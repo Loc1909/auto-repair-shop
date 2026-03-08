@@ -1,4 +1,7 @@
 package com.ou.autorepairshop.repository;
 
-public class EmployeeRepository {
+import com.ou.autorepairshop.model.Employee;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 }

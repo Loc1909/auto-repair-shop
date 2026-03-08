@@ -1,4 +1,10 @@
 package com.ou.autorepairshop.repository;
 
-public class CustomerRepository {
+import com.ou.autorepairshop.model.Customer;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface CustomerRepository extends JpaRepository<Customer, Long> {
+
 }
