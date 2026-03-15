@@ -1,0 +1,122 @@
+package com.ou.autorepairshop.service;
+
+import com.ou.autorepairshop.dto.CreateQuotationRequest;
+import com.ou.autorepairshop.dto.QuotationDetailItem;
+import com.ou.autorepairshop.dto.QuotationDetailResponse;
+import com.ou.autorepairshop.dto.QuotationResponse;
+import com.ou.autorepairshop.exception.BusinessException;
+import com.ou.autorepairshop.exception.ResourceNotFoundException;
+import com.ou.autorepairshop.model.Part;
+import com.ou.autorepairshop.model.Quotation;
+import com.ou.autorepairshop.model.QuotationDetail;
+import com.ou.autorepairshop.model.RepairOrder;
+import com.ou.autorepairshop.repository.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class QuotationService {
+
+    private final QuotationRepository quotationRepository;
+    private final QuotationDetailRepository quotationDetailRepository;
+    private final RepairOrderRepository repairOrderRepository;
+    private final PartRepository partRepository;
+    private final ServiceRepository serviceRepository;
+
+    @Transactional
+    public QuotationResponse createQuotation(CreateQuotationRequest req) {
+        RepairOrder order = repairOrderRepository.findById(req.repairOrderId())
+                .orElseThrow(() -> new ResourceNotFoundException("RepairOrder", req.repairOrderId()));
+
+        if (quotationRepository.existsByRepairOrderId(req.repairOrderId())) {
+            throw new BusinessException("A quotation already exists for this repair order. Update the existing one instead.");
+        }
+
+        Quotation quotation = Quotation.builder()
+                .repairOrder(order)
+                .status("PENDING")
+                .totalPrice(0)
+                .createdAt(LocalDateTime.now())
+                .build();
+        quotation = quotationRepository.save(quotation);
+
+        List<QuotationDetail> details = new ArrayList<>();
+        double total = 0;
+
+        for (QuotationDetailItem item : req.items()) {
+            QuotationDetail detail = buildDetail(quotation, item);
+            details.add(detail);
+            total += detail.getUnitPrice() * detail.getQuantity();
+        }
+
+        quotationDetailRepository.saveAll(details);
+        quotation.setTotalPrice(total);
+        quotation = quotationRepository.save(quotation);
+
+        order.setStatus("QUOTING");
+        repairOrderRepository.save(order);
+
+        return toResponse(quotation, details);
+    }
+
+    @Transactional(readOnly = true)
+    public QuotationResponse getByRepairOrder(Long repairOrderId) {
+        Quotation quotation = quotationRepository.findByRepairOrderId(repairOrderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation for RepairOrder", repairOrderId));
+        List<QuotationDetail> details = quotationDetailRepository.findByQuotationId(quotation.getId());
+        return toResponse(quotation, details);
+    }
+
+    @Transactional(readOnly = true)
+    public QuotationResponse getById(Long id) {
+        Quotation quotation = quotationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation", id));
+        List<QuotationDetail> details = quotationDetailRepository.findByQuotationId(id);
+        return toResponse(quotation, details);
+    }
+
+    private QuotationDetail buildDetail(Quotation quotation, QuotationDetailItem item) {
+        QuotationDetail.QuotationDetailBuilder builder = QuotationDetail.builder()
+                .quotation(quotation)
+                .itemType(item.itemType().toUpperCase())
+                .quantity(item.quantity());
+
+        if ("PART".equalsIgnoreCase(item.itemType())) {
+            Part part = partRepository.findById(item.itemId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Part", item.itemId()));
+            builder.part(part).unitPrice(part.getPrice());
+        } else if ("SERVICE".equalsIgnoreCase(item.itemType())) {
+            com.ou.autorepairshop.model.Service svc = serviceRepository.findById(item.itemId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Service", item.itemId()));
+            builder.service(svc).unitPrice(svc.getPrice());
+        } else {
+            throw new BusinessException("Unknown item type: " + item.itemType() + ". Must be PART or SERVICE.");
+        }
+
+        return builder.build();
+    }
+
+    private QuotationResponse toResponse(Quotation q, List<QuotationDetail> details) {
+        List<QuotationDetailResponse> detailResponses = details.stream().map(d -> {
+            String name = d.getPart() != null ? d.getPart().getName()
+                    : (d.getService() != null ? d.getService().getName() : "Unknown");
+            Long itemId = d.getPart() != null ? d.getPart().getId()
+                    : (d.getService() != null ? d.getService().getId() : null);
+            return new QuotationDetailResponse(
+                    d.getId(), d.getItemType(), itemId, name,
+                    d.getQuantity(), d.getUnitPrice(), d.getUnitPrice() * d.getQuantity()
+            );
+        }).toList();
+
+        return new QuotationResponse(
+                q.getId(), q.getStatus(), q.getTotalPrice(),
+                q.getCreatedAt(), q.getRepairOrder().getId(), detailResponses
+        );
+    }
+}

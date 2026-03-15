@@ -21,6 +21,7 @@ public class CustomerController {
         return customerService.getAllCustomers();
     }
 
+
     @PostMapping
     public Customer createCustomer(@RequestBody Customer customer) {
         return customerService.createCustomer(customer);

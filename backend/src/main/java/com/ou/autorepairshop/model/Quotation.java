@@ -1,22 +1,32 @@
 package com.ou.autorepairshop.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.*;
+import java.time.LocalDateTime;
+
 @Entity
-public class Quotation {//báo giá
+@Table(name = "quotations")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Quotation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private double totalPrice;
 
+    @Column(nullable = false, length = 20)
     private String status;
-    // pending, approved, rejected
+    // PENDING, APPROVED, REJECTED
 
-    @OneToOne
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "repair_order_id", nullable = false, unique = true)
     private RepairOrder repairOrder;
 }

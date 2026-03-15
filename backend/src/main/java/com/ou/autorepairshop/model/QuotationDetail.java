@@ -1,28 +1,38 @@
 package com.ou.autorepairshop.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
-public class QuotationDetail {//chi tiết báo giá
+@Table(name = "quotation_details")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class QuotationDetail {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 10)
+    private String itemType; // PART, SERVICE
+
+    @Column(nullable = false)
     private int quantity;
 
-    private double price;
+    @Column(nullable = false)
+    private double unitPrice;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "quotation_id", nullable = false)
     private Quotation quotation;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "part_id")
     private Part part;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "service_id")
     private Service service;
 }

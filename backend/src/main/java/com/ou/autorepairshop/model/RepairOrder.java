@@ -1,28 +1,41 @@
 package com.ou.autorepairshop.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Id;
-
+import jakarta.persistence.*;
+import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-public class RepairOrder { //phiếu sửa xe
+@Table(name = "repair_orders")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class RepairOrder {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private LocalDateTime createdDate;
 
-    private String status;
-    // pending, quoting, approved, repairing, completed
+    private LocalDateTime completedDate;
 
-    @ManyToOne
+    @Column(nullable = false, length = 20)
+    private String status;
+    // PENDING, QUOTING, APPROVED, REPAIRING, COMPLETED
+
+    private String notes;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vehicle_id", nullable = false)
     private Vehicle vehicle;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "appointment_id")
+    private Appointment appointment;
 }

@@ -1,27 +1,33 @@
 package com.ou.autorepairshop.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "payments")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Payment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private double amount;
 
-    private String method; // card, momo, cash
+    @Column(nullable = false, length = 20)
+    private String method; // CARD, MOMO, CASH
 
-    private String status;
+    @Column(nullable = false, length = 20)
+    private String status; // PENDING, COMPLETED, FAILED
 
     private LocalDateTime paymentDate;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "repair_order_id", nullable = false, unique = true)
     private RepairOrder repairOrder;
 }
