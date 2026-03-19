@@ -1,9 +1,9 @@
 package com.ou.autorepairshop.service;
 
-import com.ou.autorepairshop.model.Customer;
-import com.ou.autorepairshop.model.Employee;
-import com.ou.autorepairshop.model.Role;
-import com.ou.autorepairshop.model.User;
+import com.ou.autorepairshop.entity.Customer;
+import com.ou.autorepairshop.entity.Employee;
+import com.ou.autorepairshop.entity.Role;
+import com.ou.autorepairshop.entity.User;
 import com.ou.autorepairshop.repository.CustomerRepository;
 import com.ou.autorepairshop.repository.EmployeeRepository;
 import com.ou.autorepairshop.repository.UserRepository;
@@ -37,7 +37,7 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
 
-        if(savedUser.getRole() == Role.STAFF){
+        if(savedUser.getRole() == Role.ROLE_STAFF){
 
             Employee employee = Employee.builder()
                     .user(savedUser)
@@ -46,7 +46,7 @@ public class UserService {
             employeeRepository.save(employee);
         }
 
-        if(savedUser.getRole() == Role.CUSTOMER){
+        if(savedUser.getRole() == Role.ROLE_CUSTOMER){
 
             Customer customer = Customer.builder()
                     .user(savedUser)

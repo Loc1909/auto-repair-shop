@@ -1,6 +1,6 @@
 package com.ou.autorepairshop.repository;
 
-import com.ou.autorepairshop.model.Vehicle;
+import com.ou.autorepairshop.entity.Vehicle;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 

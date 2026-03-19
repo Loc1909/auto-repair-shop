@@ -1,8 +1,8 @@
 package com.ou.autorepairshop.service;
 
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
-import com.ou.autorepairshop.model.RepairOrder;
-import com.ou.autorepairshop.model.RepairProgress;
+import com.ou.autorepairshop.entity.RepairOrder;
+import com.ou.autorepairshop.entity.RepairProgress;
 import com.ou.autorepairshop.dto.RepairProgressResponse;
 import com.ou.autorepairshop.dto.UpdateProgressRequest;
 import com.ou.autorepairshop.repository.RepairOrderRepository;

@@ -2,9 +2,9 @@ package com.ou.autorepairshop.service;
 
 import com.ou.autorepairshop.exception.BusinessException;
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
-import com.ou.autorepairshop.model.Appointment;
-import com.ou.autorepairshop.model.Employee;
-import com.ou.autorepairshop.model.RepairOrder;
+import com.ou.autorepairshop.entity.Appointment;
+import com.ou.autorepairshop.entity.Employee;
+import com.ou.autorepairshop.entity.RepairOrder;
 import com.ou.autorepairshop.dto.CompleteRepairRequest;
 import com.ou.autorepairshop.dto.ReceiveVehicleRequest;
 import com.ou.autorepairshop.dto.RepairOrderResponse;

@@ -1,6 +1,6 @@
 package com.ou.autorepairshop.repository;
 
-import com.ou.autorepairshop.model.RepairOrder;
+import com.ou.autorepairshop.entity.RepairOrder;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 

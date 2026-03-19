@@ -1,14 +1,14 @@
 package com.ou.autorepairshop.service;
 
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
-import com.ou.autorepairshop.model.PartRequest;
-import com.ou.autorepairshop.model.RepairOrder;
+import com.ou.autorepairshop.entity.PartRequest;
+import com.ou.autorepairshop.entity.RepairOrder;
 import com.ou.autorepairshop.dto.PartRequestCreate;
 import com.ou.autorepairshop.dto.PartRequestResponse;
 import com.ou.autorepairshop.repository.PartRepository;
 import com.ou.autorepairshop.repository.PartRequestRepository;
 import com.ou.autorepairshop.repository.RepairOrderRepository;
-import com.ou.autorepairshop.model.Part;
+import com.ou.autorepairshop.entity.Part;
 import com.ou.autorepairshop.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
