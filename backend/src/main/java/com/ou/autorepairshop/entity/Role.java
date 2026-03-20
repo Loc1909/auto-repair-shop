@@ -1,4 +1,4 @@
-package com.ou.autorepairshop.model;
+package com.ou.autorepairshop.entity;
 
 public enum Role {
     ADMIN,

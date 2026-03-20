@@ -1,4 +1,4 @@
-package com.ou.autorepairshop.model;
+package com.ou.autorepairshop.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

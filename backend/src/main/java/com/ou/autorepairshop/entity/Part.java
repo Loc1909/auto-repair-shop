@@ -1,22 +1,28 @@
-package com.ou.autorepairshop.model;
+package com.ou.autorepairshop.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "service_categories")
+@Table(name = "parts")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ServiceCategory {
+public class Part {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String name;
 
     private String description;
+
+    @Column(nullable = false)
+    private double price;
+
+    @Column(nullable = false)
+    private int stockQuantity;
 }

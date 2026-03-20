@@ -1,15 +1,16 @@
 package com.ou.autorepairshop.service;
 
+import com.ou.autorepairshop.exception.BusinessException;
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
-import com.ou.autorepairshop.model.PartRequest;
-import com.ou.autorepairshop.model.RepairOrder;
+import com.ou.autorepairshop.mapper.PartRequestMapper;
+import com.ou.autorepairshop.entity.Part;
+import com.ou.autorepairshop.entity.PartRequest;
+import com.ou.autorepairshop.entity.RepairOrder;
 import com.ou.autorepairshop.dto.PartRequestCreate;
 import com.ou.autorepairshop.dto.PartRequestResponse;
 import com.ou.autorepairshop.repository.PartRepository;
 import com.ou.autorepairshop.repository.PartRequestRepository;
 import com.ou.autorepairshop.repository.RepairOrderRepository;
-import com.ou.autorepairshop.model.Part;
-import com.ou.autorepairshop.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ public class PartRequestService {
     private final PartRequestRepository partRequestRepository;
     private final RepairOrderRepository repairOrderRepository;
     private final PartRepository partRepository;
+    private final PartRequestMapper partRequestMapper;
 
     @Transactional
     public PartRequestResponse requestPart(PartRequestCreate req) {
@@ -48,7 +50,7 @@ public class PartRequestService {
                 .requestedAt(LocalDateTime.now())
                 .build();
 
-        return toResponse(partRequestRepository.save(partRequest));
+        return partRequestMapper.toResponse(partRequestRepository.save(partRequest));
     }
 
     @Transactional(readOnly = true)
@@ -57,14 +59,6 @@ public class PartRequestService {
             throw new ResourceNotFoundException("RepairOrder", repairOrderId);
         }
         return partRequestRepository.findByRepairOrderId(repairOrderId)
-                .stream().map(this::toResponse).toList();
-    }
-
-    private PartRequestResponse toResponse(PartRequest r) {
-        return new PartRequestResponse(
-                r.getId(), r.getStatus(), r.getRequestedQuantity(), r.getRequestedAt(),
-                r.getRepairOrder().getId(),
-                r.getPart().getId(), r.getPart().getName(), r.getPart().getStockQuantity()
-        );
+                .stream().map(partRequestMapper::toResponse).toList();
     }
 }

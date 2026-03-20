@@ -1,6 +1,6 @@
 package com.ou.autorepairshop.service;
 
-import com.ou.autorepairshop.model.Customer;
+import com.ou.autorepairshop.entity.Customer;
 import com.ou.autorepairshop.repository.CustomerRepository;
 import org.springframework.stereotype.Service;
 

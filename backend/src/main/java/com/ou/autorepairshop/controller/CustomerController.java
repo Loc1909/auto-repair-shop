@@ -1,6 +1,6 @@
 package com.ou.autorepairshop.controller;
 
-import com.ou.autorepairshop.model.Customer;
+import com.ou.autorepairshop.entity.Customer;
 import com.ou.autorepairshop.service.CustomerService;
 import org.springframework.web.bind.annotation.*;
 
