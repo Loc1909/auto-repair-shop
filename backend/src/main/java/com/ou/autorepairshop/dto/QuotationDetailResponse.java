@@ -1,11 +1,13 @@
 package com.ou.autorepairshop.dto;
 
+import java.math.BigDecimal;
+
 public record QuotationDetailResponse(
         Long id,
         String itemType,
         Long itemId,
         String itemName,
         int quantity,
-        double unitPrice,
-        double subtotal
+        BigDecimal unitPrice,
+        BigDecimal subtotal
 ) {}

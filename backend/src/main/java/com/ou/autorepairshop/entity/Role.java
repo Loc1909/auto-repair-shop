@@ -1,7 +1,7 @@
 package com.ou.autorepairshop.entity;
 
 public enum Role {
-    ADMIN,
-    STAFF,
-    CUSTOMER
+    ROLE_ADMIN,
+    ROLE_STAFF,
+    ROLE_CUSTOMER
 }

@@ -2,6 +2,8 @@ package com.ou.autorepairshop.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,15 +19,21 @@ public class Payment {
     private Long id;
 
     @Column(nullable = false)
-    private double amount;
+    private BigDecimal amount;
 
-    @Column(nullable = false, length = 20)
-    private String method; // CARD, MOMO, CASH
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentMethod method;
 
-    @Column(nullable = false, length = 20)
-    private String status; // PENDING, COMPLETED, FAILED
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentStatus status;
+
+    private String transactionId;
 
     private LocalDateTime paymentDate;
+
+    private LocalDateTime createdAt;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "repair_order_id", nullable = false, unique = true)

@@ -1,19 +1,23 @@
 package com.ou.autorepairshop.service;
 
+import com.ou.autorepairshop.dto.CreateQuotationRequest;
+import com.ou.autorepairshop.dto.QuotationDetailItem;
+import com.ou.autorepairshop.dto.QuotationResponse;
 import com.ou.autorepairshop.exception.BusinessException;
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
-import com.ou.autorepairshop.mapper.QuotationDetailMapper;
-import com.ou.autorepairshop.mapper.QuotationMapper;
 import com.ou.autorepairshop.entity.Part;
 import com.ou.autorepairshop.entity.Quotation;
 import com.ou.autorepairshop.entity.QuotationDetail;
 import com.ou.autorepairshop.entity.RepairOrder;
-import com.ou.autorepairshop.dto.*;
+import com.ou.autorepairshop.entity.RepairService;
+import com.ou.autorepairshop.mapper.QuotationDetailMapper;
+import com.ou.autorepairshop.mapper.QuotationMapper;
 import com.ou.autorepairshop.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +30,7 @@ public class QuotationService {
     private final QuotationDetailRepository quotationDetailRepository;
     private final RepairOrderRepository repairOrderRepository;
     private final PartRepository partRepository;
-    private final ServiceRepository serviceRepository;
+    private final RepairServiceRepository serviceRepository;
     private final QuotationDetailMapper quotationDetailMapper;
     private final QuotationMapper quotationMapper;
 
@@ -42,21 +46,23 @@ public class QuotationService {
         Quotation quotation = Quotation.builder()
                 .repairOrder(order)
                 .status("PENDING")
-                .totalPrice(0)
+                .totalPrice(BigDecimal.ZERO)
                 .createdAt(LocalDateTime.now())
                 .build();
+
         quotation = quotationRepository.save(quotation);
 
         List<QuotationDetail> details = new ArrayList<>();
-        double total = 0;
+        BigDecimal total = BigDecimal.ZERO;
 
         for (QuotationDetailItem item : req.items()) {
             QuotationDetail detail = buildDetail(quotation, item);
             details.add(detail);
-            total += detail.getUnitPrice() * detail.getQuantity();
+            total = total.add(detail.getUnitPrice().multiply(BigDecimal.valueOf(detail.getQuantity())));
         }
 
         quotationDetailRepository.saveAll(details);
+
         quotation.setTotalPrice(total);
         quotation = quotationRepository.save(quotation);
 
@@ -70,6 +76,7 @@ public class QuotationService {
     public QuotationResponse getByRepairOrder(Long repairOrderId) {
         Quotation quotation = quotationRepository.findByRepairOrderId(repairOrderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation for RepairOrder", repairOrderId));
+
         List<QuotationDetail> details = quotationDetailRepository.findByQuotationId(quotation.getId());
         return quotationMapper.toResponse(quotation, details, quotationDetailMapper);
     }
@@ -92,10 +99,12 @@ public class QuotationService {
             Part part = partRepository.findById(item.itemId())
                     .orElseThrow(() -> new ResourceNotFoundException("Part", item.itemId()));
             builder.part(part).unitPrice(part.getPrice());
+
         } else if ("SERVICE".equalsIgnoreCase(item.itemType())) {
-            com.ou.autorepairshop.entity.Service svc = serviceRepository.findById(item.itemId())
+            RepairService svc = serviceRepository.findById(item.itemId())
                     .orElseThrow(() -> new ResourceNotFoundException("Service", item.itemId()));
             builder.service(svc).unitPrice(svc.getPrice());
+
         } else {
             throw new BusinessException("Unknown item type: " + item.itemType() + ". Must be PART or SERVICE.");
         }

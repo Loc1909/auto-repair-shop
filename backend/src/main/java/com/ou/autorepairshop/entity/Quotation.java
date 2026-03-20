@@ -2,6 +2,8 @@ package com.ou.autorepairshop.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,7 +19,7 @@ public class Quotation {
     private Long id;
 
     @Column(nullable = false)
-    private double totalPrice;
+    private BigDecimal totalPrice;
 
     @Column(nullable = false, length = 20)
     private String status;

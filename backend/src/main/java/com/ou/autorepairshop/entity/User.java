@@ -1,7 +1,10 @@
 package com.ou.autorepairshop.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "users")
@@ -21,8 +24,16 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Column(unique = true)
+    private String email;
+
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
 
-    private boolean active;
+    @Column(nullable = false)
+    private boolean active = true;
+
+    @OneToOne(mappedBy = "user")
+    private Employee employee;
 }

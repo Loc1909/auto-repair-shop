@@ -3,6 +3,9 @@ package com.ou.autorepairshop.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "parts")
 @Data
@@ -21,8 +24,18 @@ public class Part {
     private String description;
 
     @Column(nullable = false)
-    private double price;
+    private BigDecimal price;
 
     @Column(nullable = false)
     private int stockQuantity;
+
+    // cảnh báo sắp hết hàng
+    private int minStockLevel;
+
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+    }
 }

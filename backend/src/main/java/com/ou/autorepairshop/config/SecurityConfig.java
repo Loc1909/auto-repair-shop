@@ -1,4 +1,4 @@
-package com.ou.autorepairshop.security;
+package com.ou.autorepairshop.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,21 +10,16 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 public class SecurityConfig {
 
-    // bảo mật api
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
+                .cors(cors -> {})  // <--- thêm cors Customizer rỗng
+                .csrf(csrf -> csrf.disable()) // tắt CSRF cho dev
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/**").permitAll()
-                        .anyRequest().permitAll()
+                        .anyRequest().permitAll()  //hoặc authenticated()
                 );
-
         return http.build();
     }
-
-    //hash password
 
     @Bean
     public PasswordEncoder passwordEncoder() {

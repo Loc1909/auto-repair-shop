@@ -3,27 +3,29 @@ package com.ou.autorepairshop.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "services")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Service {
+public class RepairService {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
     @Column(nullable = false)
-    private double price;
+    private BigDecimal price;
 
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
+    @JoinColumn(name = "category_id", nullable = false)
     private ServiceCategory category;
 }

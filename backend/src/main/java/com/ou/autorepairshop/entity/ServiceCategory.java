@@ -3,6 +3,9 @@ package com.ou.autorepairshop.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Entity
 @Table(name = "service_categories")
 @Data
@@ -19,4 +22,14 @@ public class ServiceCategory {
     private String name;
 
     private String description;
+
+    @OneToMany(mappedBy = "category")
+    private List<RepairService> services;
+
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+    }
 }

@@ -3,6 +3,8 @@ package com.ou.autorepairshop.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "quotation_details")
 @Data
@@ -22,7 +24,7 @@ public class QuotationDetail {
     private int quantity;
 
     @Column(nullable = false)
-    private double unitPrice;
+    private BigDecimal unitPrice;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "quotation_id", nullable = false)
@@ -34,5 +36,5 @@ public class QuotationDetail {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "service_id")
-    private Service service;
+    private RepairService service;
 }

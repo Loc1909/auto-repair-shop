@@ -37,7 +37,7 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
 
-        if(savedUser.getRole() == Role.STAFF){
+        if(savedUser.getRole() == Role.ROLE_STAFF){
 
             Employee employee = Employee.builder()
                     .user(savedUser)
@@ -46,7 +46,7 @@ public class UserService {
             employeeRepository.save(employee);
         }
 
-        if(savedUser.getRole() == Role.CUSTOMER){
+        if(savedUser.getRole() == Role.ROLE_CUSTOMER){
 
             Customer customer = Customer.builder()
                     .user(savedUser)
