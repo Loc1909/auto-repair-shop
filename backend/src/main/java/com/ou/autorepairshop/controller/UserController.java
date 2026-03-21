@@ -1,6 +1,8 @@
 package com.ou.autorepairshop.controller;
 
+import com.ou.autorepairshop.dto.UserResponse;
 import com.ou.autorepairshop.entity.User;
+import com.ou.autorepairshop.mapper.UserMapper;
 import com.ou.autorepairshop.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,12 +24,25 @@ public class UserController {
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    public List<UserResponse> getAllUsers() {
+        return userService.getAllUsers()
+                .stream()
+                .map(UserMapper::toDTO)
+                .toList();
     }
 
     @GetMapping("/{id}")
     public User getUser(@PathVariable Long id) {
         return userService.getUserById(id);
+    }
+
+    @PutMapping("/{id}")
+    public User updateUser(@PathVariable Long id, @RequestBody User user) {
+        return userService.updateUser(id, user);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
     }
 }

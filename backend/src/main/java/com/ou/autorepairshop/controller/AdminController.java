@@ -1,8 +1,10 @@
 package com.ou.autorepairshop.controller;
 
+import com.ou.autorepairshop.dto.EmployeeResponse;
 import com.ou.autorepairshop.dto.RepairServiceDTO;
 import com.ou.autorepairshop.dto.ServiceCategoryDTO;
 import com.ou.autorepairshop.entity.*;
+import com.ou.autorepairshop.mapper.EmployeeMapper;
 import com.ou.autorepairshop.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -23,10 +25,12 @@ public class AdminController {
 
     // ================= EMPLOYEE =================
     @GetMapping("/employees")
-    public List<Employee> getEmployees() {
-        return employeeService.getAll();
+    public List<EmployeeResponse> getEmployees() {
+        return employeeService.getAll()
+                .stream()
+                .map(EmployeeMapper::toDTO)
+                .toList();
     }
-
     @PostMapping("/employees")
     public Employee createEmployee(@RequestBody Employee e) {
         return employeeService.create(e);

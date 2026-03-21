@@ -66,4 +66,38 @@ public class UserService {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
+
+    public User updateUser(Long id, User updatedUser) {
+        User existing = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // update field
+        existing.setEmail(updatedUser.getEmail());
+        existing.setActive(updatedUser.isActive());
+
+        // update role nếu cần
+        if (updatedUser.getRole() != null) {
+            existing.setRole(updatedUser.getRole());
+        }
+
+        return userRepository.save(existing);
+    }
+
+    public void deleteUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // xóa employee nếu có
+        if (user.getEmployee() != null) {
+            employeeRepository.delete(user.getEmployee());
+        }
+
+        // xóa customer nếu có
+        if (user.getCustomer() != null) {
+            customerRepository.delete(user.getCustomer());
+        }
+
+        // xóa user
+        userRepository.delete(user);
+    }
 }

@@ -3,6 +3,7 @@ import AdminLayout from "./components/AdminLayout";
 import Dashboard from "./pages/Dashboard";
 import Services from "./pages/Services";
 import Parts from "./pages/Parts";
+import Users from "./pages/Users";
 import Employees from "./pages/Employees";
 
 function App() {
@@ -15,7 +16,8 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="services" element={<Services />} />
           <Route path="parts" element={<Parts />} />
-          <Route path="employees" element={<Employees />} />
+          <Route path="users" element={<Users />} />
+          <Route path="employees" element={<Employees />} /> 
         </Route>
 
       </Routes>

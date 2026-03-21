@@ -1,5 +1,7 @@
 package com.ou.autorepairshop.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,6 +24,7 @@ public class User {
     private String username;
 
     @Column(nullable = false)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @Column(unique = true)
@@ -36,4 +39,7 @@ public class User {
 
     @OneToOne(mappedBy = "user")
     private Employee employee;
+
+    @OneToOne(mappedBy = "user")
+    private Customer customer;
 }
