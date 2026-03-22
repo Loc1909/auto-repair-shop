@@ -3,6 +3,8 @@ package com.ou.autorepairshop.service;
 import com.ou.autorepairshop.dto.CreateQuotationRequest;
 import com.ou.autorepairshop.dto.QuotationDetailItem;
 import com.ou.autorepairshop.dto.QuotationResponse;
+import com.ou.autorepairshop.enums.QuotationStatus;
+import com.ou.autorepairshop.enums.RepairStatus;
 import com.ou.autorepairshop.exception.BusinessException;
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
 import com.ou.autorepairshop.entity.Part;
@@ -49,7 +51,7 @@ public class QuotationService {
 
         Quotation quotation = Quotation.builder()
                 .repairOrder(order)
-                .status("PENDING")
+                .status(QuotationStatus.PENDING)
                 .totalPrice(BigDecimal.ZERO)
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -70,7 +72,7 @@ public class QuotationService {
         quotation.setTotalPrice(total);
         quotation = quotationRepository.save(quotation);
 
-        order.setStatus("QUOTING");
+        order.setStatus(RepairStatus.QUOTING);
         repairOrderRepository.save(order);
 
         return quotationMapper.toResponse(quotation, details, quotationDetailMapper);

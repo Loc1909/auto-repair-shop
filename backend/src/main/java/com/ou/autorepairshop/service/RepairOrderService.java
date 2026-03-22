@@ -1,5 +1,7 @@
 package com.ou.autorepairshop.service;
 
+import com.ou.autorepairshop.enums.AppointmentStatus;
+import com.ou.autorepairshop.enums.RepairStatus;
 import com.ou.autorepairshop.exception.BusinessException;
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
 import com.ou.autorepairshop.mapper.RepairOrderMapper;
@@ -40,14 +42,14 @@ public class RepairOrderService {
         Employee employee = employeeRepository.findById(req.employeeId())
                 .orElseThrow(() -> new ResourceNotFoundException("Employee", req.employeeId()));
 
-        appointment.setStatus("IN_PROGRESS");
+        appointment.setStatus(AppointmentStatus.RECEIVED);
         appointmentRepository.save(appointment);
 
         RepairOrder order = RepairOrder.builder()
                 .vehicle(appointment.getVehicle())
                 .employee(employee)
                 .appointment(appointment)
-                .status("PENDING")
+                .status(RepairStatus.PENDING)
                 .notes(req.notes())
                 .createdDate(LocalDateTime.now())
                 .build();
@@ -66,7 +68,7 @@ public class RepairOrderService {
         if (req.notes() != null && !req.notes().isBlank()) {
             order.setNotes(req.notes());
         }
-        order.setStatus("COMPLETED");
+        order.setStatus(RepairStatus.COMPLETED);
         order.setCompletedDate(LocalDateTime.now());
 
         return repairOrderMapper.toResponse(repairOrderRepository.save(order));
