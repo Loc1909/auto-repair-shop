@@ -2,6 +2,7 @@ package com.ou.autorepairshop.service;
 
 import com.ou.autorepairshop.exception.BusinessException;
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
+import com.ou.autorepairshop.mapper.RepairOrderMapper;
 import com.ou.autorepairshop.entity.Appointment;
 import com.ou.autorepairshop.entity.Employee;
 import com.ou.autorepairshop.entity.RepairOrder;
@@ -25,6 +26,7 @@ public class RepairOrderService {
     private final RepairOrderRepository repairOrderRepository;
     private final AppointmentRepository appointmentRepository;
     private final EmployeeRepository employeeRepository;
+    private final RepairOrderMapper repairOrderMapper;
 
     @Transactional
     public RepairOrderResponse receiveVehicle(ReceiveVehicleRequest req) {
@@ -50,7 +52,7 @@ public class RepairOrderService {
                 .createdDate(LocalDateTime.now())
                 .build();
 
-        return toResponse(repairOrderRepository.save(order));
+        return repairOrderMapper.toResponse(repairOrderRepository.save(order));
     }
 
     @Transactional
@@ -67,44 +69,28 @@ public class RepairOrderService {
         order.setStatus("COMPLETED");
         order.setCompletedDate(LocalDateTime.now());
 
-        return toResponse(repairOrderRepository.save(order));
+        return repairOrderMapper.toResponse(repairOrderRepository.save(order));
     }
 
     @Transactional(readOnly = true)
     public RepairOrderResponse getById(Long id) {
-        return toResponse(findOrderById(id));
+        return repairOrderMapper.toResponse(findOrderById(id));
     }
 
     @Transactional(readOnly = true)
     public List<RepairOrderResponse> getByEmployee(Long employeeId) {
         return repairOrderRepository.findByEmployeeId(employeeId)
-                .stream().map(this::toResponse).toList();
+                .stream().map(repairOrderMapper::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public List<RepairOrderResponse> getAll() {
-        return repairOrderRepository.findAll().stream().map(this::toResponse).toList();
+        return repairOrderRepository.findAll()
+                .stream().map(repairOrderMapper::toResponse).toList();
     }
 
     private RepairOrder findOrderById(Long id) {
         return repairOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("RepairOrder", id));
-    }
-
-    public RepairOrderResponse toResponse(RepairOrder o) {
-        return new RepairOrderResponse(
-                o.getId(),
-                o.getStatus(),
-                o.getCreatedDate(),
-                o.getCompletedDate(),
-                o.getNotes(),
-                o.getVehicle().getId(),
-                o.getVehicle().getLicensePlate(),
-                o.getVehicle().getBrand(),
-                o.getVehicle().getModel(),
-                o.getEmployee().getId(),
-                o.getEmployee().getName(),
-                o.getAppointment() != null ? o.getAppointment().getId() : null
-        );
     }
 }

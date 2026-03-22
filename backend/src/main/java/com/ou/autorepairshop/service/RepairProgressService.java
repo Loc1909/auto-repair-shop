@@ -1,6 +1,7 @@
 package com.ou.autorepairshop.service;
 
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
+import com.ou.autorepairshop.mapper.RepairProgressMapper;
 import com.ou.autorepairshop.entity.RepairOrder;
 import com.ou.autorepairshop.entity.RepairProgress;
 import com.ou.autorepairshop.dto.RepairProgressResponse;
@@ -20,13 +21,13 @@ public class RepairProgressService {
 
     private final RepairProgressRepository repairProgressRepository;
     private final RepairOrderRepository repairOrderRepository;
+    private final RepairProgressMapper repairProgressMapper;
 
     @Transactional
     public RepairProgressResponse addProgress(UpdateProgressRequest req) {
         RepairOrder order = repairOrderRepository.findById(req.repairOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("RepairOrder", req.repairOrderId()));
 
-        // Sync the order's status with the latest progress entry
         order.setStatus(req.status());
         repairOrderRepository.save(order);
 
@@ -37,7 +38,7 @@ public class RepairProgressService {
                 .updateTime(LocalDateTime.now())
                 .build();
 
-        return toResponse(repairProgressRepository.save(progress));
+        return repairProgressMapper.toResponse(repairProgressRepository.save(progress));
     }
 
     @Transactional(readOnly = true)
@@ -47,13 +48,6 @@ public class RepairProgressService {
         }
         return repairProgressRepository
                 .findByRepairOrderIdOrderByUpdateTimeAsc(repairOrderId)
-                .stream().map(this::toResponse).toList();
-    }
-
-    private RepairProgressResponse toResponse(RepairProgress p) {
-        return new RepairProgressResponse(
-                p.getId(), p.getStatus(), p.getNote(),
-                p.getUpdateTime(), p.getRepairOrder().getId()
-        );
+                .stream().map(repairProgressMapper::toResponse).toList();
     }
 }

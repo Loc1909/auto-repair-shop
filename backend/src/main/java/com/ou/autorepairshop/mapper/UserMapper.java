@@ -7,6 +7,8 @@ import com.ou.autorepairshop.entity.Customer;
 import com.ou.autorepairshop.entity.Employee;
 import com.ou.autorepairshop.entity.Role;
 import com.ou.autorepairshop.entity.User;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 public class UserMapper {
 
@@ -36,14 +38,7 @@ public class UserMapper {
                 e.getUser() != null ? e.getUser().getUsername() : null
         );
     }
-
-    private static CustomerResponse toCustomerDTO(Customer c) {
-        if (c == null) return null;
-
-        return new CustomerResponse(
-                c.getId(),
-                c.getName(),
-                c.getPhone()
-        );
-    }
+@Mapper(componentModel = "spring")
+public interface UserMapper {
+    UserResponse toResponse(User user);
 }

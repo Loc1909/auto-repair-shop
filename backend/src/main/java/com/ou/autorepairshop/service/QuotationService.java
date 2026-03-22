@@ -2,12 +2,21 @@ package com.ou.autorepairshop.service;
 
 import com.ou.autorepairshop.dto.CreateQuotationRequest;
 import com.ou.autorepairshop.dto.QuotationDetailItem;
-import com.ou.autorepairshop.dto.QuotationDetailResponse;
 import com.ou.autorepairshop.dto.QuotationResponse;
-import com.ou.autorepairshop.entity.*;
 import com.ou.autorepairshop.exception.BusinessException;
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
-import com.ou.autorepairshop.repository.*;
+import com.ou.autorepairshop.entity.Part;
+import com.ou.autorepairshop.entity.Quotation;
+import com.ou.autorepairshop.entity.QuotationDetail;
+import com.ou.autorepairshop.entity.RepairOrder;
+import com.ou.autorepairshop.entity.RepairService;
+import com.ou.autorepairshop.mapper.QuotationDetailMapper;
+import com.ou.autorepairshop.mapper.QuotationMapper;
+import com.ou.autorepairshop.repository.QuotationRepository;
+import com.ou.autorepairshop.repository.QuotationDetailRepository;
+import com.ou.autorepairshop.repository.RepairOrderRepository;
+import com.ou.autorepairshop.repository.PartRepository;
+import com.ou.autorepairshop.repository.RepairServiceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,15 +35,16 @@ public class QuotationService {
     private final RepairOrderRepository repairOrderRepository;
     private final PartRepository partRepository;
     private final RepairServiceRepository serviceRepository;
+    private final QuotationDetailMapper quotationDetailMapper;
+    private final QuotationMapper quotationMapper;
 
     @Transactional
     public QuotationResponse createQuotation(CreateQuotationRequest req) {
-
         RepairOrder order = repairOrderRepository.findById(req.repairOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("RepairOrder", req.repairOrderId()));
 
         if (quotationRepository.existsByRepairOrderId(req.repairOrderId())) {
-            throw new BusinessException("A quotation already exists for this repair order. Update the existing one instead.");
+            throw new BusinessException("A quotation already exists for this repair order.");
         }
 
         Quotation quotation = Quotation.builder()
@@ -52,11 +62,7 @@ public class QuotationService {
         for (QuotationDetailItem item : req.items()) {
             QuotationDetail detail = buildDetail(quotation, item);
             details.add(detail);
-
-            BigDecimal itemTotal = detail.getUnitPrice()
-                    .multiply(BigDecimal.valueOf(detail.getQuantity()));
-
-            total = total.add(itemTotal);
+            total = total.add(detail.getUnitPrice().multiply(BigDecimal.valueOf(detail.getQuantity())));
         }
 
         quotationDetailRepository.saveAll(details);
@@ -67,7 +73,7 @@ public class QuotationService {
         order.setStatus("QUOTING");
         repairOrderRepository.save(order);
 
-        return toResponse(quotation, details);
+        return quotationMapper.toResponse(quotation, details, quotationDetailMapper);
     }
 
     @Transactional(readOnly = true)
@@ -76,22 +82,18 @@ public class QuotationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation for RepairOrder", repairOrderId));
 
         List<QuotationDetail> details = quotationDetailRepository.findByQuotationId(quotation.getId());
-
-        return toResponse(quotation, details);
+        return quotationMapper.toResponse(quotation, details, quotationDetailMapper);
     }
 
     @Transactional(readOnly = true)
     public QuotationResponse getById(Long id) {
         Quotation quotation = quotationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation", id));
-
         List<QuotationDetail> details = quotationDetailRepository.findByQuotationId(id);
-
-        return toResponse(quotation, details);
+        return quotationMapper.toResponse(quotation, details, quotationDetailMapper);
     }
 
     private QuotationDetail buildDetail(Quotation quotation, QuotationDetailItem item) {
-
         QuotationDetail.QuotationDetailBuilder builder = QuotationDetail.builder()
                 .quotation(quotation)
                 .itemType(item.itemType().toUpperCase())
@@ -100,58 +102,17 @@ public class QuotationService {
         if ("PART".equalsIgnoreCase(item.itemType())) {
             Part part = partRepository.findById(item.itemId())
                     .orElseThrow(() -> new ResourceNotFoundException("Part", item.itemId()));
-
-            builder.part(part)
-                    .unitPrice(part.getPrice());
+            builder.part(part).unitPrice(part.getPrice());
 
         } else if ("SERVICE".equalsIgnoreCase(item.itemType())) {
             RepairService svc = serviceRepository.findById(item.itemId())
                     .orElseThrow(() -> new ResourceNotFoundException("Service", item.itemId()));
-
-            builder.service(svc)
-                    .unitPrice(svc.getPrice());
+            builder.service(svc).unitPrice(svc.getPrice());
 
         } else {
             throw new BusinessException("Unknown item type: " + item.itemType() + ". Must be PART or SERVICE.");
         }
 
         return builder.build();
-    }
-
-    private QuotationResponse toResponse(Quotation q, List<QuotationDetail> details) {
-
-        List<QuotationDetailResponse> detailResponses = details.stream().map(d -> {
-
-            String name = d.getPart() != null
-                    ? d.getPart().getName()
-                    : (d.getService() != null ? d.getService().getName() : "Unknown");
-
-            Long itemId = d.getPart() != null
-                    ? d.getPart().getId()
-                    : (d.getService() != null ? d.getService().getId() : null);
-
-            BigDecimal total = d.getUnitPrice()
-                    .multiply(BigDecimal.valueOf(d.getQuantity()));
-
-            return new QuotationDetailResponse(
-                    d.getId(),
-                    d.getItemType(),
-                    itemId,
-                    name,
-                    d.getQuantity(),
-                    d.getUnitPrice(),
-                    total
-            );
-
-        }).toList();
-
-        return new QuotationResponse(
-                q.getId(),
-                q.getStatus(),
-                q.getTotalPrice(),
-                q.getCreatedAt(),
-                q.getRepairOrder().getId(),
-                detailResponses
-        );
     }
 }
