@@ -20,6 +20,8 @@ public class Customer {
 
     private String phone;
 
+    private String address;
+
     @OneToOne
     @JoinColumn(name = "user_id")
     @JsonIgnore

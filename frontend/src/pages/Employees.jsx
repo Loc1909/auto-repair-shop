@@ -4,11 +4,21 @@ import {
   Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Paper,
   Button, Dialog, DialogTitle,
-  DialogContent, DialogActions, TextField
+  DialogContent, DialogActions, TextField,
+  CircularProgress, TablePagination, Box, Typography
 } from "@mui/material";
 
 function Employees() {
   const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [totalElements, setTotalElements] = useState(0);
+
+  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+
   const [openModal, setOpenModal] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
 
@@ -19,32 +29,53 @@ function Employees() {
     salary: ""
   });
 
+  // ================= DEBOUNCE SEARCH =================
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      setSearch(searchInput);
+      setPage(0);
+    }, 500);
+
+    return () => clearTimeout(delay);
+  }, [searchInput]);
+
   // ================= FETCH =================
   useEffect(() => {
     fetchEmployees();
-  }, []);
+  }, [page, rowsPerPage, search]);
 
   const fetchEmployees = () => {
-    axiosClient.get("/admin/employees")
-      .then(res => setEmployees(res.data))
-      .catch(err => console.error(err));
+    setLoading(true);
+
+    axiosClient.get("/admin/employees", {
+      params: {
+        page,
+        size: rowsPerPage,
+        search
+      }
+    })
+      .then(res => {
+        setEmployees(res.data.content);
+        setTotalElements(res.data.totalElements);
+      })
+      .catch(err => console.error(err))
+      .finally(() => setLoading(false));
   };
 
   // ================= DELETE =================
   const handleDelete = (id) => {
-  console.log("CLICK DELETE:", id);
+    if (!window.confirm("Xóa employee này?")) return;
 
-  // bỏ confirm để test
-  axiosClient.delete(`/admin/employees/${id}`)
-    .then(() => {
-      alert("Xóa thành công");
-      fetchEmployees();
-    })
-    .catch(err => {
-      console.log(err);
-      alert("Xóa thất bại");
-    });
-};
+    axiosClient.delete(`/admin/employees/${id}`)
+      .then(() => {
+        if (employees.length === 1 && page > 0) {
+          setPage(page - 1);
+        } else {
+          fetchEmployees();
+        }
+      })
+      .catch(() => alert("Xóa thất bại"));
+  };
 
   // ================= EDIT =================
   const handleOpenModal = (emp) => {
@@ -58,9 +89,7 @@ function Employees() {
     setOpenModal(true);
   };
 
-  const handleCloseModal = () => {
-    setOpenModal(false);
-  };
+  const handleCloseModal = () => setOpenModal(false);
 
   // ================= UPDATE =================
   const handleSubmit = () => {
@@ -71,83 +100,126 @@ function Employees() {
 
     axiosClient.put(`/admin/employees/${editingEmployee.id}`, form)
       .then(() => {
-        alert("Cập nhật thành công");
         fetchEmployees();
         setOpenModal(false);
       })
-      .catch(err => {
-        console.log(err);
-        alert("Cập nhật thất bại");
-      });
+      .catch(() => alert("Cập nhật thất bại"));
   };
 
   // ================= UI =================
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Employees</h2>
+    <Box sx={{ padding: 3 }}>
+      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
+        Employees
+      </Typography>
 
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Username</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Phone</TableCell>
-              <TableCell>Position</TableCell>
-              <TableCell>Salary</TableCell>
-              <TableCell>Action</TableCell>
-            </TableRow>
-          </TableHead>
+      {/* SEARCH */}
+      <TextField
+        placeholder="Search name, phone, position..."
+        fullWidth
+        sx={{ mb: 2 }}
+        value={searchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
+      />
 
-          <TableBody>
-            {employees.map(e => (
-              <TableRow key={e.id}>
-                <TableCell>{e.id}</TableCell>
-                <TableCell>{e.username}</TableCell>
-                <TableCell>{e.name}</TableCell>
-                <TableCell>{e.phone}</TableCell>
-                <TableCell>{e.position}</TableCell>
-                <TableCell>{e.salary}</TableCell>
-                <TableCell>
-                  <Button
-                    size="small"
-                    variant="contained"
-                    color="success"
-                    onClick={() => handleOpenModal(e)}
-                    style={{ marginRight: 5 }}
-                  >
-                    Sửa
-                  </Button>
+      <Box sx={{ position: "relative" }}>
+        <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
+          
+          {/* LOADING OVERLAY */}
+          {loading && (
+            <Box sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              bgcolor: "rgba(255,255,255,0.6)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 1
+            }}>
+              <CircularProgress />
+            </Box>
+          )}
 
-                  <Button
-                    size="small"
-                    variant="contained"
-                    color="error"
-                    onClick={() => handleDelete(e.id)}
-                  >
-                    Xóa
-                  </Button>
-                </TableCell>
+          <Table>
+            <TableHead>
+              <TableRow sx={{ bgcolor: "#f5f5f5" }}>
+                <TableCell><b>ID</b></TableCell>
+                <TableCell><b>Username</b></TableCell>
+                <TableCell><b>Name</b></TableCell>
+                <TableCell><b>Phone</b></TableCell>
+                <TableCell><b>Position</b></TableCell>
+                <TableCell><b>Salary</b></TableCell>
+                <TableCell><b>Action</b></TableCell>
               </TableRow>
-            ))}
-          </TableBody>
+            </TableHead>
 
-        </Table>
-      </TableContainer>
+            <TableBody>
+              {employees.map(e => (
+                <TableRow key={e.id} hover>
+                  <TableCell>{e.id}</TableCell>
+                  <TableCell>{e.username}</TableCell>
+                  <TableCell>{e.name}</TableCell>
+                  <TableCell>{e.phone}</TableCell>
+                  <TableCell>{e.position}</TableCell>
+                  <TableCell>
+                    {e.salary?.toLocaleString("vi-VN")} ₫
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      onClick={() => handleOpenModal(e)}
+                      sx={{ mr: 1 }}
+                    >
+                      Edit
+                    </Button>
 
-      {/* ================= MODAL ================= */}
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="error"
+                      onClick={() => handleDelete(e.id)}
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+
+              {employees.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={7} align="center">
+                    No data
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+
+          {/* PAGINATION */}
+          <TablePagination
+            component="div"
+            count={totalElements}
+            page={page}
+            onPageChange={(e, newPage) => setPage(newPage)}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={(e) => {
+              setRowsPerPage(parseInt(e.target.value, 10));
+              setPage(0);
+            }}
+            rowsPerPageOptions={[5, 10, 20]}
+          />
+        </TableContainer>
+      </Box>
+
+      {/* MODAL */}
       <Dialog open={openModal} onClose={handleCloseModal}>
-        <DialogTitle>Sửa Employee</DialogTitle>
+        <DialogTitle>Edit Employee</DialogTitle>
 
-        <DialogContent
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 10,
-            marginTop: 5
-          }}
-        >
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
           <TextField
             label="Name"
             value={form.name}
@@ -175,13 +247,13 @@ function Employees() {
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={handleCloseModal}>Hủy</Button>
-          <Button onClick={handleSubmit} variant="contained">
-            Lưu
+          <Button onClick={handleCloseModal}>Cancel</Button>
+          <Button variant="contained" onClick={handleSubmit}>
+            Save
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </Box>
   );
 }
 

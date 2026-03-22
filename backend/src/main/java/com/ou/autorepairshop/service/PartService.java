@@ -3,6 +3,8 @@ package com.ou.autorepairshop.service;
 import com.ou.autorepairshop.entity.Part;
 import com.ou.autorepairshop.repository.PartRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,6 +37,12 @@ public class PartService {
 
     public void delete(Long id) {
         partRepository.deleteById(id);
+    }
+
+    public Page<Part> getParts(String search, Pageable pageable) {
+        return (search != null && !search.trim().isEmpty())
+                ? partRepository.search(search, pageable)
+                : partRepository.findAll(pageable);
     }
 
     // 🔥 low stock

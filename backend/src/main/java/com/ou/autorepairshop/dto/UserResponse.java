@@ -4,7 +4,7 @@ import com.ou.autorepairshop.entity.Role;
 import com.ou.autorepairshop.entity.User;
 
 public record UserResponse(
-        Long userId,
+        Long id,
         String username,
         String email,
         Role role,

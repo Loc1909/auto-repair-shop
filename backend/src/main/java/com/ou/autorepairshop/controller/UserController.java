@@ -2,46 +2,39 @@ package com.ou.autorepairshop.controller;
 
 import com.ou.autorepairshop.dto.UserResponse;
 import com.ou.autorepairshop.entity.User;
-import com.ou.autorepairshop.mapper.UserMapper;
 import com.ou.autorepairshop.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/admin")
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
+    // ================= USERS (PAGINATION + SEARCH) =================
+    @GetMapping("/users")
+    public Page<UserResponse> getUsers(
+            @RequestParam(required = false) String search,
+            Pageable pageable
+    ) {
+        return userService.getUsers(search, pageable);
     }
 
-    @PostMapping
+    @PostMapping("/users")
     public User createUser(@RequestBody User user) {
         return userService.createUser(user);
     }
 
-    @GetMapping
-    public List<UserResponse> getAllUsers() {
-        return userService.getAllUsers()
-                .stream()
-                .map(UserMapper::toDTO)
-                .toList();
-    }
-
-    @GetMapping("/{id}")
-    public User getUser(@PathVariable Long id) {
-        return userService.getUserById(id);
-    }
-
-    @PutMapping("/{id}")
+    @PutMapping("/users/{id}")
     public User updateUser(@PathVariable Long id, @RequestBody User user) {
         return userService.updateUser(id, user);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/users/{id}")
     public void deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
     }

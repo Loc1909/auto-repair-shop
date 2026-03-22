@@ -1,12 +1,12 @@
 package com.ou.autorepairshop.controller;
 
-import com.ou.autorepairshop.dto.EmployeeResponse;
-import com.ou.autorepairshop.dto.RepairServiceDTO;
-import com.ou.autorepairshop.dto.ServiceCategoryDTO;
+import com.ou.autorepairshop.dto.*;
 import com.ou.autorepairshop.entity.*;
 import com.ou.autorepairshop.mapper.EmployeeMapper;
 import com.ou.autorepairshop.service.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,11 +25,11 @@ public class AdminController {
 
     // ================= EMPLOYEE =================
     @GetMapping("/employees")
-    public List<EmployeeResponse> getEmployees() {
-        return employeeService.getAll()
-                .stream()
-                .map(EmployeeMapper::toDTO)
-                .toList();
+    public Page<EmployeeResponse> getEmployees(
+            @RequestParam(required = false) String search,
+            Pageable pageable
+    ) {
+        return employeeService.getEmployees(search, pageable);
     }
     @PostMapping("/employees")
     public Employee createEmployee(@RequestBody Employee e) {
@@ -48,8 +48,11 @@ public class AdminController {
 
     // ================= PART =================
     @GetMapping("/parts")
-    public List<Part> getParts() {
-        return partService.getAll();
+    public Page<Part> getParts(
+            @RequestParam(required = false) String search,
+            Pageable pageable
+    ) {
+        return partService.getParts(search, pageable);
     }
 
     @PostMapping("/parts")
@@ -69,35 +72,52 @@ public class AdminController {
 
     // ================= SERVICE =================
     @GetMapping("/services")
-    public List<RepairServiceDTO> getServices() {
-        return serviceService.getAll();
+    public Page<RepairServiceDTO> getServices(
+            @RequestParam(required = false) String search,
+            Pageable pageable
+    ) {
+        return serviceService.getServices(search, pageable);
     }
 
     @PostMapping("/services")
-    public RepairServiceDTO createService(@RequestBody RepairService s) {
-        return serviceService.createAndReturnDTO(s);
+    public RepairServiceDTO createRepairService(@RequestBody RepairServiceCreateRequest request) {
+        return serviceService.create(request);
     }
 
     @PutMapping("/services/{id}")
-    public RepairServiceDTO updateService(@PathVariable Long id, @RequestBody RepairService s) {
-        return serviceService.update(id, s);
+    public RepairServiceDTO updateService(@PathVariable Long id,
+                                          @RequestBody RepairServiceRequest request) {
+        return serviceService.update(id, request);
     }
 
     @DeleteMapping("/services/{id}")
-    public Map<String, String> deleteService(@PathVariable Long id) {
+    public void deleteService(@PathVariable Long id) {
         serviceService.delete(id);
-        return Map.of("message", "Deleted successfully");
     }
-
     // ================= SERVICE CATEGORY =================
+
     @GetMapping("/service-categories")
-    public List<ServiceCategoryDTO> getCategories() {
-        return categoryService.getAll();
+    public Page<ServiceCategoryDTO> getCategories(
+            @RequestParam(required = false) String search,
+            Pageable pageable
+    ) {
+        return categoryService.getCategories(search, pageable);
     }
 
     @PostMapping("/service-categories")
-    public ServiceCategory createCategory(@RequestBody ServiceCategory c) {
+    public ServiceCategoryDTO createCategory(@RequestBody ServiceCategory c) {
         return categoryService.create(c);
+    }
+
+    @PutMapping("/service-categories/{id}")
+    public ServiceCategoryDTO updateCategory(@PathVariable Long id,
+                                             @RequestBody ServiceCategory c) {
+        return categoryService.update(id, c);
+    }
+
+    @DeleteMapping("/service-categories/{id}")
+    public void deleteCategory(@PathVariable Long id) {
+        categoryService.delete(id);
     }
 
     // ================= DASHBOARD =================

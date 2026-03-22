@@ -1,15 +1,27 @@
 import { Link, useLocation } from "react-router-dom";
 import {
   Box, List, ListItem, ListItemButton,
-  ListItemText, Typography
+  ListItemText, Typography, ListItemIcon
 } from "@mui/material";
 
+import {
+  Dashboard,
+  MiscellaneousServices,
+  Build,
+  People,
+  Engineering,
+  Person,
+  Category
+} from "@mui/icons-material";
+
 const menuItems = [
-  { label: "Dashboard", path: "/admin" },
-  { label: "Services", path: "/admin/services" },
-  { label: "Parts", path: "/admin/parts" },
-  { label: "Users", path: "/admin/users" },
-  { label: "Employees", path: "/admin/employees" }, 
+  { label: "Dashboard", path: "/admin", icon: <Dashboard /> },
+  { label: "Services", path: "/admin/services", icon: <MiscellaneousServices /> },
+  { label: "Parts", path: "/admin/parts", icon: <Build /> },
+  { label: "Users", path: "/admin/users", icon: <People /> },
+  { label: "Employees", path: "/admin/employees", icon: <Engineering /> },
+  { label: "Customers", path: "/admin/customers", icon: <Person /> },
+  { label: "Service Categories", path: "/admin/service-categories", icon: <Category /> },
 ];
 
 function Sidebar() {
@@ -18,13 +30,13 @@ function Sidebar() {
   return (
     <Box
       sx={{
-        width: 220,
+        width: 240,
         bgcolor: "#fff",
         borderRight: "1px solid #e0e0e0",
         minHeight: "100vh",
         px: 2,
         py: 3,
-        boxShadow: "2px 0 6px rgba(0,0,0,0.05)"
+        boxShadow: "2px 0 10px rgba(0,0,0,0.05)"
       }}
     >
       <Typography
@@ -62,12 +74,23 @@ function Sidebar() {
                     bgcolor: "#3f51b5",
                     color: "#fff",
                     fontWeight: "bold",
-                    "&:hover": {
-                      bgcolor: "#303f9f",
-                    },
+                    "& .MuiListItemIcon-root": {
+                      color: "#fff"
+                    }
                   },
                 }}
               >
+                {/* ICON */}
+                <ListItemIcon
+                  sx={{
+                    color: isActive ? "#fff" : "#3f51b5",
+                    minWidth: 35
+                  }}
+                >
+                  {item.icon}
+                </ListItemIcon>
+
+                {/* TEXT */}
                 <ListItemText primary={item.label} />
               </ListItemButton>
             </ListItem>

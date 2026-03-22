@@ -5,6 +5,8 @@ import Services from "./pages/Services";
 import Parts from "./pages/Parts";
 import Users from "./pages/Users";
 import Employees from "./pages/Employees";
+import Customers from "./pages/Customers";
+import ServiceCategories from "./pages/ServiceCategories";
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
           <Route path="parts" element={<Parts />} />
           <Route path="users" element={<Users />} />
           <Route path="employees" element={<Employees />} /> 
+          <Route path="customers" element={<Customers />} />
+          <Route path="service-categories" element={<ServiceCategories />} /> 
         </Route>
 
       </Routes>

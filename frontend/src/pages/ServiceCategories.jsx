@@ -5,12 +5,10 @@ import {
   TableHead, TableRow, Paper,
   Button, Dialog, DialogTitle,
   DialogContent, DialogActions, TextField,
-  CircularProgress, TablePagination, Box, Typography,
-  MenuItem, Select, InputLabel, FormControl
+  CircularProgress, TablePagination, Box, Typography
 } from "@mui/material";
 
-function Services() {
-  const [services, setServices] = useState([]);
+function ServiceCategories() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -22,13 +20,11 @@ function Services() {
   const [searchInput, setSearchInput] = useState("");
 
   const [openModal, setOpenModal] = useState(false);
-  const [editingService, setEditingService] = useState(null);
+  const [editingCategory, setEditingCategory] = useState(null);
 
   const [form, setForm] = useState({
     name: "",
-    price: "",
-    description: "",
-    categoryId: ""
+    description: ""
   });
 
   // ================= DEBOUNCE SEARCH =================
@@ -43,14 +39,13 @@ function Services() {
 
   // ================= FETCH =================
   useEffect(() => {
-    fetchServices();
     fetchCategories();
   }, [page, rowsPerPage, search]);
 
-  const fetchServices = () => {
+  const fetchCategories = () => {
     setLoading(true);
 
-    axiosClient.get("/admin/services", {
+    axiosClient.get("/admin/service-categories", {
       params: {
         page,
         size: rowsPerPage,
@@ -58,33 +53,25 @@ function Services() {
       }
     })
       .then(res => {
-        setServices(res.data?.content || []);
+        setCategories(res.data?.content || []);
         setTotalElements(res.data?.totalElements || 0);
       })
       .catch(err => console.error(err))
       .finally(() => setLoading(false));
   };
 
-  const fetchCategories = () => {
-    axiosClient.get("/admin/service-categories", {
-      params: { page: 0, size: 1000 } // lấy hết để select
-    })
-      .then(res => setCategories(res.data?.content || []))
-      .catch(err => console.error(err));
-  };
-
   // ================= DELETE =================
   const handleDelete = async (id) => {
-    if (!window.confirm("Xóa service này?")) return;
+    if (!window.confirm("Xóa category này?")) return;
 
     setLoading(true);
     try {
-      await axiosClient.delete(`/admin/services/${id}`);
+      await axiosClient.delete(`/admin/service-categories/${id}`);
 
-      if (services.length === 1 && page > 0) {
+      if (categories.length === 1 && page > 0) {
         setPage(page - 1);
       } else {
-        fetchServices();
+        fetchCategories();
       }
     } catch {
       alert("Xóa thất bại");
@@ -94,22 +81,18 @@ function Services() {
   };
 
   // ================= MODAL =================
-  const handleOpenModal = (service = null) => {
-    setEditingService(service);
+  const handleOpenModal = (category = null) => {
+    setEditingCategory(category);
 
-    if (service) {
+    if (category) {
       setForm({
-        name: service.name || "",
-        price: service.price || "",
-        description: service.description || "",
-        categoryId: service.categoryId || "" // ⚠️ quan trọng
+        name: category.name || "",
+        description: category.description || ""
       });
     } else {
       setForm({
         name: "",
-        price: "",
-        description: "",
-        categoryId: ""
+        description: ""
       });
     }
 
@@ -118,32 +101,25 @@ function Services() {
 
   const handleCloseModal = () => {
     setOpenModal(false);
-    setEditingService(null);
+    setEditingCategory(null);
   };
 
   // ================= SUBMIT =================
   const handleSubmit = () => {
-    if (!form.name || !form.price || !form.categoryId) {
-      alert("Vui lòng điền đầy đủ thông tin");
+    if (!form.name) {
+      alert("Vui lòng nhập tên category");
       return;
     }
 
-    const payload = {
-      name: form.name,
-      price: Number(form.price),
-      description: form.description,
-      categoryId: form.categoryId
-    };
-
-    const request = editingService
-      ? axiosClient.put(`/admin/services/${editingService.id}`, payload)
-      : axiosClient.post("/admin/services", payload);
+    const request = editingCategory
+      ? axiosClient.put(`/admin/service-categories/${editingCategory.id}`, form)
+      : axiosClient.post("/admin/service-categories", form);
 
     setLoading(true);
 
     request
       .then(() => {
-        fetchServices();
+        fetchCategories();
         setOpenModal(false);
       })
       .catch(() => alert("Thao tác thất bại"))
@@ -154,12 +130,12 @@ function Services() {
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
-        Services
+        Service Categories
       </Typography>
 
       {/* SEARCH */}
       <TextField
-        placeholder="Search service name..."
+        placeholder="Search category name..."
         fullWidth
         sx={{ mb: 2 }}
         value={searchInput}
@@ -171,7 +147,7 @@ function Services() {
         sx={{ mb: 2 }}
         onClick={() => handleOpenModal()}
       >
-        Thêm Service
+        Thêm Category
       </Button>
 
       <Box sx={{ position: "relative" }}>
@@ -198,28 +174,22 @@ function Services() {
               <TableRow sx={{ bgcolor: "#f5f5f5" }}>
                 <TableCell><b>ID</b></TableCell>
                 <TableCell><b>Name</b></TableCell>
-                <TableCell><b>Price</b></TableCell>
                 <TableCell><b>Description</b></TableCell>
-                <TableCell><b>Category</b></TableCell>
                 <TableCell><b>Action</b></TableCell>
               </TableRow>
             </TableHead>
 
             <TableBody>
-              {services.map(s => (
-                <TableRow key={s.id} hover>
-                  <TableCell>{s.id}</TableCell>
-                  <TableCell>{s.name}</TableCell>
-                  <TableCell>
-                    {s.price?.toLocaleString("vi-VN")} ₫
-                  </TableCell>
-                  <TableCell>{s.description}</TableCell>
-                  <TableCell>{s.categoryName}</TableCell>
+              {categories.map(c => (
+                <TableRow key={c.id} hover>
+                  <TableCell>{c.id}</TableCell>
+                  <TableCell>{c.name}</TableCell>
+                  <TableCell>{c.description}</TableCell>
                   <TableCell>
                     <Button
                       size="small"
                       variant="contained"
-                      onClick={() => handleOpenModal(s)}
+                      onClick={() => handleOpenModal(c)}
                       sx={{ mr: 1 }}
                     >
                       Edit
@@ -229,7 +199,7 @@ function Services() {
                       size="small"
                       variant="contained"
                       color="error"
-                      onClick={() => handleDelete(s.id)}
+                      onClick={() => handleDelete(c.id)}
                     >
                       Delete
                     </Button>
@@ -237,9 +207,9 @@ function Services() {
                 </TableRow>
               ))}
 
-              {services.length === 0 && (
+              {categories.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">
+                  <TableCell colSpan={4} align="center">
                     No data
                   </TableCell>
                 </TableRow>
@@ -266,7 +236,7 @@ function Services() {
       {/* MODAL */}
       <Dialog open={openModal} onClose={handleCloseModal}>
         <DialogTitle>
-          {editingService ? "Edit Service" : "Add Service"}
+          {editingCategory ? "Edit Category" : "Add Category"}
         </DialogTitle>
 
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
@@ -277,34 +247,12 @@ function Services() {
           />
 
           <TextField
-            label="Price"
-            type="number"
-            value={form.price}
-            onChange={(e) => setForm({ ...form, price: e.target.value })}
-          />
-
-          <TextField
             label="Description"
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             multiline
             rows={3}
           />
-
-          <FormControl fullWidth>
-            <InputLabel>Category</InputLabel>
-            <Select
-              value={form.categoryId}
-              label="Category"
-              onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-            >
-              {categories.map(cat => (
-                <MenuItem key={cat.id} value={cat.id}>
-                  {cat.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
         </DialogContent>
 
         <DialogActions>
@@ -318,4 +266,4 @@ function Services() {
   );
 }
 
-export default Services;
+export default ServiceCategories;

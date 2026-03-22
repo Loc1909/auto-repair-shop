@@ -4,6 +4,7 @@ import com.ou.autorepairshop.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.ou.autorepairshop.entity.PaymentStatus;
+
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +18,10 @@ public class DashboardService {
     private final EmployeeRepository employeeRepository;
     private final PaymentRepository paymentRepository;
 
+    private final UserRepository userRepository;
+    private final CustomerRepository customerRepository;
+    private final ServiceCategoryRepository categoryRepository;
+
     public Map<String, Object> getDashboard() {
 
         Map<String, Object> data = new HashMap<>();
@@ -25,13 +30,16 @@ public class DashboardService {
         long totalServices = serviceRepository.count();
         long totalEmployees = employeeRepository.count();
 
+        long totalUsers = userRepository.count();
+        long totalCustomers = customerRepository.count();
+        long totalCategories = categoryRepository.count();
+
         long lowStockParts = partRepository
                 .findAll()
                 .stream()
                 .filter(p -> p.getStockQuantity() < p.getMinStockLevel())
                 .count();
 
-        // tổng doanh thu từ payment COMPLETED
         BigDecimal totalRevenue = paymentRepository.findAll()
                 .stream()
                 .filter(p -> p.getStatus() == PaymentStatus.COMPLETED)
@@ -42,6 +50,11 @@ public class DashboardService {
         data.put("lowStockParts", lowStockParts);
         data.put("totalServices", totalServices);
         data.put("totalEmployees", totalEmployees);
+
+        data.put("totalUsers", totalUsers);
+        data.put("totalCustomers", totalCustomers);
+        data.put("totalCategories", totalCategories);
+
         data.put("totalRevenue", totalRevenue);
 
         return data;
