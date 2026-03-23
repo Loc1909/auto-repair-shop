@@ -1,8 +1,11 @@
 package com.ou.autorepairshop.controller;
 
+import com.ou.autorepairshop.dto.AppointmentCreateRequest;
+import com.ou.autorepairshop.dto.AppointmentResponse;
 import com.ou.autorepairshop.entity.Appointment;
 import com.ou.autorepairshop.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +17,15 @@ import java.util.Map;
 public class AppointmentController {
 
     private final AppointmentService appointmentService;
+
+    /**
+     * Người dùng đặt lịch hẹn
+     */
+    @PostMapping
+    public ResponseEntity<AppointmentResponse> makeAppointment(@RequestBody AppointmentCreateRequest request) {
+        AppointmentResponse response = appointmentService.makeAppointment(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
 
     /**
      * Nhân viên xác nhận lịch hẹn (PENDING → CONFIRMED)
