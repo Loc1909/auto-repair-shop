@@ -158,11 +158,10 @@ function Parts() {
                     <Button
                       size="small"
                       variant="contained"
-                      color="success"
                       onClick={() => handleOpenModal(p)}
                       sx={{ mr: 1 }}
                     >
-                      Sửa
+                      Edit
                     </Button>
                     <Button
                       size="small"
@@ -170,7 +169,7 @@ function Parts() {
                       color="error"
                       onClick={() => handleDelete(p.id)}
                     >
-                      Xóa
+                      Delete
                     </Button>
                   </TableCell>
                 </TableRow>

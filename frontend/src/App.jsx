@@ -7,7 +7,7 @@ import Users from "./pages/Users";
 import Employees from "./pages/Employees";
 import Customers from "./pages/Customers";
 import ServiceCategories from "./pages/ServiceCategories";
-
+import Revenue from "./pages/Revenue";
 function App() {
   return (
     <BrowserRouter>
@@ -22,6 +22,7 @@ function App() {
           <Route path="employees" element={<Employees />} /> 
           <Route path="customers" element={<Customers />} />
           <Route path="service-categories" element={<ServiceCategories />} /> 
+          <Route path="revenue" element={<Revenue />} />
         </Route>
 
       </Routes>
