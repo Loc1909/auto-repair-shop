@@ -1,5 +1,6 @@
 package com.ou.autorepairshop.entity;
 
+import com.ou.autorepairshop.enums.RepairStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -16,8 +17,9 @@ public class RepairProgress {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
-    private String status;
+    private RepairStatus status;
 
     @Column(columnDefinition = "TEXT")
     private String note;

@@ -1,5 +1,6 @@
 package com.ou.autorepairshop.service;
 
+import com.ou.autorepairshop.enums.PartRequestStatus;
 import com.ou.autorepairshop.exception.BusinessException;
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
 import com.ou.autorepairshop.mapper.PartRequestMapper;
@@ -46,7 +47,7 @@ public class PartRequestService {
                 .repairOrder(order)
                 .part(part)
                 .requestedQuantity(req.requestedQuantity())
-                .status("PENDING")
+                .status(PartRequestStatus.PENDING)
                 .requestedAt(LocalDateTime.now())
                 .build();
 

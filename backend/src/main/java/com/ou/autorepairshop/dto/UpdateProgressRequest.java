@@ -1,10 +1,10 @@
 package com.ou.autorepairshop.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import com.ou.autorepairshop.enums.RepairStatus;
 import jakarta.validation.constraints.NotNull;
 
 public record UpdateProgressRequest(
         @NotNull Long repairOrderId,
-        @NotBlank String status,
+        @NotNull RepairStatus status,
         String note
 ) {}

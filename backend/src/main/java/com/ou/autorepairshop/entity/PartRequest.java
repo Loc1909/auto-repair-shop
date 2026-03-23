@@ -1,5 +1,6 @@
 package com.ou.autorepairshop.entity;
 
+import com.ou.autorepairshop.enums.PartRequestStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -19,9 +20,9 @@ public class PartRequest {
     @Column(nullable = false)
     private int requestedQuantity;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String status;
-    // PENDING, APPROVED, REJECTED
+    private PartRequestStatus status;
 
     @Column(nullable = false)
     private LocalDateTime requestedAt;

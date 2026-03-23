@@ -1,5 +1,6 @@
 package com.ou.autorepairshop.entity;
 
+import com.ou.autorepairshop.enums.AppointmentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -19,8 +20,9 @@ public class Appointment {
     @Column(nullable = false)
     private LocalDateTime appointmentTime;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String status; // PENDING, CONFIRMED, IN_PROGRESS, CANCELLED
+    private AppointmentStatus status;
 
     private String note;
 

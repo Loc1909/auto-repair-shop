@@ -1,5 +1,6 @@
 package com.ou.autorepairshop.entity;
 
+import com.ou.autorepairshop.enums.QuotationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,9 +22,9 @@ public class Quotation {
     @Column(nullable = false)
     private BigDecimal totalPrice;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String status;
-    // PENDING, APPROVED, REJECTED
+    private QuotationStatus status;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

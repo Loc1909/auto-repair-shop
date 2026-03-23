@@ -1,5 +1,6 @@
 package com.ou.autorepairshop.service;
 
+import com.ou.autorepairshop.enums.RepairStatus;
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
 import com.ou.autorepairshop.entity.Appointment;
 import com.ou.autorepairshop.entity.Employee;
@@ -22,7 +23,10 @@ public class WorkScheduleService {
     private final AppointmentRepository appointmentRepository;
     private final RepairOrderRepository repairOrderRepository;
 
-    private static final List<String> ACTIVE_STATUSES = List.of("PENDING", "QUOTING", "APPROVED", "REPAIRING");
+    private static final List<RepairStatus> ACTIVE_STATUSES = List.of(
+            RepairStatus.PENDING, RepairStatus.DIAGNOSING,
+            RepairStatus.QUOTING, RepairStatus.APPROVED, RepairStatus.REPAIRING
+    );
 
     @Transactional(readOnly = true)
     public WorkScheduleResponse getSchedule(Long employeeId) {

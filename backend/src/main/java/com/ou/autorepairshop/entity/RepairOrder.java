@@ -1,5 +1,6 @@
 package com.ou.autorepairshop.entity;
 
+import com.ou.autorepairshop.enums.RepairStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -21,9 +22,9 @@ public class RepairOrder {
 
     private LocalDateTime completedDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String status;
-    // PENDING, QUOTING, APPROVED, REPAIRING, COMPLETED
+    private RepairStatus status;
 
     private String notes;
 
