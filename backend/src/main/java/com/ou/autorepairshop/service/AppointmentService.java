@@ -2,25 +2,22 @@ package com.ou.autorepairshop.service;
 
 import com.ou.autorepairshop.dto.AppointmentCreateRequest;
 import com.ou.autorepairshop.dto.AppointmentResponse;
-import com.ou.autorepairshop.entity.Customer;
-import com.ou.autorepairshop.entity.Employee;
-import com.ou.autorepairshop.entity.Vehicle;
+import com.ou.autorepairshop.entity.*;
 import com.ou.autorepairshop.enums.AppointmentStatus;
 import com.ou.autorepairshop.exception.BusinessException;
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
-import com.ou.autorepairshop.entity.Appointment;
 import com.ou.autorepairshop.mapper.AppointmentMapper;
 import com.ou.autorepairshop.repository.AppointmentRepository;
 import com.ou.autorepairshop.repository.CustomerRepository;
+import com.ou.autorepairshop.repository.UserRepository;
 import com.ou.autorepairshop.repository.VehicleRepository;
-import com.ou.autorepairshop.entity.NotificationEvent;
 import com.ou.autorepairshop.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.ou.autorepairshop.dto.AppointmentResponse;
-import com.ou.autorepairshop.mapper.AppointmentMapper;
 
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -32,6 +29,7 @@ public class AppointmentService {
     private final CustomerRepository customerRepository;
     private final VehicleRepository vehicleRepository;
     private final NotificationService notificationService;
+    private final UserRepository userRepository;
 
     @Transactional
     public AppointmentResponse makeAppointment(AppointmentCreateRequest request) {
@@ -51,6 +49,30 @@ public class AppointmentService {
 
         appointmentRepository.save(appointment);
         return appointmentMapper.toResponse(appointment);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AppointmentResponse> getAppointmentsByCustomer(Long customerId) {
+
+        List<Appointment> appointments =
+                appointmentRepository.findByCustomerIdOrderByAppointmentTimeDesc(customerId);
+
+        return appointmentMapper.toResponseList(appointments);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AppointmentResponse> getMyAppointments() {
+
+        String username = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return appointmentMapper.toResponseList(
+                appointmentRepository.findByCustomerUserId(user.getId())
+        );
     }
 
     @Transactional

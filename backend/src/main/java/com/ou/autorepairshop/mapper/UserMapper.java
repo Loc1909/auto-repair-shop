@@ -4,7 +4,9 @@ import com.ou.autorepairshop.dto.UserResponse;
 import com.ou.autorepairshop.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.springframework.stereotype.Component;
 
+@Component
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 

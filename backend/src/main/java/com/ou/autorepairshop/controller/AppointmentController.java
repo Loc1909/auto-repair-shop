@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -25,6 +26,14 @@ public class AppointmentController {
     public ResponseEntity<AppointmentResponse> makeAppointment(@RequestBody AppointmentCreateRequest request) {
         AppointmentResponse response = appointmentService.makeAppointment(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     * Lấy dữ liệu appointment của customer/user hiện tại
+     */
+    @GetMapping("/me")
+    public ResponseEntity<List<AppointmentResponse>> getMyAppointments() {
+        return ResponseEntity.ok(appointmentService.getMyAppointments());
     }
 
     /**

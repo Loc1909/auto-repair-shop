@@ -9,6 +9,6 @@ public record AppointmentResponse(
         String status,
         Long employeeId,
         Long customerId,
-        Long vehicleId
+        String vehicleName
 ) {
 }
