@@ -93,10 +93,11 @@ public class AppointmentService {
                 return;
             }
 
-            notificationService.send(
+            notificationService.sendByEvent(
                     event,
                     appointment.getCustomer().getUser().getEmail(),
-                    data
+                    data,
+                    appointment.getId()
             );
 
         } catch (Exception e) {

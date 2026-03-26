@@ -8,6 +8,7 @@ import Employees from "./pages/Employees";
 import Customers from "./pages/Customers";
 import ServiceCategories from "./pages/ServiceCategories";
 import Revenue from "./pages/Revenue";
+import NotificationConfig from "./pages/NotificationConfig";
 function App() {
   return (
     <BrowserRouter>
@@ -23,6 +24,7 @@ function App() {
           <Route path="customers" element={<Customers />} />
           <Route path="service-categories" element={<ServiceCategories />} /> 
           <Route path="revenue" element={<Revenue />} />
+          <Route path="notification-config" element={<NotificationConfig />} />
         </Route>
 
       </Routes>

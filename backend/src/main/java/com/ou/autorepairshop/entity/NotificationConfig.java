@@ -15,7 +15,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "notification_config", indexes = {
-        @Index(name = "idx_event_type", columnList = "eventType")
+        @Index(name = "idx_event_type", columnList = "event_type")
 })
 @Data
 @NoArgsConstructor

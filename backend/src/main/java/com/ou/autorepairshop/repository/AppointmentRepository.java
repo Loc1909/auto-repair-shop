@@ -22,10 +22,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     @Query("SELECT a FROM Appointment a " +
             "JOIN FETCH a.customer c " +
             "JOIN FETCH c.user " +
-            "WHERE a.status = :status AND a.appointmentTime BETWEEN :start AND :end")
-    List<Appointment> findAllWithCustomerAndUserByStatusAndTimeBetween(
-            @Param("status") AppointmentStatus status,
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end
+            "WHERE a.status = :status")
+    List<Appointment> findAllWithCustomerAndUserByStatus(
+            @Param("status") AppointmentStatus status
     );
 }

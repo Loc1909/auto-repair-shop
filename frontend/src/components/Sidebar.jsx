@@ -14,7 +14,8 @@ import {
   Engineering,
   Person,
   Category,
-  AttachMoney
+  AttachMoney,
+  Notifications
 } from "@mui/icons-material";
 
 const menuItems = [
@@ -25,7 +26,8 @@ const menuItems = [
   { label: "Employees", path: "/admin/employees", icon: <Engineering /> },
   { label: "Customers", path: "/admin/customers", icon: <Person /> },
   { label: "Service Categories", path: "/admin/service-categories", icon: <Category /> },
-  { label: "Revenue", path: "/admin/revenue", icon: <AttachMoney /> }
+  { label: "Revenue", path: "/admin/revenue", icon: <AttachMoney /> },
+  { label: "Notification Config", path: "/admin/notification-config", icon: <Notifications /> }
 ];
 
 function Sidebar() {
