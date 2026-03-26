@@ -23,4 +23,18 @@ public interface AppointmentMapper {
     @Mapping(source = "vehicle.id", target = "vehicleId")
     @Mapping(source = "assignedEmployee.id", target = "employeeId")
     AppointmentResponse toResponse(Appointment appointment);
+
+//    public AppointmentResponse toResponse(Appointment a) {
+//        String customerName = null;
+//
+//        if (a.getCustomer() != null) {
+//            customerName = a.getCustomer().getName();
+//        }
+//
+//        return new AppointmentResponse(
+//                a.getId(),
+//                a.getStatus().name(),
+//                customerName
+//        );
+//    }
 }

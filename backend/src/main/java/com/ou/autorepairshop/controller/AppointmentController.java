@@ -31,7 +31,7 @@ public class AppointmentController {
      * Nhân viên xác nhận lịch hẹn (PENDING → CONFIRMED)
      */
     @PatchMapping("/{id}/confirm")
-    public ResponseEntity<Appointment> confirm(@PathVariable Long id) {
+    public ResponseEntity<AppointmentResponse> confirm(@PathVariable Long id) {
         return ResponseEntity.ok(appointmentService.confirmAppointment(id));
     }
 
@@ -40,7 +40,7 @@ public class AppointmentController {
      * Body (optional): { "reason": "Thợ bận, không đủ nhân lực" }
      */
     @PatchMapping("/{id}/cancel")
-    public ResponseEntity<Appointment> cancel(
+    public ResponseEntity<AppointmentResponse> cancel(
             @PathVariable Long id,
             @RequestBody(required = false) Map<String, String> body) {
 

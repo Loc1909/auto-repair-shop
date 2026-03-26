@@ -7,6 +7,7 @@ import com.ou.autorepairshop.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class AdminController {
     private final RepairServiceService serviceService;
     private final DashboardService dashboardService;
     private final ServiceCategoryService categoryService;
+    private final StatisticService statisticService;
 
     // ================= EMPLOYEE =================
     @GetMapping("/employees")
@@ -124,5 +126,14 @@ public class AdminController {
     @GetMapping("/dashboard")
     public Map<String, Object> dashboard() {
         return dashboardService.getDashboard();
+    }
+
+
+    //  API revenue
+    @GetMapping("/revenue")
+    public ResponseEntity<List<RevenueDTO>> getRevenue(
+            @RequestParam(defaultValue = "day") String type
+    ) {
+        return ResponseEntity.ok(statisticService.getRevenue(type));
     }
 }
