@@ -2,7 +2,9 @@ package com.ou.autorepairshop.service;
 
 import com.ou.autorepairshop.dto.AppointmentCreateRequest;
 import com.ou.autorepairshop.dto.AppointmentResponse;
+
 import com.ou.autorepairshop.entity.*;
+import com.ou.autorepairshop.dto.AppointmentResponseForEmployee;
 import com.ou.autorepairshop.enums.AppointmentStatus;
 import com.ou.autorepairshop.exception.BusinessException;
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
@@ -10,6 +12,7 @@ import com.ou.autorepairshop.mapper.AppointmentMapper;
 import com.ou.autorepairshop.repository.AppointmentRepository;
 import com.ou.autorepairshop.repository.CustomerRepository;
 import com.ou.autorepairshop.repository.UserRepository;
+import com.ou.autorepairshop.repository.EmployeeRepository;
 import com.ou.autorepairshop.repository.VehicleRepository;
 import com.ou.autorepairshop.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,7 @@ public class AppointmentService {
     private final AppointmentMapper appointmentMapper;
     private final CustomerRepository customerRepository;
     private final VehicleRepository vehicleRepository;
+    private final EmployeeRepository employeeRepository;
     private final NotificationService notificationService;
     private final UserRepository userRepository;
 
@@ -76,16 +80,19 @@ public class AppointmentService {
     }
 
     @Transactional
-    public AppointmentResponse confirmAppointment(Long id) {
+    public AppointmentResponseForEmployee confirmAppointment(Long id, Long employeeId) {
         Appointment appointment = findById(id);
 
         if (AppointmentStatus.PENDING != appointment.getStatus()) {
             throw new BusinessException(
                     "Cannot confirm appointment with status: " + appointment.getStatus()
-                            + ". Only PENDING appointments can be confirmed."
-            );
+                            + ". Only PENDING appointments can be confirmed.");
         }
 
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", employeeId));
+
+        appointment.setAssignedEmployee(employee);
         appointment.setStatus(AppointmentStatus.CONFIRMED);
         Appointment saved = appointmentRepository.save(appointment);
 
@@ -94,15 +101,13 @@ public class AppointmentService {
                 saved,
                 Map.of(
                         "customer_name", safe(saved.getCustomer().getName()),
-                        "appointment_time", safe(saved.getAppointmentTime())
-                )
-        );
+                        "appointment_time", safe(saved.getAppointmentTime())));
 
-        return appointmentMapper.toResponse(saved);
+        return appointmentMapper.toResponseForEmployee(saved);
     }
 
     @Transactional
-    public AppointmentResponse cancelAppointment(Long id, String reason) {
+    public AppointmentResponseForEmployee cancelAppointment(Long id, String reason) {
         Appointment appointment = findById(id);
 
         if (AppointmentStatus.RECEIVED == appointment.getStatus()) {
@@ -126,11 +131,9 @@ public class AppointmentService {
                 saved,
                 Map.of(
                         "customer_name", safe(saved.getCustomer().getName()),
-                        "reason", (reason != null && !reason.isBlank()) ? reason : "Không có"
-                )
-        );
+                        "reason", (reason != null && !reason.isBlank()) ? reason : "Không có"));
 
-        return appointmentMapper.toResponse(saved);
+        return appointmentMapper.toResponseForEmployee(saved);
     }
 
     // ================= HELPER =================
@@ -145,10 +148,11 @@ public class AppointmentService {
                 return;
             }
 
-            notificationService.send(
+            notificationService.sendByEvent(
                     event,
                     appointment.getCustomer().getUser().getEmail(),
-                    data
+                    data,
+                    appointment.getId()
             );
 
         } catch (Exception e) {

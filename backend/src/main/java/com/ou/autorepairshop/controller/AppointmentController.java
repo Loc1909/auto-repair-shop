@@ -2,7 +2,7 @@ package com.ou.autorepairshop.controller;
 
 import com.ou.autorepairshop.dto.AppointmentCreateRequest;
 import com.ou.autorepairshop.dto.AppointmentResponse;
-import com.ou.autorepairshop.entity.Appointment;
+import com.ou.autorepairshop.dto.AppointmentResponseForEmployee;
 import com.ou.autorepairshop.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/appointments")
+@RequestMapping("/api/appointments")
 @RequiredArgsConstructor
 public class AppointmentController {
 
@@ -40,8 +40,10 @@ public class AppointmentController {
      * Nhân viên xác nhận lịch hẹn (PENDING → CONFIRMED)
      */
     @PatchMapping("/{id}/confirm")
-    public ResponseEntity<AppointmentResponse> confirm(@PathVariable Long id) {
-        return ResponseEntity.ok(appointmentService.confirmAppointment(id));
+    public ResponseEntity<AppointmentResponseForEmployee> confirm(
+            @PathVariable Long id,
+            @RequestParam Long employeeId) {
+        return ResponseEntity.ok(appointmentService.confirmAppointment(id, employeeId));
     }
 
     /**
@@ -49,7 +51,7 @@ public class AppointmentController {
      * Body (optional): { "reason": "Thợ bận, không đủ nhân lực" }
      */
     @PatchMapping("/{id}/cancel")
-    public ResponseEntity<AppointmentResponse> cancel(
+    public ResponseEntity<AppointmentResponseForEmployee> cancel(
             @PathVariable Long id,
             @RequestBody(required = false) Map<String, String> body) {
 

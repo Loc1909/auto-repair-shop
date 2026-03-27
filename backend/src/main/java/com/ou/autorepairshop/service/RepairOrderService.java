@@ -35,7 +35,8 @@ public class RepairOrderService {
         Appointment appointment = appointmentRepository.findById(req.appointmentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment", req.appointmentId()));
 
-        if (!"PENDING".equals(appointment.getStatus()) && !"CONFIRMED".equals(appointment.getStatus())) {
+        if (appointment.getStatus() != AppointmentStatus.PENDING
+                && appointment.getStatus() != AppointmentStatus.CONFIRMED) {
             throw new BusinessException("Appointment is not in a receivable state: " + appointment.getStatus());
         }
 
@@ -61,7 +62,7 @@ public class RepairOrderService {
     public RepairOrderResponse completeRepair(Long orderId, CompleteRepairRequest req) {
         RepairOrder order = findOrderById(orderId);
 
-        if ("COMPLETED".equals(order.getStatus())) {
+        if (order.getStatus() == RepairStatus.COMPLETED) {
             throw new BusinessException("Repair order is already completed.");
         }
 

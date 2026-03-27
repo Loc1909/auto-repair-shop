@@ -23,7 +23,7 @@ public class Customer {
     private String address;
 
     @OneToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", unique = true, nullable = false)
     @JsonIgnore
     private User user;
 }
