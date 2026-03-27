@@ -2,24 +2,18 @@ package com.ou.autorepairshop.service;
 
 import com.ou.autorepairshop.dto.CreateQuotationRequest;
 import com.ou.autorepairshop.dto.QuotationDetailItem;
+import com.ou.autorepairshop.dto.QuotationDetailResponse;
 import com.ou.autorepairshop.dto.QuotationResponse;
+import com.ou.autorepairshop.entity.*;
 import com.ou.autorepairshop.enums.QuotationStatus;
 import com.ou.autorepairshop.enums.RepairStatus;
 import com.ou.autorepairshop.exception.BusinessException;
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
-import com.ou.autorepairshop.entity.Part;
-import com.ou.autorepairshop.entity.Quotation;
-import com.ou.autorepairshop.entity.QuotationDetail;
-import com.ou.autorepairshop.entity.RepairOrder;
-import com.ou.autorepairshop.entity.RepairService;
 import com.ou.autorepairshop.mapper.QuotationDetailMapper;
 import com.ou.autorepairshop.mapper.QuotationMapper;
-import com.ou.autorepairshop.repository.QuotationRepository;
-import com.ou.autorepairshop.repository.QuotationDetailRepository;
-import com.ou.autorepairshop.repository.RepairOrderRepository;
-import com.ou.autorepairshop.repository.PartRepository;
-import com.ou.autorepairshop.repository.RepairServiceRepository;
+import com.ou.autorepairshop.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +33,8 @@ public class QuotationService {
     private final RepairServiceRepository serviceRepository;
     private final QuotationDetailMapper quotationDetailMapper;
     private final QuotationMapper quotationMapper;
+    private final UserRepository userRepository;
+    private final CustomerRepository customerRepository;
 
     @Transactional
     public QuotationResponse createQuotation(CreateQuotationRequest req) {
@@ -116,5 +112,71 @@ public class QuotationService {
         }
 
         return builder.build();
+    }
+
+    @Transactional
+    public QuotationResponse updateQuotationStatus(Long repairOrderId, String action) {
+        String username = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Customer customer = customerRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        RepairOrder repairOrder = repairOrderRepository.findByIdAndVehicleCustomerId(repairOrderId, customer.getId())
+                .orElseThrow(() -> new RuntimeException("Repair order not found or not yours"));
+
+        Quotation quotation = quotationRepository
+                .findByRepairOrderId(repairOrder.getId())
+                .orElseThrow(() -> new RuntimeException("Quotation not found"));
+
+        if (quotation.getStatus() != QuotationStatus.PENDING) {
+            throw new RuntimeException("Quotation already processed");
+        }
+
+        if ("APPROVE".equalsIgnoreCase(action)) {
+            quotation.setStatus(QuotationStatus.APPROVED);
+            repairOrder.setStatus(RepairStatus.APPROVED);
+            repairOrderRepository.save(repairOrder);
+        } else if ("REJECT".equalsIgnoreCase(action)) {
+            quotation.setStatus(QuotationStatus.REJECTED);
+            repairOrder.setStatus(RepairStatus.REJECTED);
+            repairOrderRepository.save(repairOrder);
+        } else {
+            throw new RuntimeException("Invalid action");
+        }
+        List<QuotationDetail> details = quotationDetailRepository.findByQuotationId(quotation.getId());
+        return quotationMapper.toResponse(quotation, details, quotationDetailMapper);
+    }
+
+    private QuotationResponse mapToResponse(Quotation q,
+                                            List<QuotationDetail> details) {
+//        Long id,
+//        String itemType,
+//        Long itemId, // id của Part và RepairService
+//        String itemName, // name của Part và RepairService
+//        int quantity,
+//        BigDecimal unitPrice,
+//        BigDecimal subtotal
+        List<QuotationDetailResponse> detailResponses = details.stream()
+                .map(d -> new QuotationDetailResponse(
+                        d.getId(),
+                        d.getItemType(),
+                        d.getService().getId(),
+                        d.getService().getName(),
+                        d.getQuantity(),
+                        d.getUnitPrice(),
+                        d.getService().getPrice())).toList();
+
+        return new QuotationResponse(
+                q.getId(),
+                q.getStatus().name(),
+                q.getTotalPrice(),
+                q.getCreatedAt(),
+                q.getRepairOrder().getId(),
+                detailResponses
+        );
     }
 }

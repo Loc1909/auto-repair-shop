@@ -43,8 +43,8 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/api/auth/**").permitAll()
-                                .requestMatchers("/api/*/appointments/**", "/api/appointments/**")
-                                .hasAnyRole("ADMIN", "CUSTOMER")
+                                .requestMatchers("/api/appointments/**").hasAnyRole("ADMIN", "CUSTOMER")
+                                .requestMatchers("/api/repair-orders/**").hasAnyRole("ADMIN", "CUSTOMER","STAFF")
                                 .anyRequest().permitAll()) //hoặc authenticated() -> tăng bảo mật, yêu cầu tất cả api khác cần login
                 .exceptionHandling(ex
                         -> ex.authenticationEntryPoint(jwtAuthEntryPoint)
