@@ -7,6 +7,7 @@ import com.ou.autorepairshop.dto.QuotationResponse;
 import com.ou.autorepairshop.entity.*;
 import com.ou.autorepairshop.enums.QuotationStatus;
 import com.ou.autorepairshop.enums.RepairStatus;
+import com.ou.autorepairshop.exception.BadRequestException;
 import com.ou.autorepairshop.exception.BusinessException;
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
 import com.ou.autorepairshop.mapper.QuotationDetailMapper;
@@ -120,17 +121,17 @@ public class QuotationService {
                 .getAuthentication().getName();
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Customer customer = customerRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         RepairOrder repairOrder = repairOrderRepository.findByIdAndVehicleCustomerId(repairOrderId, customer.getId())
-                .orElseThrow(() -> new RuntimeException("Repair order not found or not yours"));
+                .orElseThrow(() -> new ResourceNotFoundException("Repair order not found or not yours"));
 
         Quotation quotation = quotationRepository
                 .findByRepairOrderId(repairOrder.getId())
-                .orElseThrow(() -> new RuntimeException("Quotation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation not found"));
 
         if (quotation.getStatus() != QuotationStatus.PENDING) {
             throw new RuntimeException("Quotation already processed");
@@ -145,7 +146,7 @@ public class QuotationService {
             repairOrder.setStatus(RepairStatus.REJECTED);
             repairOrderRepository.save(repairOrder);
         } else {
-            throw new RuntimeException("Invalid action");
+            throw new BadRequestException("Invalid action");
         }
         List<QuotationDetail> details = quotationDetailRepository.findByQuotationId(quotation.getId());
         return quotationMapper.toResponse(quotation, details, quotationDetailMapper);

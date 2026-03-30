@@ -39,4 +39,7 @@ public class RepairOrder {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "appointment_id")
     private Appointment appointment;
+
+    @OneToOne(mappedBy = "repairOrder")
+    private Quotation quotation;
 }

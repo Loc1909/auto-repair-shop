@@ -6,7 +6,6 @@ import com.ou.autorepairshop.enums.AppointmentStatus;
 import com.ou.autorepairshop.enums.RepairStatus;
 import com.ou.autorepairshop.exception.BusinessException;
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
-import com.ou.autorepairshop.exception.UserNotFoundException;
 import com.ou.autorepairshop.mapper.RepairOrderMapper;
 import com.ou.autorepairshop.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -112,14 +111,14 @@ public class RepairOrderService {
         String username = SecurityContextHolder.getContext()
                 .getAuthentication().getName();
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User Not Found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
 
         Customer customer = customerRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new RuntimeException("User Not Found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
 
         RepairOrder order = repairOrderRepository
                 .findByIdAndVehicleCustomerId(repairOrderId, customer.getId())
-                .orElseThrow(() -> new RuntimeException("Not allowed"));
+                .orElseThrow(() -> new ResourceNotFoundException("Not allowed"));
 
         return repairProgressRepository
                 .findByRepairOrderIdOrderByUpdateTimeAsc(order.getId())
