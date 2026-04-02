@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ou.autorepairshop.dto.AppointmentResponse;
 import com.ou.autorepairshop.mapper.AppointmentMapper;
 
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -112,6 +113,14 @@ public class AppointmentService {
 
         return appointmentMapper.toResponseForEmployee(saved);
     }
+
+    @Transactional(readOnly = true)
+    public List<AppointmentResponseForEmployee> getAllAppointments() {
+        return appointmentRepository.findAll().stream()
+                .map(appointmentMapper::toResponseForEmployee)
+                .toList();
+    }
+
 
     // ================= HELPER =================
 
