@@ -87,7 +87,7 @@ function EmployeeAppointments() {
             <Paper sx={{ p: 2, borderRadius: 2, boxShadow: 3 }}>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                 <Typography variant="h6" fontWeight="bold">
-                  {apt.vehicle?.licensePlate || apt.licensePlate || "Không rõ xe"}
+                  {apt?.licensePlate || "Không rõ xe"}
                 </Typography>
                 <Chip label={apt.status} color={getStatusColor(apt.status)} size="small" />
               </Box>

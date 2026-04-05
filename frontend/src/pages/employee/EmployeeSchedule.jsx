@@ -8,6 +8,29 @@ import dayjs from "dayjs";
 
 const MOCK_EMPLOYEE_ID = 2; // TODO: Lấy từ Context/Auth
 
+const getAptStatusColor = (status) => {
+  switch (status) {
+    case "PENDING": return "warning";
+    case "CONFIRMED": return "success";
+    case "CANCELLED": return "error";
+    case "RECEIVED": return "info";
+    default: return "default";
+  }
+};
+
+const getRepairStatusColor = (status) => {
+  switch (status) {
+    case "PENDING": return "warning";
+    case "DIAGNOSING": return "secondary";
+    case "QUOTING": return "info";
+    case "APPROVED": return "primary";
+    case "REPAIRING": return "success";
+    case "COMPLETED": return "success";
+    case "CANCELLED": return "error";
+    default: return "default";
+  }
+};
+
 function EmployeeSchedule() {
   const [scheduleData, setScheduleData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -59,7 +82,7 @@ function EmployeeSchedule() {
                       />
                       <Chip 
                         label={apt.status} 
-                        color={apt.status === 'CONFIRMED' ? 'success' : 'warning'} 
+                        color={getAptStatusColor(apt.status)} 
                         size="small" 
                         sx={{ mt: 1 }}
                       />
@@ -93,7 +116,7 @@ function EmployeeSchedule() {
                       />
                       <Chip 
                         label={order.status} 
-                        color={order.status === 'IN_PROGRESS' ? 'info' : 'default'} 
+                        color={getRepairStatusColor(order.status)} 
                         size="small" 
                         sx={{ mt: 1 }}
                       />
