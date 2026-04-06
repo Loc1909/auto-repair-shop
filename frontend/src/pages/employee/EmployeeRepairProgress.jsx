@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { 
-  Typography, Box, Paper, Grid, CircularProgress, 
+import {
+  Typography, Box, Paper, Grid, CircularProgress,
   Button, List, ListItem, ListItemText, Divider,
-  TextField, MenuItem, Select, FormControl, InputLabel, Chip
+  TextField, MenuItem, Select, FormControl, InputLabel, Chip,
+  Autocomplete
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import axiosClient from "../../api/axiosClient";
@@ -22,7 +23,7 @@ function EmployeeRepairProgress() {
   const [progressNote, setProgressNote] = useState("");
 
   // Form Yêu cầu vật tư
-  const [selectedPartId, setSelectedPartId] = useState("");
+  const [selectedPart, setSelectedPart] = useState(null);
   const [quantity, setQuantity] = useState(1);
 
   const REPAIR_STATUSES = [
@@ -47,7 +48,7 @@ function EmployeeRepairProgress() {
       ]);
       setProgresses(progRes.data);
       setPartRequests(reqRes.data);
-      setParts(partsRes.data.content || partsRes.data || []); 
+      setParts(partsRes.data.content || partsRes.data || []);
     } catch (error) {
       console.error("Lỗi khi tải dữ liệu chi tiết phiếu sửa chữa", error);
     } finally {
@@ -71,17 +72,17 @@ function EmployeeRepairProgress() {
   };
 
   const handleRequestPart = async () => {
-    if (!selectedPartId || quantity <= 0) {
+    if (!selectedPart || quantity <= 0) {
       alert("Vui lòng chọn vật tư và số lượng hợp lệ");
       return;
     }
     try {
       await axiosClient.post("/part-requests", {
         repairOrderId: Number(id),
-        partId: Number(selectedPartId),
+        partId: selectedPart.id,
         requestedQuantity: Number(quantity)
       });
-      setSelectedPartId("");
+      setSelectedPart(null);
       setQuantity(1);
       fetchData(); // reload
     } catch (error) {
@@ -125,16 +126,16 @@ function EmployeeRepairProgress() {
                   ))}
                 </Select>
               </FormControl>
-              
-              <TextField 
-                label="Ghi chú hoàn thành/tiến độ" 
-                multiline 
-                rows={2} 
+
+              <TextField
+                label="Ghi chú hoàn thành/tiến độ"
+                multiline
+                rows={2}
                 size="small"
                 value={progressNote}
                 onChange={(e) => setProgressNote(e.target.value)}
               />
-              
+
               <Button variant="contained" color="primary" onClick={handleUpdateProgress}>
                 Ghi nhận Tiến độ
               </Button>
@@ -179,24 +180,28 @@ function EmployeeRepairProgress() {
               Yêu cầu Vật tư mới
             </Typography>
             <Box display="flex" flexDirection="column" gap={2}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Chọn Vật tư</InputLabel>
-                <Select
-                  value={selectedPartId}
-                  label="Chọn Vật tư"
-                  onChange={(e) => setSelectedPartId(e.target.value)}
-                >
-                  {parts.map(part => (
-                    <MenuItem key={part.id} value={part.id}>
-                      {part.name} (Kho: {part.quantity} - {part.sellingPrice?.toLocaleString()} VND)
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <Autocomplete
+                options={parts}
+                getOptionLabel={(part) =>
+                  `${part.name} (Kho: ${part.stockQuantity} - ${part.price?.toLocaleString() || "N/A"} VND)`
+                }
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                value={selectedPart}
+                onChange={(_, newValue) => setSelectedPart(newValue)}
+                noOptionsText="Không tìm thấy vật tư"
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Chọn Vật tư"
+                    size="small"
+                    placeholder="Gõ tên vật tư để tìm..."
+                  />
+                )}
+              />
 
-              <TextField 
-                label="Số lượng cần" 
-                type="number" 
+              <TextField
+                label="Số lượng cần"
+                type="number"
                 size="small"
                 inputProps={{ min: 1 }}
                 value={quantity}
@@ -224,9 +229,9 @@ function EmployeeRepairProgress() {
                         primary={
                           <Box display="flex" justifyContent="space-between">
                             <strong>{req.part?.name || `Vật tư ID: ${req.partId}`}</strong>
-                            <Chip 
-                              label={req.status} 
-                              size="small" 
+                            <Chip
+                              label={req.status}
+                              size="small"
                               color={req.status === 'APPROVED' ? 'success' : req.status === 'REJECTED' ? 'error' : 'warning'}
                             />
                           </Box>

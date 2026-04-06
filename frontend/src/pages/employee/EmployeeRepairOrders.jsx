@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { 
-  Typography, Box, Paper, Grid, CircularProgress, 
-  Button, Chip, Dialog, DialogTitle, DialogContent, 
-  DialogActions, TextField 
+import {
+  Typography, Box, Paper, Grid, CircularProgress,
+  Button, Chip, Dialog, DialogTitle, DialogContent,
+  DialogActions, TextField,
+  Autocomplete
 } from "@mui/material";
 import axiosClient from "../../api/axiosClient";
 import dayjs from "dayjs";
@@ -14,10 +15,11 @@ function EmployeeRepairOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  
+
   // Dialog Tiếp nhận xe
   const [receiveOpen, setReceiveOpen] = useState(false);
-  const [appointmentId, setAppointmentId] = useState("");
+  const [confirmedAppointments, setConfirmedAppointments] = useState([]);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [receiveNotes, setReceiveNotes] = useState("");
 
   // Dialog Hoàn thành
@@ -40,24 +42,37 @@ function EmployeeRepairOrders() {
     }
   };
 
+  const openReceiveDialog = async () => {
+    try {
+      const response = await axiosClient.get("/appointments");
+      const confirmed = response.data.filter((apt) => apt.status === "CONFIRMED");
+      setConfirmedAppointments(confirmed);
+    } catch (error) {
+      console.error("Lỗi khi tải danh sách lịch hẹn", error);
+    }
+    setSelectedAppointment(null);
+    setReceiveNotes("");
+    setReceiveOpen(true);
+  };
+
   const handleReceiveVehicle = async () => {
-    if (!appointmentId) {
-      alert("Vui lòng nhập ID lịch hẹn");
+    if (!selectedAppointment) {
+      alert("Vui lòng chọn lịch hẹn");
       return;
     }
     try {
       await axiosClient.post("/repair-orders/receive", {
-        appointmentId: Number(appointmentId),
+        appointmentId: selectedAppointment.id,
         employeeId: MOCK_EMPLOYEE_ID,
         notes: receiveNotes
       });
       setReceiveOpen(false);
-      setAppointmentId("");
+      setSelectedAppointment(null);
       setReceiveNotes("");
       fetchOrders();
     } catch (error) {
       console.error("Lỗi khi tiếp nhận xe", error);
-      alert("Tiếp nhận xe thất bại! Vui lòng kiểm tra ID lịch hẹn.");
+      alert("Tiếp nhận xe thất bại!");
     }
   };
 
@@ -103,7 +118,7 @@ function EmployeeRepairOrders() {
         <Typography variant="h4" fontWeight="bold">
           Quản lý Phiếu sửa chữa
         </Typography>
-        <Button variant="contained" color="primary" onClick={() => setReceiveOpen(true)}>
+        <Button variant="contained" color="primary" onClick={openReceiveDialog}>
           + Tiếp nhận xe
         </Button>
       </Box>
@@ -118,7 +133,7 @@ function EmployeeRepairOrders() {
                 </Typography>
                 <Chip label={order.status} color={getStatusColor(order.status)} size="small" />
               </Box>
-              
+
               <Typography variant="body2" color="textSecondary" gutterBottom>
                 <strong>Xe:</strong> {order.vehicleLicensePlate || "Không rõ"}
               </Typography>
@@ -130,9 +145,9 @@ function EmployeeRepairOrders() {
               </Typography>
 
               <Box mt={2} display="flex" gap={1} flexWrap="wrap">
-                <Button 
-                  variant="outlined" 
-                  color="primary" 
+                <Button
+                  variant="outlined"
+                  color="primary"
                   size="small"
                   onClick={() => navigate(`/employee/repair-orders/${order.id}`)}
                 >
@@ -140,9 +155,9 @@ function EmployeeRepairOrders() {
                 </Button>
 
                 {order.status !== "COMPLETED" && order.status !== "CANCELLED" && (
-                  <Button 
-                    variant="contained" 
-                    color="success" 
+                  <Button
+                    variant="contained"
+                    color="success"
                     size="small"
                     onClick={() => openCompleteDialog(order.id)}
                   >
@@ -165,15 +180,23 @@ function EmployeeRepairOrders() {
       <Dialog open={receiveOpen} onClose={() => setReceiveOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>Tiếp nhận xe (Tạo phiếu sửa chữa)</DialogTitle>
         <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="ID Lịch hẹn (đã xác nhận)"
-            type="number"
-            fullWidth
-            variant="outlined"
-            value={appointmentId}
-            onChange={(e) => setAppointmentId(e.target.value)}
+          <Autocomplete
+            options={confirmedAppointments}
+            getOptionLabel={(apt) =>
+              `#${apt.id} — Xe: ${apt.licensePlate || "N/A"} | Khách: ${apt.customerName || "N/A"}`
+            }
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            value={selectedAppointment}
+            onChange={(_, newValue) => setSelectedAppointment(newValue)}
+            noOptionsText="Không có lịch hẹn nào đã xác nhận"
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Chọn lịch hẹn đã xác nhận"
+                margin="dense"
+                placeholder="Gõ để tìm kiếm..."
+              />
+            )}
             sx={{ mb: 2 }}
           />
           <TextField
