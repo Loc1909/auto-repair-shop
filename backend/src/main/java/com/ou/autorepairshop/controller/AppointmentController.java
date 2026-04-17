@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/appointments")
@@ -27,6 +28,12 @@ public class AppointmentController {
         AppointmentResponse response = appointmentService.makeAppointment(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    @GetMapping
+    public ResponseEntity<List<AppointmentResponseForEmployee>> getAllAppointments() {
+        return ResponseEntity.ok(appointmentService.getAllAppointments());
+    }
+
 
     /**
      * Lấy dữ liệu appointment của customer/user hiện tại

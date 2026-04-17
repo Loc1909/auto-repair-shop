@@ -33,9 +33,9 @@ public class RepairOrderService {
         Appointment appointment = appointmentRepository.findById(req.appointmentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment", req.appointmentId()));
 
-        if (appointment.getStatus() != AppointmentStatus.PENDING
-                && appointment.getStatus() != AppointmentStatus.CONFIRMED) {
-            throw new BusinessException("Appointment is not in a receivable state: " + appointment.getStatus());
+        if (appointment.getStatus() != AppointmentStatus.CONFIRMED) {
+            throw new BusinessException(
+                    "Only CONFIRMED appointments can be received. Current status: " + appointment.getStatus());
         }
 
         Employee employee = employeeRepository.findById(req.employeeId())

@@ -136,6 +136,14 @@ public class AppointmentService {
         return appointmentMapper.toResponseForEmployee(saved);
     }
 
+    @Transactional(readOnly = true)
+    public List<AppointmentResponseForEmployee> getAllAppointments() {
+        return appointmentRepository.findAll().stream()
+                .map(appointmentMapper::toResponseForEmployee)
+                .toList();
+    }
+
+
     // ================= HELPER =================
 
     private void sendNotificationSafe(NotificationEvent event, Appointment appointment, Map<String, String> data) {
