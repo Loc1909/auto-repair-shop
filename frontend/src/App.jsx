@@ -17,6 +17,9 @@ import EmployeeAppointments from "./pages/employee/EmployeeAppointments";
 import EmployeeRepairOrders from "./pages/employee/EmployeeRepairOrders";
 import EmployeeRepairProgress from "./pages/employee/EmployeeRepairProgress";
 
+
+import Login from "./pages/auth/Login.jsx";
+
 function App() {
   return (
     <BrowserRouter>
@@ -28,9 +31,9 @@ function App() {
           <Route path="services" element={<Services />} />
           <Route path="parts" element={<Parts />} />
           <Route path="users" element={<Users />} />
-          <Route path="employees" element={<Employees />} /> 
+          <Route path="employees" element={<Employees />} />
           <Route path="customers" element={<Customers />} />
-          <Route path="service-categories" element={<ServiceCategories />} /> 
+          <Route path="service-categories" element={<ServiceCategories />} />
           <Route path="revenue" element={<Revenue />} />
           <Route path="notification-config" element={<NotificationConfig />} />
         </Route>
@@ -43,6 +46,8 @@ function App() {
           <Route path="repair-orders" element={<EmployeeRepairOrders />} />
           <Route path="repair-orders/:id" element={<EmployeeRepairProgress />} />
         </Route>
+
+        <Route path="/login" element={<Login />} />
 
       </Routes>
     </BrowserRouter>
