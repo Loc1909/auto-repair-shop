@@ -20,6 +20,7 @@ public class AppointmentController {
      * Nhân viên xác nhận lịch hẹn (PENDING → CONFIRMED)
      */
     @PatchMapping("/{id}/confirm")
+
     public ResponseEntity<AppointmentResponse> confirm(@PathVariable Long id) {
         return ResponseEntity.ok(appointmentService.confirmAppointment(id));
     }

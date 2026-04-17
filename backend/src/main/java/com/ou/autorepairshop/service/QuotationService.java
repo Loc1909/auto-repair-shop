@@ -3,6 +3,7 @@ package com.ou.autorepairshop.service;
 import com.ou.autorepairshop.dto.CreateQuotationRequest;
 import com.ou.autorepairshop.dto.QuotationDetailItem;
 import com.ou.autorepairshop.dto.QuotationResponse;
+import com.ou.autorepairshop.enums.ItemType;
 import com.ou.autorepairshop.enums.QuotationStatus;
 import com.ou.autorepairshop.enums.RepairStatus;
 import com.ou.autorepairshop.exception.BusinessException;
@@ -96,23 +97,34 @@ public class QuotationService {
     }
 
     private QuotationDetail buildDetail(Quotation quotation, QuotationDetailItem item) {
+
+        ItemType type;
+        try {
+            type = ItemType.valueOf(item.itemType().toUpperCase());
+        } catch (Exception e) {
+            throw new BusinessException("Invalid item type: " + item.itemType());
+        }
+
         QuotationDetail.QuotationDetailBuilder builder = QuotationDetail.builder()
                 .quotation(quotation)
-                .itemType(item.itemType().toUpperCase())
+                .itemType(type)
                 .quantity(item.quantity());
 
-        if ("PART".equalsIgnoreCase(item.itemType())) {
+        if (type == ItemType.PART) {
+
             Part part = partRepository.findById(item.itemId())
                     .orElseThrow(() -> new ResourceNotFoundException("Part", item.itemId()));
-            builder.part(part).unitPrice(part.getPrice());
 
-        } else if ("SERVICE".equalsIgnoreCase(item.itemType())) {
+            builder.part(part)
+                    .unitPrice(part.getPrice());
+
+        } else if (type == ItemType.SERVICE) {
+
             RepairService svc = serviceRepository.findById(item.itemId())
                     .orElseThrow(() -> new ResourceNotFoundException("Service", item.itemId()));
-            builder.service(svc).unitPrice(svc.getPrice());
 
-        } else {
-            throw new BusinessException("Unknown item type: " + item.itemType() + ". Must be PART or SERVICE.");
+            builder.service(svc)
+                    .unitPrice(svc.getPrice());
         }
 
         return builder.build();

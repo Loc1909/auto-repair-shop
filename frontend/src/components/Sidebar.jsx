@@ -19,15 +19,15 @@ import {
 } from "@mui/icons-material";
 
 const menuItems = [
-  { label: "Dashboard", path: "/admin", icon: <Dashboard /> },
-  { label: "Services", path: "/admin/services", icon: <MiscellaneousServices /> },
-  { label: "Parts", path: "/admin/parts", icon: <Build /> },
-  { label: "Users", path: "/admin/users", icon: <People /> },
-  { label: "Employees", path: "/admin/employees", icon: <Engineering /> },
-  { label: "Customers", path: "/admin/customers", icon: <Person /> },
-  { label: "Service Categories", path: "/admin/service-categories", icon: <Category /> },
-  { label: "Revenue", path: "/admin/revenue", icon: <AttachMoney /> },
-  { label: "Notification Config", path: "/admin/notification-config", icon: <Notifications /> }
+  { label: "Bảng điều khiển", path: "/admin", icon: <Dashboard /> },
+  { label: "Dịch vụ", path: "/admin/services", icon: <MiscellaneousServices /> },
+  { label: "Phụ tùng", path: "/admin/parts", icon: <Build /> },
+  { label: "Người dùng", path: "/admin/users", icon: <People /> },
+  { label: "Nhân viên", path: "/admin/employees", icon: <Engineering /> },
+  { label: "Khách hàng", path: "/admin/customers", icon: <Person /> },
+  { label: "Danh mục dịch vụ", path: "/admin/service-categories", icon: <Category /> },
+  { label: "Doanh thu", path: "/admin/revenue", icon: <AttachMoney /> },
+  { label: "Cấu hình thông báo", path: "/admin/notification-config", icon: <Notifications /> }
 ];
 
 function Sidebar() {
@@ -37,6 +37,7 @@ function Sidebar() {
     <Box
       sx={{
         width: 240,
+        flexShrink: 0,
         bgcolor: "#fff",
         borderRight: "1px solid #e0e0e0",
         minHeight: "100vh",

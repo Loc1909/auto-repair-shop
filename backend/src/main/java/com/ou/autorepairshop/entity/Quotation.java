@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "quotations")
@@ -32,4 +33,12 @@ public class Quotation {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "repair_order_id", nullable = false, unique = true)
     private RepairOrder repairOrder;
+
+    @OneToMany(mappedBy = "quotation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QuotationDetail> details;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+    }
 }

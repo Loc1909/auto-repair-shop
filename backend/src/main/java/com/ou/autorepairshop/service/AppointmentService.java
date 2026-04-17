@@ -6,14 +6,12 @@ import com.ou.autorepairshop.enums.AppointmentStatus;
 import com.ou.autorepairshop.exception.BusinessException;
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
 import com.ou.autorepairshop.repository.AppointmentRepository;
-import com.ou.autorepairshop.service.NotificationService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import com.ou.autorepairshop.dto.AppointmentResponse;
 import com.ou.autorepairshop.mapper.AppointmentMapper;
 
-import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +21,7 @@ public class AppointmentService {
     private final NotificationService notificationService;
     private final AppointmentMapper appointmentMapper;
 
+    // ================= CONFIRM =================
     @Transactional
     public AppointmentResponse confirmAppointment(Long id) {
         Appointment appointment = findById(id);
@@ -37,18 +36,13 @@ public class AppointmentService {
         appointment.setStatus(AppointmentStatus.CONFIRMED);
         Appointment saved = appointmentRepository.save(appointment);
 
-        sendNotificationSafe(
-                NotificationEvent.APPOINTMENT_CONFIRMED,
-                saved,
-                Map.of(
-                        "customer_name", safe(saved.getCustomer().getName()),
-                        "appointment_time", safe(saved.getAppointmentTime())
-                )
-        );
+        // Gửi notification
+        sendNotificationSafe(NotificationEvent.APPOINTMENT_CONFIRMED, saved);
 
         return appointmentMapper.toResponse(saved);
     }
 
+    // ================= CANCEL =================
     @Transactional
     public AppointmentResponse cancelAppointment(Long id, String reason) {
         Appointment appointment = findById(id);
@@ -56,10 +50,12 @@ public class AppointmentService {
         if (AppointmentStatus.RECEIVED == appointment.getStatus()) {
             throw new BusinessException("Cannot cancel an appointment that is already RECEIVED.");
         }
+
         if (AppointmentStatus.CANCELLED == appointment.getStatus()) {
             throw new BusinessException("Appointment is already cancelled.");
         }
 
+        // Ghi lý do vào note
         if (reason != null && !reason.isBlank()) {
             String updatedNote = (appointment.getNote() != null ? appointment.getNote() + " | " : "")
                     + "Hủy lịch: " + reason;
@@ -69,46 +65,32 @@ public class AppointmentService {
         appointment.setStatus(AppointmentStatus.CANCELLED);
         Appointment saved = appointmentRepository.save(appointment);
 
-        sendNotificationSafe(
-                NotificationEvent.APPOINTMENT_CANCELLED,
-                saved,
-                Map.of(
-                        "customer_name", safe(saved.getCustomer().getName()),
-                        "reason", (reason != null && !reason.isBlank()) ? reason : "Không có"
-                )
-        );
+        // Gửi notification
+        sendNotificationSafe(NotificationEvent.APPOINTMENT_CANCELLED, saved);
 
         return appointmentMapper.toResponse(saved);
     }
 
-    // ================= HELPER =================
-
-    private void sendNotificationSafe(NotificationEvent event, Appointment appointment, Map<String, String> data) {
+    // ================= HELPER SEND =================
+    private void sendNotificationSafe(NotificationEvent event, Appointment appointment) {
         try {
+            // Kiểm tra có user để push/email không
             if (appointment.getCustomer() == null ||
-                    appointment.getCustomer().getUser() == null ||
-                    appointment.getCustomer().getUser().getEmail() == null) {
+                    appointment.getCustomer().getUser() == null) {
 
-                System.err.println("Skip sending mail: missing email");
+                System.err.println("Skip sending notification: missing user");
                 return;
             }
 
-            notificationService.sendByEvent(
-                    event,
-                    appointment.getCustomer().getUser().getEmail(),
-                    data,
-                    appointment.getId()
-            );
+            // Gửi notification (email + push)
+            notificationService.sendByEvent(event, appointment);
 
         } catch (Exception e) {
-            System.err.println("Send mail failed: " + e.getMessage());
+            System.err.println("Send notification failed: " + e.getMessage());
         }
     }
 
-    private String safe(Object value) {
-        return value != null ? value.toString() : "";
-    }
-
+    // ================= FIND =================
     private Appointment findById(Long id) {
         return appointmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment", id));

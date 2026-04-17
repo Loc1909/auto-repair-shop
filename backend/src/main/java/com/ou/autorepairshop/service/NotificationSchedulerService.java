@@ -1,4 +1,5 @@
 package com.ou.autorepairshop.service;
+
 import com.ou.autorepairshop.entity.NotificationEvent;
 import com.ou.autorepairshop.enums.AppointmentStatus;
 import com.ou.autorepairshop.repository.AppointmentRepository;
@@ -9,8 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +28,6 @@ public class NotificationSchedulerService {
 
         var configs = configRepository.findAllByEventType(NotificationEvent.APPOINTMENT_REMINDER);
 
-        // Lấy tất cả appointment PENDING (có join fetch)
         var appointments = appointmentRepository.findAllWithCustomerAndUserByStatus(
                 AppointmentStatus.PENDING
         );
@@ -50,23 +48,15 @@ public class NotificationSchedulerService {
 
                 long targetSeconds = Math.abs(offset) * 60;
 
+                // check đúng thời điểm gửi
                 if (Math.abs(secondsDiff - targetSeconds) > 30) continue;
 
-                String email = a.getCustomer().getUser().getEmail();
-                if (email == null) continue;
+                // check user tồn tại
+                if (a.getCustomer() == null ||
+                        a.getCustomer().getUser() == null) continue;
 
                 System.out.println("Send offset " + offset + " for appointment " + a.getId());
-
-                notificationService.send(
-                        config,
-                        email,
-                        Map.of(
-                                "customer_name", a.getCustomer().getName(),
-                                "appointment_time", appointmentTime.toString(),
-                                "minutes", String.valueOf(Math.abs(offset))
-                        ),
-                        a.getId()
-                );
+                notificationService.send(config, a);
             }
         }
     }
