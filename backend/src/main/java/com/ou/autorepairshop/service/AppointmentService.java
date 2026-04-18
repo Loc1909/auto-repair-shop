@@ -50,22 +50,20 @@ public class AppointmentService {
     // ================= CONFIRM (CUSTOMER FLOW) =================
     @Transactional
     public AppointmentResponse confirmAppointment(Long id) {
+
         Appointment appointment = findById(id);
 
-        if (AppointmentStatus.PENDING != appointment.getStatus()) {
+        if (appointment.getStatus() != AppointmentStatus.PENDING) {
             throw new BusinessException(
                     "Cannot confirm appointment with status: " + appointment.getStatus()
+                            + ". Only PENDING appointments can be confirmed."
             );
         }
 
         appointment.setStatus(AppointmentStatus.CONFIRMED);
         Appointment saved = appointmentRepository.save(appointment);
 
-        sendNotificationSafe(
-                NotificationEvent.APPOINTMENT_CONFIRMED,
-                saved,
-                Map.of()
-        );
+        sendNotificationSafe(NotificationEvent.APPOINTMENT_CONFIRMED, saved);
 
         return appointmentMapper.toResponse(saved);
     }
@@ -91,33 +89,35 @@ public class AppointmentService {
 
         sendNotificationSafe(
                 NotificationEvent.APPOINTMENT_CONFIRMED,
-                saved,
-                Map.of(
-                        "customer_name", safe(saved.getCustomer().getName()),
-                        "appointment_time", safe(saved.getAppointmentTime())
-                )
+                saved
         );
 
         return appointmentMapper.toResponseForEmployee(saved);
     }
 
-    // ================= CANCEL (CUSTOMER FLOW) =================
     @Transactional
     public AppointmentResponse cancelAppointment(Long id, String reason) {
+
         Appointment appointment = findById(id);
 
-        validateCancelable(appointment);
+        if (appointment.getStatus() == AppointmentStatus.RECEIVED) {
+            throw new BusinessException("Cannot cancel an appointment that is already RECEIVED.");
+        }
 
-        appendCancelReason(appointment, reason);
+        if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
+            throw new BusinessException("Appointment is already cancelled.");
+        }
+
+        if (reason != null && !reason.isBlank()) {
+            String updatedNote = (appointment.getNote() != null ? appointment.getNote() + " | " : "")
+                    + "Hủy lịch: " + reason;
+            appointment.setNote(updatedNote);
+        }
 
         appointment.setStatus(AppointmentStatus.CANCELLED);
         Appointment saved = appointmentRepository.save(appointment);
 
-        sendNotificationSafe(
-                NotificationEvent.APPOINTMENT_CANCELLED,
-                saved,
-                Map.of("reason", safe(reason))
-        );
+        sendNotificationSafe(NotificationEvent.APPOINTMENT_CANCELLED, saved);
 
         return appointmentMapper.toResponse(saved);
     }
@@ -136,11 +136,7 @@ public class AppointmentService {
 
         sendNotificationSafe(
                 NotificationEvent.APPOINTMENT_CANCELLED,
-                saved,
-                Map.of(
-                        "customer_name", safe(saved.getCustomer().getName()),
-                        "reason", safe(reason)
-                )
+                saved
         );
 
         return appointmentMapper.toResponseForEmployee(saved);
@@ -173,24 +169,16 @@ public class AppointmentService {
         }
     }
 
-    private void sendNotificationSafe(NotificationEvent event,
-                                      Appointment appointment,
-                                      Map<String, String> data) {
+    private void sendNotificationSafe(NotificationEvent event, Appointment appointment) {
         try {
             if (appointment.getCustomer() == null ||
-                    appointment.getCustomer().getUser() == null ||
-                    appointment.getCustomer().getUser().getEmail() == null) {
+                    appointment.getCustomer().getUser() == null) {
 
-                System.err.println("Skip sending notification: missing email");
+                System.err.println("Skip notification: missing user");
                 return;
             }
 
-            notificationService.sendByEvent(
-                    event,
-                    appointment.getCustomer().getUser().getEmail(),
-                    data,
-                    appointment.getId()
-            );
+            notificationService.sendByEvent(event, appointment);
 
         } catch (Exception e) {
             System.err.println("Send notification failed: " + e.getMessage());

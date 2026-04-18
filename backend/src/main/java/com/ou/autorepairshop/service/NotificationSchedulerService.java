@@ -24,38 +24,30 @@ public class NotificationSchedulerService {
     public void sendUpcomingAppointments() {
 
         LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);
-        System.out.println("Scheduler running at: " + now);
 
         var configs = configRepository.findAllByEventType(NotificationEvent.APPOINTMENT_REMINDER);
-
-        var appointments = appointmentRepository.findAllWithCustomerAndUserByStatus(
-                AppointmentStatus.PENDING
-        );
 
         for (var config : configs) {
 
             int offset = config.getSendTimeOffset();
 
+            LocalDateTime targetTime = now.minusMinutes(offset);
+
+            LocalDateTime start = targetTime.minusMinutes(1);
+            LocalDateTime end = targetTime.plusMinutes(1);
+
+            var appointments = appointmentRepository.findAppointmentsForReminder(
+                    AppointmentStatus.CONFIRMED,
+                    start,
+                    end
+            );
+
             for (var a : appointments) {
 
-                LocalDateTime appointmentTime = a.getAppointmentTime()
-                        .withSecond(0)
-                        .withNano(0);
+                if (a.getCustomer() == null || a.getCustomer().getUser() == null) continue;
 
-                long secondsDiff = java.time.Duration
-                        .between(now, appointmentTime)
-                        .getSeconds();
+                System.out.println("Send reminder for appointment " + a.getId());
 
-                long targetSeconds = Math.abs(offset) * 60;
-
-                // check đúng thời điểm gửi
-                if (Math.abs(secondsDiff - targetSeconds) > 30) continue;
-
-                // check user tồn tại
-                if (a.getCustomer() == null ||
-                        a.getCustomer().getUser() == null) continue;
-
-                System.out.println("Send offset " + offset + " for appointment " + a.getId());
                 notificationService.send(config, a);
             }
         }

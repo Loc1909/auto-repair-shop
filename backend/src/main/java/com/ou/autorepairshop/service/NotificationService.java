@@ -1,6 +1,7 @@
 package com.ou.autorepairshop.service;
 
 import com.ou.autorepairshop.entity.*;
+import com.ou.autorepairshop.enums.AppointmentStatus;
 import com.ou.autorepairshop.repository.NotificationConfigRepository;
 import com.ou.autorepairshop.repository.NotificationLogRepository;
 import com.ou.autorepairshop.repository.UserRepository;
@@ -21,87 +22,155 @@ public class NotificationService {
     private final NotificationLogRepository notificationLogRepository;
     private final EmailService emailService;
     private final PushNotificationService pushNotificationService;
-    private final UserRepository userRepository;
 
-    // ================= MAIN SEND =================
+    // ================= MAIN ENTRY =================
     @Transactional
     public void send(NotificationConfig config, Appointment appointment) {
-        if (config.getStatus() != NotificationStatus.ACTIVE) return;
 
-        int offset = config.getSendTimeOffset();
+        if (!isConfigActive(config)) return;
+        if (!shouldSend(config, appointment)) return;
+        if (isDuplicate(config, appointment)) return;
 
-        // Check duplicate
-        boolean alreadySent = notificationLogRepository
+        boolean sent = dispatch(config, appointment);
+
+        if (sent) {
+            logNotification(config, appointment);
+        }
+    }
+
+    // ================= VALIDATION =================
+
+    private boolean isConfigActive(NotificationConfig config) {
+        return config.getStatus() == NotificationStatus.ACTIVE;
+    }
+
+    private boolean shouldSend(NotificationConfig config, Appointment appointment) {
+
+        // Không gửi nếu CANCELLED ( chỉ gửi push cho khách hàng)
+        if (appointment.getStatus() == AppointmentStatus.CANCELLED &&
+                config.getEventType() != NotificationEvent.APPOINTMENT_CANCELLED) {
+
+            log.info("Skip: appointment {} is CANCELLED", appointment.getId());
+            return false;
+        }
+
+        // REMINDER chỉ khi CONFIRMED
+        if (config.getEventType() == NotificationEvent.APPOINTMENT_REMINDER &&
+                appointment.getStatus() != AppointmentStatus.CONFIRMED) {
+
+            log.info("Skip reminder: appointment {} not CONFIRMED", appointment.getId());
+            return false;
+        }
+
+        //  CONFIRMED phải có employee
+        if (config.getEventType() == NotificationEvent.APPOINTMENT_CONFIRMED &&
+                appointment.getAssignedEmployee() == null) {
+
+            log.info("Skip confirmed: no employee assigned for {}", appointment.getId());
+            return false;
+        }
+
+        // Template rỗng
+        if (isTemplateEmpty(config)) {
+            log.warn("Skip: empty template for event {}", config.getEventType());
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean isTemplateEmpty(NotificationConfig config) {
+        return (isBlank(config.getTemplateEmail()) && isBlank(config.getTemplatePush()));
+    }
+
+    private boolean isDuplicate(NotificationConfig config, Appointment appointment) {
+
+        boolean exists = notificationLogRepository
                 .existsByAppointmentIdAndEventTypeAndSendTimeOffset(
                         appointment.getId(),
                         config.getEventType(),
-                        offset
+                        config.getSendTimeOffset()
                 );
 
-        if (alreadySent) {
-            log.info("Skip duplicate notification for appointment {}", appointment.getId());
-            return;
+        if (exists) {
+            log.info("Skip duplicate for appointment {}", appointment.getId());
         }
 
-        // SEND CHANNELS
-        sendEmailIfNeeded(config, appointment);
-        sendPushIfNeeded(config, appointment);
-
-        // LOG
-        notificationLogRepository.save(
-                NotificationLog.builder()
-                        .appointmentId(appointment.getId())
-                        .eventType(config.getEventType())
-                        .sendTimeOffset(offset)
-                        .sentAt(java.time.LocalDateTime.now())
-                        .build()
-        );
+        return exists;
     }
 
-    // ================= SEND EMAIL =================
-    private void sendEmailIfNeeded(NotificationConfig config, Appointment appointment) {
-        if (config.getChannels() == null || !config.getChannels().contains(NotificationChannel.EMAIL)) return;
+    // ================= DISPATCH =================
 
-        String email = appointment.getCustomer() != null &&
-                appointment.getCustomer().getUser() != null
-                ? appointment.getCustomer().getUser().getEmail()
-                : null;
+    private boolean dispatch(NotificationConfig config, Appointment appointment) {
+        boolean emailSent = sendEmail(config, appointment);
+        boolean pushSent = sendPush(config, appointment);
+        return emailSent || pushSent;
+    }
 
-        if (email == null || email.isBlank()) {
-            log.warn("Skip sending email: missing email");
-            return;
+    // ================= EMAIL =================
+
+    private boolean sendEmail(NotificationConfig config, Appointment appointment) {
+
+        if (!isChannelEnabled(config, NotificationChannel.EMAIL)) return false;
+
+        String email = extractEmail(appointment);
+        if (isBlank(email)) {
+            log.warn("Skip email: missing email");
+            return false;
         }
 
         String content = buildContent(config.getTemplateEmail(), appointment);
+        if (content.isBlank()) return false;
 
         try {
             emailService.sendEmail(email, "Thông báo lịch hẹn", content);
+            return true;
         } catch (Exception e) {
             log.error("Email failed", e);
+            return false;
         }
     }
 
-    // ================= SEND PUSH =================
-    private void sendPushIfNeeded(NotificationConfig config, Appointment appointment) {
-        if (config.getChannels() == null || !config.getChannels().contains(NotificationChannel.PUSH)) return;
-
-        if (appointment.getCustomer() == null || appointment.getCustomer().getUser() == null) return;
-
-        User user = appointment.getCustomer().getUser();
-        String content = buildContent(config.getTemplatePush(), appointment);
-
-        sendPushToUser(user, "Thông báo lịch hẹn", content);
+    private String extractEmail(Appointment appointment) {
+        return (appointment.getCustomer() != null &&
+                appointment.getCustomer().getUser() != null)
+                ? appointment.getCustomer().getUser().getEmail()
+                : null;
     }
 
-    private void sendPushToUser(User user, String title, String body) {
+    // ================= PUSH =================
+
+    private boolean sendPush(NotificationConfig config, Appointment appointment) {
+
+        if (!isChannelEnabled(config, NotificationChannel.PUSH)) return false;
+
+        User user = extractUser(appointment);
+        if (user == null) return false;
+
+        String content = buildContent(config.getTemplatePush(), appointment);
+        if (content.isBlank()) return false;
+
+        return sendPushToUser(user, "Thông báo lịch hẹn", content);
+    }
+
+    private User extractUser(Appointment appointment) {
+        return (appointment.getCustomer() != null)
+                ? appointment.getCustomer().getUser()
+                : null;
+    }
+
+    private boolean sendPushToUser(User user, String title, String body) {
+
         List<DeviceToken> tokens = user.getDeviceTokens().stream()
                 .filter(DeviceToken::isActive)
                 .toList();
 
         if (tokens.isEmpty()) {
             log.warn("User {} has no active tokens", user.getId());
-            return;
+            return false;
         }
+
+        boolean success = false;
 
         for (DeviceToken dt : tokens) {
             try {
@@ -111,39 +180,62 @@ public class NotificationService {
                         title,
                         body
                 );
+                success = true;
             } catch (Exception e) {
                 log.error("Push failed for token {}", dt.getToken(), e);
             }
         }
+
+        return success;
+    }
+
+    // ================= COMMON =================
+
+    private boolean isChannelEnabled(NotificationConfig config, NotificationChannel channel) {
+        return config.getChannels() != null && config.getChannels().contains(channel);
+    }
+
+    private void logNotification(NotificationConfig config, Appointment appointment) {
+        notificationLogRepository.save(
+                NotificationLog.builder()
+                        .appointmentId(appointment.getId())
+                        .eventType(config.getEventType())
+                        .sendTimeOffset(config.getSendTimeOffset())
+                        .sentAt(java.time.LocalDateTime.now())
+                        .build()
+        );
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     // ================= TEMPLATE =================
+
     private String buildContent(String template, Appointment appointment) {
         if (template == null) return "";
 
-        String result = template;
-
-        // Lấy tên: ưu tiên Customer, nếu trống thì Employee
-        String name = appointment.getCustomer() != null
-                ? appointment.getCustomer().getName()
-                : appointment.getAssignedEmployee() != null
-                ? appointment.getAssignedEmployee().getName()
-                : "Khách";
-
-        // Lấy ngày giờ lịch hẹn
-        String date = appointment.getAppointmentTime() != null
-                ? appointment.getAppointmentTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
-                : "";
-
-        // Thay placeholder
-        result = result.replace("{name}", name)
-                .replace("{date}", date);
-
-        return result;
+        return template
+                .replace("{name}", resolveName(appointment))
+                .replace("{date}", resolveDate(appointment));
     }
 
-    // ================= SEND BY EVENT =================
+    private String resolveName(Appointment appointment) {
+        if (appointment.getCustomer() != null) return appointment.getCustomer().getName();
+        if (appointment.getAssignedEmployee() != null) return appointment.getAssignedEmployee().getName();
+        return "Khách";
+    }
+
+    private String resolveDate(Appointment appointment) {
+        return appointment.getAppointmentTime() != null
+                ? appointment.getAppointmentTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                : "";
+    }
+
+    // ================= ENTRY BY EVENT =================
+
     public void sendByEvent(NotificationEvent event, Appointment appointment) {
+
         List<NotificationConfig> configs = configRepo.findAllByEventType(event);
 
         if (configs.isEmpty()) {
@@ -151,8 +243,6 @@ public class NotificationService {
             return;
         }
 
-        for (NotificationConfig config : configs) {
-            send(config, appointment);
-        }
+        configs.forEach(config -> send(config, appointment));
     }
 }
