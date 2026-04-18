@@ -1,23 +1,49 @@
 package com.ou.autorepairshop.mapper;
 
+import com.ou.autorepairshop.dto.AppointmentCreateRequest;
 import com.ou.autorepairshop.dto.AppointmentResponse;
+import com.ou.autorepairshop.dto.AppointmentResponseForEmployee;
 import com.ou.autorepairshop.entity.Appointment;
-import org.springframework.stereotype.Component;
+import com.ou.autorepairshop.entity.Customer;
+import com.ou.autorepairshop.entity.Employee;
+import com.ou.autorepairshop.entity.Vehicle;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Component
-public class AppointmentMapper {
+@Mapper(componentModel = "spring")
+public interface AppointmentMapper {
 
-    public AppointmentResponse toResponse(Appointment a) {
-        String customerName = null;
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "status", constant = "PENDING")
+    Appointment toEntity(AppointmentCreateRequest request,
+                         Customer customer,
+                         Vehicle vehicle,
+                         Employee employee);
 
-        if (a.getCustomer() != null) {
-            customerName = a.getCustomer().getName();
-        }
+    @Mapping(source = "customer.id", target = "customerId")
+    @Mapping(source = "vehicle.id", target = "vehicleId")
+    @Mapping(source = "assignedEmployee.id", target = "employeeId")
+    AppointmentResponse toResponse(Appointment appointment);
 
-        return new AppointmentResponse(
-                a.getId(),
-                a.getStatus().name(),
-                customerName
-        );
-    }
+    @Mapping(target = "customerId", source = "customer.id")
+    @Mapping(target = "customerName", source = "customer.name")
+    @Mapping(target = "vehicleId", source = "vehicle.id")
+    @Mapping(target = "licensePlate", source = "vehicle.licensePlate")
+    @Mapping(target = "assignedEmployeeId", source = "assignedEmployee.id")
+    @Mapping(target = "assignedEmployeeName", source = "assignedEmployee.name")
+    AppointmentResponseForEmployee toResponseForEmployee(Appointment appointment);
+
+//    public AppointmentResponse toResponse(Appointment a) {
+//        String customerName = null;
+//
+//        if (a.getCustomer() != null) {
+//            customerName = a.getCustomer().getName();
+//        }
+//
+//        return new AppointmentResponse(
+//                a.getId(),
+//                a.getStatus().name(),
+//                customerName
+//        );
+//    }
 }

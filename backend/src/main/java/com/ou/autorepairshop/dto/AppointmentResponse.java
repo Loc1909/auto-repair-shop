@@ -1,7 +1,14 @@
 package com.ou.autorepairshop.dto;
 
+import java.time.LocalDateTime;
+
 public record AppointmentResponse(
         Long id,
+        LocalDateTime appointmentTime,
+        String note,
         String status,
-        String customerName
-) {}
+        Long employeeId,
+        Long customerId,
+        Long vehicleId
+) {
+}

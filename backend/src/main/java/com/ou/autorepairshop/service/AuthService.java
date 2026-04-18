@@ -5,9 +5,11 @@ import com.ou.autorepairshop.dto.AuthResponse;
 import com.ou.autorepairshop.dto.LoginRequest;
 import com.ou.autorepairshop.dto.UserRegisterRequest;
 import com.ou.autorepairshop.dto.UserResponse;
+import com.ou.autorepairshop.entity.Customer;
 import com.ou.autorepairshop.entity.Role;
 import com.ou.autorepairshop.entity.User;
 import com.ou.autorepairshop.mapper.UserMapper;
+import com.ou.autorepairshop.repository.CustomerRepository;
 import com.ou.autorepairshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CustomerRepository customerRepository;
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtProperties jwtProperties;
     private final JwtService jwtService;
@@ -34,8 +37,14 @@ public class AuthService {
                 .build();
 
         user.setRole(Role.ROLE_CUSTOMER);
-        System.out.println(user);
-        return UserResponse.fromEntity(userRepository.save(user));
+        User s = userRepository.save(user);
+
+        Customer customer = new Customer();
+        customer.setName(request.username());
+        customer.setUser(user);
+        customerRepository.save(customer);
+
+        return UserResponse.fromEntity(s);
     }
 
     public AuthResponse login(LoginRequest request) {

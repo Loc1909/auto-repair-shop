@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/repair-progress")
+@RequestMapping("/api/repair-progress")
 @RequiredArgsConstructor
 public class RepairProgressController {
 
