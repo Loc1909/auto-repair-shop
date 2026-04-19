@@ -24,6 +24,7 @@ import EmployeeRepairProgress from "./pages/employee/EmployeeRepairProgress";
 
 
 import Login from "./pages/auth/Login.jsx";
+import Register from "./pages/auth/Register.jsx";
 
 import { listenForegroundMessages } from "./firebase";
 
@@ -38,15 +39,6 @@ function App() {
 
         {/* ===== ADMIN ===== */}
         <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="services" element={<Services />} />
-          <Route path="parts" element={<Parts />} />
-          <Route path="users" element={<Users />} />
-          <Route path="employees" element={<Employees />} />
-          <Route path="customers" element={<Customers />} />
-          <Route path="service-categories" element={<ServiceCategories />} />
-          <Route path="revenue" element={<Revenue />} />
-          <Route path="notification-config" element={<NotificationConfig />} />
           <Route index element={<AdminDashboard />} />
           <Route path="services" element={<AdminServices />} />
           <Route path="parts" element={<AdminParts />} />
@@ -68,6 +60,7 @@ function App() {
         </Route>
 
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
       </Routes>
     </BrowserRouter>
