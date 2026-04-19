@@ -34,6 +34,11 @@ public class Quotation {
     @JoinColumn(name = "repair_order_id", nullable = false, unique = true)
     private RepairOrder repairOrder;
 
-    @OneToMany(mappedBy = "quotation")
+    @OneToMany(mappedBy = "quotation", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuotationDetail> details;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+    }
 }

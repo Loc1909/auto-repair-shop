@@ -15,18 +15,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
     Optional<User> findByEmail(String email);
 
+    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
+
     @Query("""
         SELECT u FROM User u
         WHERE LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%'))
            OR LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%'))
     """)
-    Page<User> searchUsers(String search, Pageable pageable);
-
-    boolean existsByUsername(String username);
-
-    boolean existsByEmail(String email);
-
-    boolean existsByEmailAndIdNot(String email, Long id);
+    Page<User> searchUsers(@Param("search") String search, Pageable pageable);
 
     @Query("SELECT u FROM User u WHERE " +
             "(:search IS NULL " +
@@ -37,4 +34,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("search") String search,
             @Param("role") Role role,
             Pageable pageable);
+    @Query("""
+        SELECT DISTINCT u FROM User u
+        LEFT JOIN FETCH u.deviceTokens
+        WHERE u.id = :id
+    """)
+    Optional<User> findByIdWithTokens(@Param("id") Long id);
 }

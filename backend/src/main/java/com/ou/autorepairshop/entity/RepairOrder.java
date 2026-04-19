@@ -3,7 +3,9 @@ package com.ou.autorepairshop.entity;
 import com.ou.autorepairshop.enums.RepairStatus;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "repair_orders")
@@ -42,4 +44,11 @@ public class RepairOrder {
 
     @OneToOne(mappedBy = "repairOrder")
     private Quotation quotation;
+    @OneToMany(mappedBy = "repairOrder", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RepairOrderDetail> details;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdDate = LocalDateTime.now();
+    }
 }

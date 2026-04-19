@@ -1,4 +1,5 @@
 package com.ou.autorepairshop.service;
+
 import com.ou.autorepairshop.entity.NotificationEvent;
 import com.ou.autorepairshop.enums.AppointmentStatus;
 import com.ou.autorepairshop.repository.AppointmentRepository;
@@ -9,8 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -25,48 +24,31 @@ public class NotificationSchedulerService {
     public void sendUpcomingAppointments() {
 
         LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);
-        System.out.println("Scheduler running at: " + now);
 
         var configs = configRepository.findAllByEventType(NotificationEvent.APPOINTMENT_REMINDER);
-
-        // Lấy tất cả appointment PENDING (có join fetch)
-        var appointments = appointmentRepository.findAllWithCustomerAndUserByStatus(
-                AppointmentStatus.PENDING
-        );
 
         for (var config : configs) {
 
             int offset = config.getSendTimeOffset();
 
+            LocalDateTime targetTime = now.minusMinutes(offset);
+
+            LocalDateTime start = targetTime.minusMinutes(1);
+            LocalDateTime end = targetTime.plusMinutes(1);
+
+            var appointments = appointmentRepository.findAppointmentsForReminder(
+                    AppointmentStatus.CONFIRMED,
+                    start,
+                    end
+            );
+
             for (var a : appointments) {
 
-                LocalDateTime appointmentTime = a.getAppointmentTime()
-                        .withSecond(0)
-                        .withNano(0);
+                if (a.getCustomer() == null || a.getCustomer().getUser() == null) continue;
 
-                long secondsDiff = java.time.Duration
-                        .between(now, appointmentTime)
-                        .getSeconds();
+                System.out.println("Send reminder for appointment " + a.getId());
 
-                long targetSeconds = Math.abs(offset) * 60;
-
-                if (Math.abs(secondsDiff - targetSeconds) > 30) continue;
-
-                String email = a.getCustomer().getUser().getEmail();
-                if (email == null) continue;
-
-                System.out.println("Send offset " + offset + " for appointment " + a.getId());
-
-                notificationService.send(
-                        config,
-                        email,
-                        Map.of(
-                                "customer_name", a.getCustomer().getName(),
-                                "appointment_time", appointmentTime.toString(),
-                                "minutes", String.valueOf(Math.abs(offset))
-                        ),
-                        a.getId()
-                );
+                notificationService.send(config, a);
             }
         }
     }

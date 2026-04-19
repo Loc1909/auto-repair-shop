@@ -1,16 +1,21 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import AdminLayout from "./components/AdminLayout";
-import Dashboard from "./pages/Dashboard";
-import Services from "./pages/Services";
-import Parts from "./pages/Parts";
-import Users from "./pages/Users";
-import Employees from "./pages/Employees";
-import Customers from "./pages/Customers";
-import ServiceCategories from "./pages/ServiceCategories";
-import Revenue from "./pages/Revenue";
-import NotificationConfig from "./pages/NotificationConfig";
+import { useEffect } from "react";
 
+import AdminLayout from "./components/AdminLayout";
 import EmployeeLayout from "./components/EmployeeLayout";
+
+// ===== ADMIN PAGES =====
+import AdminDashboard from "./pages/admin/dashboard/Dashboard";
+import AdminServices from "./pages/admin/service/Services";
+import AdminParts from "./pages/admin/part/Parts";
+import AdminUsers from "./pages/admin/user/Users";
+import AdminEmployees from "./pages/admin/employee/Employees";
+import AdminCustomers from "./pages/admin/customer/Customers";
+import AdminServiceCategories from "./pages/admin/service-category/ServiceCategories";
+import AdminRevenue from "./pages/admin/revenue/Revenue";
+import AdminNotificationConfig from "./pages/admin/notification-config/NotificationConfig";
+
+// ===== EMPLOYEE PAGES =====
 import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
 import EmployeeSchedule from "./pages/employee/EmployeeSchedule";
 import EmployeeAppointments from "./pages/employee/EmployeeAppointments";
@@ -20,12 +25,18 @@ import EmployeeRepairProgress from "./pages/employee/EmployeeRepairProgress";
 
 import Login from "./pages/auth/Login.jsx";
 
+import { listenForegroundMessages } from "./firebase";
+
 function App() {
+  useEffect(() => {
+    listenForegroundMessages();
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>
 
-        {/* Admin Layout */}
+        {/* ===== ADMIN ===== */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="services" element={<Services />} />
@@ -36,9 +47,18 @@ function App() {
           <Route path="service-categories" element={<ServiceCategories />} />
           <Route path="revenue" element={<Revenue />} />
           <Route path="notification-config" element={<NotificationConfig />} />
+          <Route index element={<AdminDashboard />} />
+          <Route path="services" element={<AdminServices />} />
+          <Route path="parts" element={<AdminParts />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="employees" element={<AdminEmployees />} />
+          <Route path="customers" element={<AdminCustomers />} />
+          <Route path="service-categories" element={<AdminServiceCategories />} />
+          <Route path="revenue" element={<AdminRevenue />} />
+          <Route path="notification-config" element={<AdminNotificationConfig />} />
         </Route>
 
-        {/* Employee Layout */}
+        {/* ===== EMPLOYEE ===== */}
         <Route path="/employee" element={<EmployeeLayout />}>
           <Route index element={<EmployeeDashboard />} />
           <Route path="schedule" element={<EmployeeSchedule />} />

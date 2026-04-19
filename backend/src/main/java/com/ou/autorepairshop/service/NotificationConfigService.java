@@ -4,18 +4,27 @@ import com.ou.autorepairshop.entity.NotificationConfig;
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
 import com.ou.autorepairshop.repository.NotificationConfigRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class NotificationConfigService { //Vai trò quản lý cấu hình
+public class NotificationConfigService {
 
     private final NotificationConfigRepository repository;
 
     public List<NotificationConfig> getAll() {
         return repository.findAll();
+    }
+
+    public Page<NotificationConfig> getAll(String search, Pageable pageable) {
+        if (search != null && !search.isEmpty()) {
+            return repository.findByNameContainingIgnoreCase(search, pageable);
+        }
+        return repository.findAll(pageable);
     }
 
     public NotificationConfig getById(Long id) {
@@ -24,7 +33,18 @@ public class NotificationConfigService { //Vai trò quản lý cấu hình
     }
 
     public NotificationConfig create(NotificationConfig config) {
-        return repository.save(config);
+        // Chỉ lưu templateEmail & templatePush
+        NotificationConfig toSave = NotificationConfig.builder()
+                .name(config.getName())
+                .eventType(config.getEventType())
+                .channels(config.getChannels())
+                .templateEmail(config.getTemplateEmail())
+                .templatePush(config.getTemplatePush())
+                .status(config.getStatus())
+                .sendTimeOffset(config.getSendTimeOffset())
+                .build();
+
+        return repository.save(toSave);
     }
 
     public NotificationConfig update(Long id, NotificationConfig newConfig) {
@@ -33,7 +53,8 @@ public class NotificationConfigService { //Vai trò quản lý cấu hình
         existing.setName(newConfig.getName());
         existing.setEventType(newConfig.getEventType());
         existing.setChannels(newConfig.getChannels());
-        existing.setTemplate(newConfig.getTemplate());
+        existing.setTemplateEmail(newConfig.getTemplateEmail());
+        existing.setTemplatePush(newConfig.getTemplatePush());
         existing.setStatus(newConfig.getStatus());
         existing.setSendTimeOffset(newConfig.getSendTimeOffset());
 
