@@ -1,5 +1,6 @@
 package com.ou.autorepairshop.service;
 
+import com.ou.autorepairshop.dto.UserAdminRequest;
 import com.ou.autorepairshop.dto.UserResponse;
 import com.ou.autorepairshop.entity.Customer;
 import com.ou.autorepairshop.entity.Employee;
@@ -8,12 +9,17 @@ import com.ou.autorepairshop.entity.User;
 import com.ou.autorepairshop.repository.CustomerRepository;
 import com.ou.autorepairshop.repository.EmployeeRepository;
 import com.ou.autorepairshop.repository.UserRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import static com.ou.autorepairshop.entity.Role.ROLE_CUSTOMER;
+import static com.ou.autorepairshop.entity.Role.ROLE_STAFF;
 
 @Service
 public class UserService {
@@ -34,31 +40,45 @@ public class UserService {
     }
 
 
-    public User createUser(User user) {
+    @Transactional
+    public User createUser(UserAdminRequest req) {
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-        User savedUser = userRepository.save(user);
-
-        if(savedUser.getRole() == Role.ROLE_STAFF){
-
-            Employee employee = Employee.builder()
-                    .user(savedUser)
-                    .build();
-
-            employeeRepository.save(employee);
+        if (userRepository.existsByUsername(req.getUsername())) {
+            throw new RuntimeException("Username đã tồn tại");
         }
 
-        if(savedUser.getRole() == Role.ROLE_CUSTOMER){
-
-            Customer customer = Customer.builder()
-                    .user(savedUser)
-                    .build();
-
-            customerRepository.save(customer);
+        if (userRepository.existsByEmail(req.getEmail())) {
+            throw new RuntimeException("Email đã tồn tại");
         }
 
-        return savedUser;
+        if (req.getRole() == Role.ROLE_ADMIN) {
+            throw new RuntimeException("Không được phép tạo admin");
+        }
+
+        User user = User.builder()
+                .username(req.getUsername())
+                .password(passwordEncoder.encode(req.getPassword()))
+                .email(req.getEmail().toLowerCase())
+                .role(req.getRole())
+                .active(true)
+                .build();
+
+        try {
+            User savedUser = userRepository.save(user);
+
+            switch (savedUser.getRole()) {
+                case ROLE_STAFF ->
+                        employeeRepository.save(Employee.builder().user(savedUser).build());
+
+                case ROLE_CUSTOMER ->
+                        customerRepository.save(Customer.builder().user(savedUser).build());
+            }
+
+            return savedUser;
+
+        } catch (DataIntegrityViolationException ex) {
+            throw new RuntimeException("Username hoặc Email đã tồn tại");
+        }
     }
 
     public List<User> getAllUsers() {

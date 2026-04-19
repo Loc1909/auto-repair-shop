@@ -1,12 +1,7 @@
 package com.ou.autorepairshop.entity;
 
-import com.ou.autorepairshop.entity.NotificationChannel;
-import com.ou.autorepairshop.entity.NotificationStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -15,7 +10,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "notification_config", indexes = {
-        @Index(name = "idx_event_type", columnList = "eventType")
+        @Index(name = "idx_event_type", columnList = "event_type")
 })
 @Data
 @NoArgsConstructor
@@ -34,12 +29,27 @@ public class NotificationConfig {
     @Column(nullable = false)
     private NotificationEvent eventType;
 
+    // ================= CHANNELS =================
     @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "notification_config_channels",
+            joinColumns = @JoinColumn(name = "notification_config_id")
+    )
     @Enumerated(EnumType.STRING)
+    @Column(name = "channels")
     private Set<NotificationChannel> channels;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
-    private String template;
+    // ================= TEMPLATE =================
+
+    // PUSH
+    @Column(name = "template_push", columnDefinition = "TEXT")
+    private String templatePush;
+
+    // EMAIL
+    @Column(name = "template_email", columnDefinition = "TEXT")
+    private String templateEmail;
+
+    // ================= STATUS =================
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
@@ -47,6 +57,8 @@ public class NotificationConfig {
 
     @Builder.Default
     private Integer sendTimeOffset = 0;
+
+    // ================= AUDIT =================
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

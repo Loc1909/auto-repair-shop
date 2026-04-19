@@ -1,11 +1,15 @@
 package com.ou.autorepairshop.controller;
 
+import com.ou.autorepairshop.dto.UserAdminRequest;
 import com.ou.autorepairshop.dto.UserResponse;
 import com.ou.autorepairshop.entity.User;
 import com.ou.autorepairshop.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,8 +29,14 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    public User createUser(@RequestBody User user) {
-        return userService.createUser(user);
+    public ResponseEntity<UserResponse> createUser(
+            @Valid @RequestBody UserAdminRequest req) {
+
+        User user = userService.createUser(req);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(UserResponse.fromEntity(user));
     }
 
     @PutMapping("/users/{id}")

@@ -76,4 +76,15 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     ORDER BY FUNCTION('YEAR', p.paymentDate), FUNCTION('QUARTER', p.paymentDate)
 """)
     List<Object[]> getRevenueRawByQuarter();
+
+    @Query("""
+SELECT s.name, SUM(ros.price * ros.quantity)
+FROM Payment p
+JOIN p.repairOrder ro
+JOIN RepairOrderDetail ros ON ros.repairOrder = ro
+JOIN ros.service s
+WHERE p.status = 'PAID'
+GROUP BY s.name
+""")
+    List<Object[]> getRevenueByService();
 }

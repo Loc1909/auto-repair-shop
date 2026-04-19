@@ -1,17 +1,15 @@
 package com.ou.autorepairshop.service;
 
-import com.ou.autorepairshop.entity.Appointment;
 import com.ou.autorepairshop.entity.NotificationEvent;
 import com.ou.autorepairshop.enums.AppointmentStatus;
 import com.ou.autorepairshop.repository.AppointmentRepository;
+import com.ou.autorepairshop.repository.NotificationConfigRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -19,44 +17,38 @@ public class NotificationSchedulerService {
 
     private final AppointmentRepository appointmentRepository;
     private final NotificationService notificationService;
+    private final NotificationConfigRepository configRepository;
 
-    // Chạy mỗi phút
     @Scheduled(fixedRate = 60_000)
-    @Transactional  //  cần để session mở và lazy fetch được
+    @Transactional
     public void sendUpcomingAppointments() {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime windowEnd = now.plusMinutes(1);
 
-        System.out.println("Scheduler running at: " + now);
+        LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);
 
-        // Dùng query join fetch để tránh LazyInitializationException
-        List<Appointment> upcomingAppointments = appointmentRepository
-                .findAllWithCustomerAndUserByStatusAndTimeBetween(
-                        AppointmentStatus.PENDING, now, windowEnd
-                );
+        var configs = configRepository.findAllByEventType(NotificationEvent.APPOINTMENT_REMINDER);
 
-        System.out.println("Upcoming appointments found: " + upcomingAppointments.size());
+        for (var config : configs) {
 
-        for (Appointment a : upcomingAppointments) {
-            String email = a.getCustomer().getUser().getEmail();
-            if (email == null) {
-                System.err.println("Skipping appointment " + a.getId() + " due to missing email");
-                continue;
-            }
+            int offset = config.getSendTimeOffset();
 
-            System.out.println("Sending notification to: " + email + " for appointment ID: " + a.getId());
+            LocalDateTime targetTime = now.minusMinutes(offset);
 
-            try {
-                notificationService.send(
-                        NotificationEvent.APPOINTMENT_REMINDER,
-                        email,
-                        Map.of(
-                                "customer_name", a.getCustomer().getName(),
-                                "appointment_time", a.getAppointmentTime().toString()
-                        )
-                );
-            } catch (Exception e) {
-                System.err.println("Failed to send reminder: " + e.getMessage());
+            LocalDateTime start = targetTime.minusMinutes(1);
+            LocalDateTime end = targetTime.plusMinutes(1);
+
+            var appointments = appointmentRepository.findAppointmentsForReminder(
+                    AppointmentStatus.CONFIRMED,
+                    start,
+                    end
+            );
+
+            for (var a : appointments) {
+
+                if (a.getCustomer() == null || a.getCustomer().getUser() == null) continue;
+
+                System.out.println("Send reminder for appointment " + a.getId());
+
+                notificationService.send(config, a);
             }
         }
     }
