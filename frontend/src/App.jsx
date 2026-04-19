@@ -23,6 +23,10 @@ import EmployeeRepairOrders from "./pages/employee/EmployeeRepairOrders";
 import EmployeeRepairProgress from "./pages/employee/EmployeeRepairProgress";
 
 
+//===== HOME PAGE =====
+import HomePage from "./pages/home/HomePage";
+
+
 
 import { listenForegroundMessages } from "./firebase";
 
@@ -56,6 +60,9 @@ function App() {
           <Route path="repair-orders" element={<EmployeeRepairOrders />} />
           <Route path="repair-orders/:id" element={<EmployeeRepairProgress />} />
         </Route>
+
+        {/* ===== HOME ===== */}
+        <Route path="/" element={<HomePage />} />
 
       </Routes>
     </BrowserRouter>
