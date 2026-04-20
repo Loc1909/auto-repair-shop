@@ -1,5 +1,8 @@
 package com.ou.autorepairshop.service;
 
+import com.ou.autorepairshop.dto.AppointmentCreateRequest;
+import com.ou.autorepairshop.dto.AppointmentResponse;
+import com.ou.autorepairshop.dto.AppointmentResponseForEmployee;
 import com.ou.autorepairshop.dto.*;
 import com.ou.autorepairshop.entity.*;
 import com.ou.autorepairshop.enums.AppointmentStatus;
@@ -9,6 +12,7 @@ import com.ou.autorepairshop.mapper.AppointmentMapper;
 import com.ou.autorepairshop.repository.*;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +29,7 @@ public class AppointmentService {
     private final VehicleRepository vehicleRepository;
     private final EmployeeRepository employeeRepository;
     private final NotificationService notificationService;
+    private final UserRepository userRepository;
 
     // ================= CREATE =================
     @Transactional
@@ -45,6 +50,30 @@ public class AppointmentService {
 
         appointmentRepository.save(appointment);
         return appointmentMapper.toResponse(appointment);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AppointmentResponse> getAppointmentsByCustomer(Long customerId) {
+
+        List<Appointment> appointments =
+                appointmentRepository.findByCustomerIdOrderByAppointmentTimeDesc(customerId);
+
+        return appointmentMapper.toResponseList(appointments);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AppointmentResponse> getMyAppointments() {
+
+        String username = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return appointmentMapper.toResponseList(
+                appointmentRepository.findByCustomerUserId(user.getId())
+        );
     }
 
     // ================= CONFIRM (CUSTOMER FLOW) =================

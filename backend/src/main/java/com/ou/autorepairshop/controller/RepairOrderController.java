@@ -3,6 +3,7 @@ package com.ou.autorepairshop.controller;
 import com.ou.autorepairshop.dto.CompleteRepairRequest;
 import com.ou.autorepairshop.dto.ReceiveVehicleRequest;
 import com.ou.autorepairshop.dto.RepairOrderResponse;
+import com.ou.autorepairshop.dto.RepairProgressResponse;
 import com.ou.autorepairshop.service.RepairOrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,16 @@ public class RepairOrderController {
             @RequestBody @Valid ReceiveVehicleRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(repairOrderService.receiveVehicle(request));
+    }
+
+    @GetMapping("/mine/{repairOrderId}")
+    public ResponseEntity<List<RepairProgressResponse>> getTracking(@PathVariable Long repairOrderId) {
+        return ResponseEntity.ok(repairOrderService.getMyTracking(repairOrderId));
+    }
+
+    @GetMapping("/mine")
+    public ResponseEntity<List<RepairOrderResponse>> getMyRepairOrders() {
+        return ResponseEntity.ok(repairOrderService.getMyRepairOrders());
     }
 
     @GetMapping("/{id}")

@@ -32,4 +32,10 @@ public class QuotationController {
     public ResponseEntity<QuotationResponse> getByRepairOrder(@PathVariable Long repairOrderId) {
         return ResponseEntity.ok(quotationService.getByRepairOrder(repairOrderId));
     }
+
+    @PutMapping("/repair-order/{repairOrderId}")
+    public ResponseEntity<QuotationResponse> updateStatus(@PathVariable Long repairOrderId,
+                                                          @RequestParam String action) {
+        return ResponseEntity.ok(quotationService.updateQuotationStatus(repairOrderId, action));
+    }
 }

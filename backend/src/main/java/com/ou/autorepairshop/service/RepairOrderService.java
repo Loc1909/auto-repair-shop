@@ -1,20 +1,15 @@
 package com.ou.autorepairshop.service;
 
+import com.ou.autorepairshop.dto.*;
+import com.ou.autorepairshop.entity.*;
 import com.ou.autorepairshop.enums.AppointmentStatus;
 import com.ou.autorepairshop.enums.RepairStatus;
 import com.ou.autorepairshop.exception.BusinessException;
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
 import com.ou.autorepairshop.mapper.RepairOrderMapper;
-import com.ou.autorepairshop.entity.Appointment;
-import com.ou.autorepairshop.entity.Employee;
-import com.ou.autorepairshop.entity.RepairOrder;
-import com.ou.autorepairshop.dto.CompleteRepairRequest;
-import com.ou.autorepairshop.dto.ReceiveVehicleRequest;
-import com.ou.autorepairshop.dto.RepairOrderResponse;
-import com.ou.autorepairshop.repository.AppointmentRepository;
-import com.ou.autorepairshop.repository.EmployeeRepository;
-import com.ou.autorepairshop.repository.RepairOrderRepository;
+import com.ou.autorepairshop.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +22,9 @@ public class RepairOrderService {
 
     private final RepairOrderRepository repairOrderRepository;
     private final AppointmentRepository appointmentRepository;
+    private final RepairProgressRepository repairProgressRepository;
+    private final CustomerRepository customerRepository;
+    private final UserRepository userRepository;
     private final EmployeeRepository employeeRepository;
     private final RepairOrderMapper repairOrderMapper;
 
@@ -95,5 +93,57 @@ public class RepairOrderService {
     private RepairOrder findOrderById(Long id) {
         return repairOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("RepairOrder", id));
+    }
+
+    private RepairProgressResponse mapToResponse(RepairProgress p) {
+        return new RepairProgressResponse(
+                p.getId(),
+                p.getStatus().name(),
+                p.getNote(),
+                p.getUpdateTime(),
+                p.getRepairOrder().getId()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public List<RepairProgressResponse> getMyTracking(Long repairOrderId) {
+
+        String username = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
+
+        Customer customer = customerRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
+
+        RepairOrder order = repairOrderRepository
+                .findByIdAndVehicleCustomerId(repairOrderId, customer.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Not allowed"));
+
+        return repairProgressRepository
+                .findByRepairOrderIdOrderByUpdateTimeAsc(order.getId())
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<RepairOrderResponse> getMyRepairOrders() {
+
+        String username = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Customer customer = customerRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<RepairOrder> repairOrders =
+                repairOrderRepository.findByVehicleCustomerIdOrderByCreatedDateDesc(customer.getId());
+
+        return repairOrders.stream()
+                .map(repairOrderMapper::toResponse)
+                .toList();
     }
 }

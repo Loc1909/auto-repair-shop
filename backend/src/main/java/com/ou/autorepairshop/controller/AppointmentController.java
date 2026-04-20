@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.List;
 
@@ -35,6 +36,18 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.getAllAppointments());
     }
 
+
+    /**
+     * Lấy dữ liệu appointment của customer/user hiện tại
+     */
+    @GetMapping("/me")
+    public ResponseEntity<List<AppointmentResponse>> getMyAppointments() {
+        return ResponseEntity.ok(appointmentService.getMyAppointments());
+    }
+
+    /**
+     * Nhân viên xác nhận lịch hẹn (PENDING → CONFIRMED)
+     */
     // ================= CONFIRM (CUSTOMER / ADMIN) =================
     @PatchMapping("/{id}/confirm")
     public ResponseEntity<AppointmentResponse> confirm(@PathVariable Long id) {
