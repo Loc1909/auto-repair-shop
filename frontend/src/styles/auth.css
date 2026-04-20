@@ -1,0 +1,121 @@
+/* src/styles/auth.css */
+@import url('https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+/* Layout wrapper */
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6rem 1rem 2rem;
+    position: relative;
+    background: #0D0D14;
+}
+
+/* Card chứa form */
+.auth-card {
+    background: rgba(255, 255, 255, .04);
+    border: 1px solid rgba(255, 255, 255, .07);
+    border-radius: 24px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 440px;
+}
+
+/* Input wrapper (label + input) */
+.input-wrap {
+    margin-bottom: 1.2rem;
+}
+
+.gradient-text-white {
+    background: linear-gradient(135deg,
+            #ffffff 0%,
+            #e0e0ff 40%,
+            #c9d6ff 70%,
+            #ffffff 100%);
+    background-size: 200% auto;
+
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+
+    animation: shimmer 3s linear infinite;
+}
+
+.input-wrap label {
+    display: block;
+    font-size: .78rem;
+    color: #7A7A9A;
+    margin-bottom: .45rem;
+    font-weight: 500;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+}
+
+/* Step indicator (dùng cho Register) */
+.step-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .8rem;
+    font-weight: 700;
+    transition: all .4s;
+}
+
+/* Social login buttons */
+.social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: .75rem;
+    background: rgba(255, 255, 255, .04);
+    border: 1px solid rgba(255, 255, 255, .08);
+    border-radius: 12px;
+    color: #A0A0B8;
+    font-size: .85rem;
+    cursor: pointer;
+    transition: all .3s;
+    font-family: 'Kanit', sans-serif;
+}
+
+.social-btn:hover {
+    background: rgba(255, 255, 255, .07);
+    color: #F0F0F8;
+}
+
+/* OTP input */
+.otp-input {
+    width: 48px;
+    height: 54px;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 700;
+    border-radius: 12px;
+    padding: 0;
+}
+
+/* Divider "hoặc" */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.auth-divider span {
+    font-size: .78rem;
+    color: #5A5A7A;
+    white-space: nowrap;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, .07);
+}

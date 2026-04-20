@@ -1,6 +1,10 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import Logo from "../common/Logo";
 
 export default function Navbar({ scrolled, NAV_LINKS }) {
+    const navigate = useNavigate();
+
     return (
         <nav style={{
             position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000,
@@ -11,34 +15,39 @@ export default function Navbar({ scrolled, NAV_LINKS }) {
             transition: "all 0.4s",
             display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-                <div style={{
-                    width: 36, height: 36,
-                    background: "linear-gradient(135deg, #FF6B2B, #FF3B00)",
-                    borderRadius: "10px",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: "1.1rem",
-                }}>🔧</div>
+            
+            {/* LOGO */}
+            <Logo onClick={() => navigate("/")} />
 
-                <span style={{
-                    fontFamily: "'Syne', sans-serif",
-                    fontWeight: 800,
-                    fontSize: "1.15rem",
-                    letterSpacing: "-0.5px"
-                }}>
-                    Auto<span style={{ color: "#FF6B2B" }}>Pro</span>
-                </span>
-            </div>
-
+            {/* NAV LINKS */}
             <div style={{ display: "flex", gap: "2.5rem", alignItems: "center" }}>
-                {NAV_LINKS.map(l => (
-                    <a key={l} href="#" className="nav-link">{l}</a>
+                {NAV_LINKS.map((l) => (
+                    <button
+                        key={l.label}
+                        onClick={() => navigate(l.path)}
+                        className="nav-link"
+                        style={{ background: "none", border: "none", cursor: "pointer" }}
+                    >
+                        {l.label}
+                    </button>
                 ))}
             </div>
 
+            {/* ACTIONS */}
             <div style={{ display: "flex", gap: "0.8rem" }}>
-                <button className="btn-outline">Đăng Nhập</button>
-                <button className="btn-primary">Đặt Lịch Ngay</button>
+                <button
+                    className="btn-outline"
+                    onClick={() => navigate("/login")}
+                >
+                    Đăng Nhập
+                </button>
+
+                <button
+                    className="btn-primary"
+                    onClick={() => navigate("/booking")}
+                >
+                    Đặt Lịch Ngay
+                </button>
             </div>
         </nav>
     );

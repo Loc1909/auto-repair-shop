@@ -1,0 +1,21 @@
+// src/constants/colors.js
+export const C = {
+  bg:         "#0D0D14",
+  bgCard:     "rgba(255,255,255,0.04)",
+  bgCard2:    "rgba(255,255,255,0.02)",
+  border:     "rgba(255,255,255,0.07)",
+  orange:     "#FF6B2B",
+  orangeLight:"#FF8C5A",
+  orangeDim:  "rgba(255,107,43,0.15)",
+  text:       "#F0F0F8",
+  textSub:    "#A0A0B8",
+  textMuted:  "#5A5A7A",
+  green:      "#4ADAA0",
+  greenDim:   "rgba(74,218,160,0.12)",
+  red:        "#FF5B6B",
+  redDim:     "rgba(255,91,107,0.12)",
+  amber:      "#FFB84D",
+  amberDim:   "rgba(255,184,77,0.12)",
+  blue:       "#5B9EFF",
+  blueDim:    "rgba(91,158,255,0.12)",
+};

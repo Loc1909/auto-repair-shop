@@ -36,11 +36,12 @@ function Sidebar() {
   return (
     <Box
       sx={{
-        width: 240,
+        width: 270,
         flexShrink: 0,
         bgcolor: "#fff",
         borderRight: "1px solid #e0e0e0",
         minHeight: "100vh",
+        color: "#3f51b5",
         px: 2,
         py: 3,
         boxShadow: "2px 0 10px rgba(0,0,0,0.05)"

@@ -1,4 +1,7 @@
 import BookingWidget from "../booking/BookingWidget";
+
+import { FaCar } from "react-icons/fa";
+
 export default function HeroSection({ heroVisible }) {
     return (
         <section style={{
@@ -21,7 +24,17 @@ export default function HeroSection({ heroVisible }) {
             <div style={{ maxWidth: 1300, margin: "0 auto", width: "100%", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem", alignItems: "center" }}>
                 {/* LEFT */}
                 <div style={{ animation: heroVisible ? "fadeUp 0.8s ease both" : "none" }}>
-                    <div className="section-tag">🚗 Garage Thông Minh Số 1 HCM</div>
+                    <div
+                        className="section-tag"
+                        style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: ".5rem"
+                        }}
+                    >
+                        <FaCar size={16} />
+                        <span>Garage Thông Minh Số 1 HCM</span>
+                    </div>
                     <h1
                         style={{
                             fontFamily: "'Kanit', sans-serif",
