@@ -1,0 +1,15 @@
+# env files
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+
+# Java / Maven
+target/
+*.log
