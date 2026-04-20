@@ -36,7 +36,7 @@ function Dashboard() {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: "bold" }}>
+      <Typography variant="h4" sx={{ mb: 3, fontWeight: "bold", color: "#3f51b5" }}>
         Bảng điều khiển
       </Typography>
 

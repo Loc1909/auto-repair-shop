@@ -146,7 +146,7 @@ body {
     border: none;
     padding: 0.85rem 2rem;
     border-radius: 50px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Kanit', sans-serif;
     font-size: 0.95rem;
     font-weight: 500;
     cursor: pointer;
@@ -165,7 +165,7 @@ body {
     border: 1.5px solid rgba(240, 240, 248, 0.2);
     padding: 0.85rem 2rem;
     border-radius: 50px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Kanit', sans-serif;
     font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.3s;
@@ -228,7 +228,7 @@ select {
     border-radius: 12px;
     padding: 0.9rem 1.2rem;
     color: #F0F0F8;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Kanit', sans-serif;
     font-size: 0.95rem;
     outline: none;
     transition: border-color 0.3s;
