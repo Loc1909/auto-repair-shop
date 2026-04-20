@@ -1,0 +1,1 @@
+export const NAV_LINKS = ["Dịch Vụ", "Tiến Độ", "Báo Giá", "Lịch Sử", "Liên Hệ"];
