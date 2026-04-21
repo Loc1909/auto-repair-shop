@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 
 import TopNav from "../../components/layout/TopNav";
 import AuthNav from "../../components/layout/AuthNav";
 import Toast from "../../components/ui/Toast";
 import "../../styles/customer.css";
+import { logout } from "../../api/authApi";
 
 export default function CustomerLayout() {
   const [user, setUser] = useState(null);
@@ -18,6 +19,12 @@ export default function CustomerLayout() {
   // xác định đang ở auth hay dashboard
   const isAuthPage = ["/login", "/register", "/forgot"].includes(location.pathname);
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
   return (
     <>
       <div style={{ minHeight: "100vh", background: "#0f172a" }}>
@@ -33,7 +40,7 @@ export default function CustomerLayout() {
         {isAuthPage ? (
           <AuthNav />
         ) : (
-          <TopNav user={user} />
+          <TopNav user={user} onLogout={() => {setUser(null); logout();}} />
         )}
 
         {/* render page con */}

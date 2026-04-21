@@ -5,17 +5,19 @@ import AuthNav from "../../components/layout/AuthNav";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import "../../styles/auth.css";
 import { FaFacebook, FaGoogle } from "react-icons/fa";
-import { FiPhone, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
+import { FiLock, FiEye, FiEyeOff, FiUser } from "react-icons/fi";
+import { login, storeLoginToken } from "../../api/authApi";
 
 
 export default function LoginPage() {
     const navigate = useNavigate();
     const { setUser, showToast } = useOutletContext();
 
-    const [form, setForm] = useState({ phone: "", password: "" });
+    const [error, setError] = useState("");
+    const [emailOrUsername, setEmailOrUsername] = useState("");
+    const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
-    const [showPass, setShowPass] = useState(false);
-    const upd = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
+    const [showPassword, setShowPassword] = useState(false);
 
     const C = {
         bg: "#0D0D14", bgCard: "rgba(255,255,255,0.04)", bgCard2: "rgba(255,255,255,0.02)",
@@ -28,29 +30,35 @@ export default function LoginPage() {
         blue: "#5B9EFF", blueDim: "rgba(91,158,255,0.12)",
     };
 
-    const handleLogin = () => {
-        if (!form.phone || !form.password) {
-            showToast("Vui lòng điền đầy đủ thông tin", "error");
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError("");
+        if (!emailOrUsername || !password) {
+            setError("Vui lòng nhập đầy đủ thông tin");
             return;
         }
-
-        setLoading(true);
-
-        setTimeout(() => {
-            setUser({
-                name: "Nguyễn Minh Tuấn",
-                phone: form.phone,
-                email: "tuan@email.com",
-                id: "KH001"
+        try {
+            setLoading(true);
+            const res = await login({
+                emailOrUsername,
+                password
             });
+            storeLoginToken(res.data);
 
-            showToast("Đăng nhập thành công! Chào mừng trở lại 🎉", "success");
+            setTimeout(() => {
+                showToast("Đăng nhập thành công! Chào mừng trở lại 🎉", "success");
+                navigate("/dashboard");
+                setLoading(false);
+            }, 1000);
 
-
-            navigate("/dashboard");
-
+        } catch (err) {
+            console.log(err);
+            setError(
+                err.response?.data?.message || "Đăng nhập thất bại"
+            );
+        } finally {
             setLoading(false);
-        }, 1400);
+        }
     };
 
     return (
@@ -67,8 +75,8 @@ export default function LoginPage() {
                     </p>
                 </div>
 
-                <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 24, padding: "2.5rem", backdropFilter: "blur(20px)" }}>
-
+                <form onSubmit={handleSubmit}
+                    style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 24, padding: "2.5rem", backdropFilter: "blur(20px)" }}>
 
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: ".8rem", marginBottom: "1.8rem" }}>
                         {[
@@ -112,12 +120,12 @@ export default function LoginPage() {
                         <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,.07)" }} />
                     </div>
 
-                    {/* PHONE */}
+                    {/* Email */}
                     <div className="input-wrap">
-                        <label>Số điện thoại</label>
+                        <label>Email hoặc tên đăng nhập</label>
                         <div style={{ position: "relative" }}>
 
-                            <FiPhone
+                            <FiUser
                                 style={{
                                     position: "absolute",
                                     left: "1rem",
@@ -130,9 +138,9 @@ export default function LoginPage() {
 
                             <input
                                 style={{ paddingLeft: "2.5rem" }}
-                                placeholder="0901 234 567"
-                                value={form.phone}
-                                onChange={upd("phone")}
+                                placeholder="example@email.com hoặc username"
+                                value={emailOrUsername}
+                                onChange={(e) => setEmailOrUsername(e.target.value)}
                             />
                         </div>
                     </div>
@@ -155,15 +163,15 @@ export default function LoginPage() {
 
                             <input
                                 style={{ paddingLeft: "2.5rem", paddingRight: "3rem" }}
-                                type={showPass ? "text" : "password"}
-                                placeholder="••••••••"
-                                value={form.password}
-                                onChange={upd("password")}
-                                onKeyDown={e => e.key === "Enter" && handleLogin()}
+                                type={showPassword ? "text" : "password"}
+                                placeholder="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                onKeyDown={e => e.key === "Enter" && handleSubmit(e)}
                             />
 
                             <button
-                                onClick={() => setShowPass(s => !s)}
+                                onClick={() => setShowPassword(!showPassword)}
                                 style={{
                                     position: "absolute",
                                     right: "1rem",
@@ -177,7 +185,7 @@ export default function LoginPage() {
                                     alignItems: "center"
                                 }}
                             >
-                                {showPass ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                                {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
                             </button>
 
                         </div>
@@ -191,18 +199,19 @@ export default function LoginPage() {
                         </button>
                     </div>
 
-                    <button className="btn-p" onClick={handleLogin} disabled={loading} style={{ width: "100%", padding: "1rem", fontSize: ".95rem", opacity: loading ? .7 : 1 }}>
+                    <button className="btn-p"
+                        type="submit"
+                        disabled={loading}
+                        style={{ width: "100%", padding: "1rem", fontSize: ".95rem", opacity: loading ? .7 : 1 }}>
                         {loading ? <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: ".6rem" }}>
                             <span style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin .8s linear infinite", display: "inline-block" }} />
                             Đang đăng nhập...
                         </span> : "Đăng Nhập →"}
                     </button>
-                </div>
+                </form>
 
                 <p style={{ textAlign: "center", marginTop: "1.5rem", color: C.textMuted, fontSize: ".88rem" }}>
                     Chưa có tài khoản?{" "}
-
-
                     <button onClick={() => navigate("/register")} style={{ background: "none", border: "none", color: C.orangeLight, cursor: "pointer", fontWeight: 500, fontSize: ".88rem" }}>
                         Đăng ký ngay
                     </button>

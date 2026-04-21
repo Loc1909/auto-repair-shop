@@ -5,6 +5,10 @@ import Logo from "../../components/common/Logo";
 import BackgroundOrbs from "../../components/effects/BackgroundOrbs";
 import "../../styles/auth.css";
 import "../../styles/global.css"
+import { FiEye, FiEyeOff } from "react-icons/fi";
+import { login, register, storeLoginToken } from "../../api/authApi";
+import { createVehicle } from "../../api/vehicleApi";
+import { getCustomerByUserId } from "../../api/customerApi";
 
 const C = {
   bg: "#0D0D14", bgCard: "rgba(255,255,255,0.04)",
@@ -20,15 +24,23 @@ export default function RegisterPage() {
 
   const [step, setStep] = useState(0);
   const [form, setForm] = useState({
-    name: "", phone: "", email: "",
-    password: "", confirm: "",
-    plate: "", brand: "", model: "", year: ""
+    username: "", email: "",
+    name: "", phone: "", address: "",
+    password: "", confirm: ""
   });
+  const [vehicleForm, setVehicleForm] = useState({
+    plate: "", brand: "", model: "", year: "", customerId: ""
+  });
+  const [userId, setUserId] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const otpRefs = useRef([]);
 
   const upd = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
+  const updateVehicleFrom = k => e => setVehicleForm(f => ({ ...f, [k]: e.target.value }));
+
   const steps = ["Thông tin", "Xác thực OTP", "Thêm xe", "Hoàn tất"];
 
   const handleOtp = (i, v) => {
@@ -36,47 +48,185 @@ export default function RegisterPage() {
     const n = [...otp]; n[i] = v; setOtp(n);
     if (v && i < 5) otpRefs.current[i + 1]?.focus();
   };
+  const validateForm = () => {
+    if (!form.name.trim()) {
+      showToast('Họ và Tên không được để trống', "error");
+      return false;
+    }
+    if (form.name.trim().length < 4) {
+      showToast('Tên không hợp lệ', "error");
+      return false;
+    }
+    if (!form.username.trim()) {
+      showToast('Username không được để trống', "error");
+      return false;
+    }
+    if (form.username.includes(' ')) {
+      showToast('Username không được có khoảng trống', "error");
+      return false;
+    }
+    if (!form.email.trim()) {
+      showToast('Email không được để trống', "error");
+      return false;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      showToast('Vui lòng nhập đúng định dạng email', "error");
+      return false;
+    }
+    if (form.password.length < 8) {
+      showToast('Mật khẩu tối thiểu phải 8 ký tự', "error");
+      return false;
+    }
+    if (form.password !== form.confirm) {
+      showToast('Mật khẩu không khớp', "error");
+      return false;
+    }
+    return true;
+  };
 
-  const next = () => {
+  const validateVehicleForm = () => {
+    if (!vehicleForm.plate?.trim()) {
+      showToast("Biển số xe không được để trống", "error");
+      return false;
+    }
+    const plateRegex = /^[0-9]{2}[A-Z]-?[0-9]{4,5}$/;
+    if (!plateRegex.test(vehicleForm.plate.trim())) {
+      showToast("Biển số xe không hợp lệ (VD: 59A-12345)", "error");
+      return false;
+    }
+    if (!vehicleForm.brand?.trim()) {
+      showToast("Hãng xe không được để trống", "error");
+      return false;
+    }
+    if (!vehicleForm.model?.trim()) {
+      showToast("Model không được để trống", "error");
+      return false;
+    }
+
+    if (!vehicleForm.year) {
+      showToast("Năm sản xuất không được để trống", "error");
+      return false;
+    }
+
+    const currentYear = new Date().getFullYear();
+    if (isNaN(vehicleForm.year) || vehicleForm.year < 1950 || vehicleForm.year > currentYear) {
+      showToast(`Năm sản xuất phải từ 1950 đến ${currentYear}`, "error");
+      return false;
+    }
+    return true;
+  };
+  const isVehicleFormEmpty = () => {
+    return !vehicleForm.plate.trim() &&
+      !vehicleForm.brand.trim() &&
+      !vehicleForm.model.trim() &&
+      !vehicleForm.year;
+  };
+  const next = async () => {
     if (step === 0) {
-      if (!form.name || !form.phone || !form.password) {
-        showToast("Vui lòng điền đầy đủ", "error"); return;
+      if (!validateForm()) {
+        return;
       }
-      if (form.password !== form.confirm) {
-        showToast("Mật khẩu không khớp", "error"); return;
-      }
-      setLoading(true);
-      setTimeout(() => {
+      try {
+        await handleRegister();
+        setTimeout(() => {
+          setLoading(false);
+          setStep(1);
+          showToast("Đã gửi OTP đến " + form.phone, "info");
+        }, 1000);
+      } catch (err) {
+        showToast("Lỗi tạo tài khoản", "error");
+      } finally {
         setLoading(false);
-        setStep(1);
-        showToast("Đã gửi OTP đến " + form.phone, "info");
-      }, 1000);
+      }
     } else if (step === 1) {
       if (otp.join("").length < 6) {
         showToast("Nhập đủ 6 chữ số OTP", "error"); return;
       }
-      setStep(2);
+      try {
+        setLoading(true);
+        const res = await login({ emailOrUsername: form.username, password: form.password });
+        storeLoginToken(res.data);
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setLoading(false);
+        setStep(2);
+      }
     } else if (step === 2) {
-      setStep(3);
+      if (isVehicleFormEmpty()) {
+        setStep(3);
+        return;
+      }
+      if (!validateVehicleForm()) return;
+      try {
+        await handleVehicleRegister();
+        setStep(3);
+      } catch (err) {
+        showToast("Lỗi khi đăng ký xe", "error");
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
   const finish = () => {
     setLoading(true);
     setTimeout(() => {
-      setUser({
-        name: form.name,
-        phone: form.phone,
-        email: form.email,
-        id: "KH" + Math.floor(Math.random() * 999)
-      });
       showToast("Đăng ký thành công! Chào mừng đến AutoPro 🎉", "success");
       navigate("/dashboard"); // ← fix: dùng navigate thay vì setPage
     }, 1500);
   };
 
+  const toggleShowPassword = () => {
+    setShowPassword((prev) => !prev);
+  };
+
+  const handleRegister = async () => {
+    setLoading(true);
+    try {
+      const res = await register({
+        username: form.username,
+        email: form.email,
+        password: form.password,
+        customer: {
+          name: form?.username || "",
+          phone: form?.phone || "",
+          address: form?.address || "",
+        }
+      });
+      setUserId(res.data.id);
+      showToast("Đăng ký thành công!", "success");
+    } catch (err) {
+      showToast("Đăng ký thất bại", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVehicleRegister = async () => {
+    setLoading(true);
+
+    try {
+      const customerRes = await getCustomerByUserId(userId);
+      const res = await createVehicle({
+        licensePlate: vehicleForm.plate,
+        brand: vehicleForm.brand,
+        model: vehicleForm.model,
+        year: vehicleForm.year,
+        customerId: customerRes.data.id
+      });
+      setVehicleForm({
+        plate: "", brand: "",
+        model: "", year: "", customerId: ""
+      });
+    } catch (err) {
+      showToast("Đăng ký xe thất bại", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
-    <div style={{backgroundColor: "rgba(13,13,20,.92)", minHeight: "100vh", padding: "6rem 1rem 3rem", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+    <div style={{ backgroundColor: "rgba(13,13,20,.92)", minHeight: "100vh", padding: "6rem 1rem 3rem", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
       <BackgroundOrbs />
       <div style={{ width: "100%", maxWidth: 500, position: "relative", zIndex: 1, animation: "fadeUp .6s ease" }}>
 
@@ -119,24 +269,76 @@ export default function RegisterPage() {
           {step === 0 && (
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               <div className="input-wrap" style={{ marginBottom: 0 }}>
-                <label>Họ và tên</label>
+                <label>Họ và tên </label>
                 <input placeholder="Nguyễn Văn A" value={form.name} onChange={upd("name")} />
               </div>
               <div className="input-wrap" style={{ marginBottom: 0 }}>
-                <label>Số điện thoại</label>
-                <input placeholder="0901 234 567" value={form.phone} onChange={upd("phone")} />
+                <label>Tên người dùng</label>
+                <input placeholder="username" value={form.username} onChange={upd("username")} />
               </div>
               <div className="input-wrap" style={{ marginBottom: 0 }}>
-                <label>Email (tuỳ chọn)</label>
+                <label>Email</label>
                 <input placeholder="email@example.com" value={form.email} onChange={upd("email")} />
               </div>
               <div className="input-wrap" style={{ marginBottom: 0 }}>
-                <label>Mật khẩu</label>
-                <input type="password" placeholder="Tối thiểu 8 ký tự" value={form.password} onChange={upd("password")} />
+                <label>Số điện thoại (tùy chọn)</label>
+                <input placeholder="0901 234 567" value={form.phone} onChange={upd("phone")} />
               </div>
               <div className="input-wrap" style={{ marginBottom: 0 }}>
+                <label>Địa chỉ (tùy chọn)</label>
+                <input placeholder="97 Võ Văn Tần, Xuân Hòa, Hồ Chí Minh" value={form.address} onChange={upd("address")} />
+              </div>
+              <div className="input-wrap" style={{ marginBottom: 0, position: "relative" }}>
+                <label>Mật khẩu</label>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Tối thiểu 8 ký tự"
+                  value={form.password}
+                  onChange={upd("password")}
+                />
+                <div
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: "absolute",
+                    right: "1rem",
+                    top: "65%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    color: C.textMuted,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center"
+                  }} >
+                  {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                </div>
+              </div>
+              <div className="input-wrap" style={{ marginBottom: 0, position: "relative" }}>
                 <label>Xác nhận mật khẩu</label>
-                <input type="password" placeholder="Nhập lại mật khẩu" value={form.confirm} onChange={upd("confirm")} />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Nhập lại mật khẩu"
+                  value={form.confirm}
+                  onChange={upd("confirm")}
+                />
+
+                <div
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: "absolute",
+                    right: "1rem",
+                    top: "65%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    color: C.textMuted,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center"
+                  }}
+                >
+                  {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                </div>
               </div>
               <p style={{ fontSize: ".78rem", color: C.textMuted, lineHeight: 1.6 }}>
                 Bằng cách đăng ký, bạn đồng ý với{" "}
@@ -196,21 +398,21 @@ export default function RegisterPage() {
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                 <div className="input-wrap" style={{ marginBottom: 0 }}>
                   <label>Biển số xe</label>
-                  <input placeholder="VD: 51F-123.45" value={form.plate} onChange={upd("plate")} />
+                  <input placeholder="VD: 51F-123.45" value={form.plate} onChange={updateVehicleFrom("plate")} />
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                   <div className="input-wrap" style={{ marginBottom: 0 }}>
                     <label>Hãng xe</label>
-                    <select value={form.brand} onChange={upd("brand")}>
+                    <select value={form.brand} onChange={updateVehicleFrom("brand")}>
                       <option value="">Chọn hãng...</option>
-                      {["Toyota","Honda","Mazda","Ford","Hyundai","Kia","Mitsubishi","Suzuki"].map(b => (
+                      {["Toyota", "Honda", "Mazda", "Ford", "Hyundai", "Kia", "Mitsubishi", "Suzuki"].map(b => (
                         <option key={b} value={b}>{b}</option>
                       ))}
                     </select>
                   </div>
                   <div className="input-wrap" style={{ marginBottom: 0 }}>
                     <label>Năm sản xuất</label>
-                    <select value={form.year} onChange={upd("year")}>
+                    <select value={form.year} onChange={updateVehicleFrom("year")}>
                       <option value="">Năm...</option>
                       {Array.from({ length: 15 }, (_, i) => 2025 - i).map(y => (
                         <option key={y} value={y}>{y}</option>
@@ -220,7 +422,7 @@ export default function RegisterPage() {
                 </div>
                 <div className="input-wrap" style={{ marginBottom: 0 }}>
                   <label>Model</label>
-                  <input placeholder="VD: Fortuner 2.7V" value={form.model} onChange={upd("model")} />
+                  <input placeholder="VD: Fortuner 2.7V" value={form.model} onChange={updateVehicleFrom("model")} />
                 </div>
               </div>
             </div>

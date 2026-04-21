@@ -5,6 +5,7 @@ import com.ou.autorepairshop.service.JwtAuthenticationEntryPoint;
 import com.ou.autorepairshop.service.JwtService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -46,6 +47,9 @@ public class SecurityConfig {
                                 .requestMatchers("/api/appointments/**").hasAnyRole("ADMIN", "CUSTOMER")
                                 .requestMatchers("/api/reviews/**").hasAnyRole("ADMIN", "CUSTOMER","STAFF")
                                 .requestMatchers("/api/repair-orders/**").hasAnyRole("ADMIN", "CUSTOMER","STAFF")
+                                .requestMatchers(HttpMethod.GET, "/api/customers/user/**").permitAll()
+                                .requestMatchers("/api/customers/**").hasAnyRole("ADMIN", "CUSTOMER","STAFF")
+                                .requestMatchers("/api/vehicles/**").hasAnyRole("ADMIN", "CUSTOMER","STAFF")
                                 .anyRequest().permitAll()) //hoặc authenticated() -> tăng bảo mật, yêu cầu tất cả api khác cần login
                 .exceptionHandling(ex
                         -> ex.authenticationEntryPoint(jwtAuthEntryPoint)
