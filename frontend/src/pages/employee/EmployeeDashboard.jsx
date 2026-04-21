@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Typography, Box, Paper, Grid, CircularProgress } from "@mui/material";
+import { Typography, Box, Grid, CircularProgress, Card, CardContent } from "@mui/material";
+import { CalendarTodayRounded, HandymanRounded } from "@mui/icons-material";
 import axiosClient from "../../api/axiosClient";
 
-const MOCK_EMPLOYEE_ID = 14; // TODO: Lấy từ Context/Auth khi có chức năng Login
+const MOCK_EMPLOYEE_ID = 2; // TODO: Lấy từ Context/Auth 
 
 function EmployeeDashboard() {
   const [scheduleData, setScheduleData] = useState(null);
@@ -29,26 +30,64 @@ function EmployeeDashboard() {
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: "bold" }}>
-        Xin chào, {scheduleData?.employeeName || "Nhân viên"}
-      </Typography>
-      
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" sx={{ fontWeight: "bold", color: "#1e1e2d" }}>
+          Xin chào, {scheduleData?.employeeName || "Kỹ thuật viên"} 👋
+        </Typography>
+        <Typography variant="body1" sx={{ color: "#6e6e7c", mt: 1 }}>
+          Chào mừng quay trở lại. Hãy cùng xem công việc hôm nay của bạn.
+        </Typography>
+      </Box>
+
       <Grid container spacing={3}>
-        <Grid item xs={12} sm={4}>
-          <Paper sx={{ p: 3, textAlign: "center", borderRadius: 2, boxShadow: 3 }}>
-            <Typography variant="h6" color="textSecondary">Lịch hẹn được giao hôm nay</Typography>
-            <Typography variant="h3" color="primary" sx={{ mt: 1, fontWeight: 'bold' }}>
-              {scheduleData?.appointments?.length || 0}
-            </Typography>
-          </Paper>
+        <Grid item xs={12} sm={6} md={4}>
+          <Card 
+            sx={{ 
+              borderRadius: 4, 
+              background: "linear-gradient(135deg, #1e88e5 0%, #1565c0 100%)",
+              color: "#fff",
+              position: "relative",
+              overflow: "hidden",
+              boxShadow: "0 10px 20px rgba(21, 101, 192, 0.2)"
+            }}
+          >
+            <Box sx={{ position: "absolute", top: -20, right: -20, opacity: 0.2 }}>
+              <CalendarTodayRounded sx={{ fontSize: 120 }} />
+            </Box>
+            <CardContent sx={{ position: "relative", zIndex: 1, p: 3 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, opacity: 0.9 }}>
+                Lịch hẹn hôm nay
+              </Typography>
+              <Typography variant="h2" sx={{ fontWeight: "bold", mt: 1 }}>
+                {scheduleData?.appointments?.length || 0}
+              </Typography>
+            </CardContent>
+          </Card>
         </Grid>
-        <Grid item xs={12} sm={4}>
-          <Paper sx={{ p: 3, textAlign: "center", borderRadius: 2, boxShadow: 3 }}>
-            <Typography variant="h6" color="textSecondary">Phiếu sửa chữa đang làm</Typography>
-            <Typography variant="h3" color="secondary" sx={{ mt: 1, fontWeight: 'bold' }}>
-              {scheduleData?.activeOrders?.length || 0}
-            </Typography>
-          </Paper>
+        
+        <Grid item xs={12} sm={6} md={4}>
+          <Card 
+            sx={{ 
+              borderRadius: 4, 
+              background: "linear-gradient(135deg, #43a047 0%, #2e7d32 100%)",
+              color: "#fff",
+              position: "relative",
+              overflow: "hidden",
+              boxShadow: "0 10px 20px rgba(46, 125, 50, 0.2)"
+            }}
+          >
+            <Box sx={{ position: "absolute", top: -20, right: -20, opacity: 0.2 }}>
+              <HandymanRounded sx={{ fontSize: 120 }} />
+            </Box>
+            <CardContent sx={{ position: "relative", zIndex: 1, p: 3 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, opacity: 0.9 }}>
+                Phiếu sửa chữa đang làm
+              </Typography>
+              <Typography variant="h2" sx={{ fontWeight: "bold", mt: 1 }}>
+                {scheduleData?.activeOrders?.length || 0}
+              </Typography>
+            </CardContent>
+          </Card>
         </Grid>
       </Grid>
     </Box>

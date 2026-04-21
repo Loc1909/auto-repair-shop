@@ -43,9 +43,23 @@ public class QuotationService {
         RepairOrder order = repairOrderRepository.findById(req.repairOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("RepairOrder", req.repairOrderId()));
 
-        if (quotationRepository.existsByRepairOrderId(req.repairOrderId())) {
-            throw new BusinessException("A quotation already exists for this repair order.");
+        // #7: Chỉ cho phép tạo báo giá khi xe đang ở trạng thái hợp lệ
+        if (order.getStatus() != RepairStatus.PENDING && order.getStatus() != RepairStatus.DIAGNOSING) {
+            throw new BusinessException(
+                    "Cannot create quotation for order with status: " + order.getStatus()
+                            + ". Order must be PENDING or DIAGNOSING.");
         }
+
+        // #8: Nếu báo giá cũ đã bị REJECTED, xóa đi để tạo báo giá mới
+        quotationRepository.findByRepairOrderId(req.repairOrderId()).ifPresent(existing -> {
+            if (existing.getStatus() == QuotationStatus.REJECTED) {
+                quotationDetailRepository.deleteAll(
+                        quotationDetailRepository.findByQuotationId(existing.getId()));
+                quotationRepository.delete(existing);
+            } else {
+                throw new BusinessException("A quotation already exists for this repair order.");
+            }
+        });
 
         Quotation quotation = Quotation.builder()
                 .repairOrder(order)
@@ -136,7 +150,7 @@ public class QuotationService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Customer customer = customerRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
         RepairOrder repairOrder = repairOrderRepository.findByIdAndVehicleCustomerId(repairOrderId, customer.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Repair order not found or not yours"));
@@ -146,7 +160,7 @@ public class QuotationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation not found"));
 
         if (quotation.getStatus() != QuotationStatus.PENDING) {
-            throw new RuntimeException("Quotation already processed");
+            throw new BusinessException("Quotation already processed");
         }
 
         if ("APPROVE".equalsIgnoreCase(action)) {
@@ -154,42 +168,17 @@ public class QuotationService {
             repairOrder.setStatus(RepairStatus.APPROVED);
             repairOrderRepository.save(repairOrder);
         } else if ("REJECT".equalsIgnoreCase(action)) {
+            // Khách từ chối: đặt báo giá = REJECTED, nhưng order về DIAGNOSING
+            // để nhân viên có thể lập báo giá mới
             quotation.setStatus(QuotationStatus.REJECTED);
-            repairOrder.setStatus(RepairStatus.REJECTED);
+            repairOrder.setStatus(RepairStatus.DIAGNOSING);
             repairOrderRepository.save(repairOrder);
         } else {
-            throw new BadRequestException("Invalid action");
+            throw new BadRequestException("Invalid action. Use APPROVE or REJECT.");
         }
+        quotationRepository.save(quotation);
         List<QuotationDetail> details = quotationDetailRepository.findByQuotationId(quotation.getId());
         return quotationMapper.toResponse(quotation, details, quotationDetailMapper);
     }
 
-    private QuotationResponse mapToResponse(Quotation q,
-                                            List<QuotationDetail> details) {
-//        Long id,
-//        String itemType,
-//        Long itemId, // id của Part và RepairService
-//        String itemName, // name của Part và RepairService
-//        int quantity,
-//        BigDecimal unitPrice,
-//        BigDecimal subtotal
-        List<QuotationDetailResponse> detailResponses = details.stream()
-                .map(d -> new QuotationDetailResponse(
-                        d.getId(),
-                        d.getItemType().toString(),
-                        d.getService().getId(),
-                        d.getService().getName(),
-                        d.getQuantity(),
-                        d.getUnitPrice(),
-                        d.getService().getPrice())).toList();
-
-        return new QuotationResponse(
-                q.getId(),
-                q.getStatus().name(),
-                q.getTotalPrice(),
-                q.getCreatedAt(),
-                q.getRepairOrder().getId(),
-                detailResponses
-        );
-    }
 }

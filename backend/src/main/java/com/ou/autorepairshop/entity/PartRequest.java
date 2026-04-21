@@ -34,4 +34,10 @@ public class PartRequest {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "part_id", nullable = false)
     private Part part;
+
+    @PrePersist
+    public void prePersist() {
+        this.requestedAt = LocalDateTime.now();
+    }
 }
+

@@ -118,7 +118,7 @@ public class RepairOrderService {
 
         RepairOrder order = repairOrderRepository
                 .findByIdAndVehicleCustomerId(repairOrderId, customer.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Not allowed"));
+                .orElseThrow(() -> new ResourceNotFoundException("RepairOrder", repairOrderId));
 
         return repairProgressRepository
                 .findByRepairOrderIdOrderByUpdateTimeAsc(order.getId())
@@ -134,10 +134,10 @@ public class RepairOrderService {
                 .getAuthentication().getName();
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Customer customer = customerRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
         List<RepairOrder> repairOrders =
                 repairOrderRepository.findByVehicleCustomerIdOrderByCreatedDateDesc(customer.getId());
