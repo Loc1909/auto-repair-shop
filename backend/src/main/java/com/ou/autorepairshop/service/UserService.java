@@ -9,7 +9,7 @@ import com.ou.autorepairshop.entity.User;
 import com.ou.autorepairshop.repository.CustomerRepository;
 import com.ou.autorepairshop.repository.EmployeeRepository;
 import com.ou.autorepairshop.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -139,6 +139,7 @@ public class UserService {
     }
 
 
+    @Transactional(readOnly = true)
     public Page<UserResponse> getUsers(String search, Pageable pageable) {
         Page<User> page;
 

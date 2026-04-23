@@ -3,8 +3,6 @@ import { Typography, Box, Grid, CircularProgress, Card, CardContent } from "@mui
 import { CalendarTodayRounded, HandymanRounded } from "@mui/icons-material";
 import axiosClient from "../../api/axiosClient";
 
-const MOCK_EMPLOYEE_ID = 2; // TODO: Lấy từ Context/Auth 
-
 function EmployeeDashboard() {
   const [scheduleData, setScheduleData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -14,8 +12,17 @@ function EmployeeDashboard() {
   }, []);
 
   const fetchDashboardData = async () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const employeeId = user?.employeeId;
+
+    if (!employeeId) {
+      console.error("Không tìm thấy Employee ID");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await axiosClient.get(`/staff/${MOCK_EMPLOYEE_ID}/schedule`);
+      const response = await axiosClient.get(`/staff/${employeeId}/schedule`);
       setScheduleData(response.data);
     } catch (error) {
       console.error("Lỗi khi tải dữ liệu bảng điều khiển", error);

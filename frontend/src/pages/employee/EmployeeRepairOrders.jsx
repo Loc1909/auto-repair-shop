@@ -10,7 +10,6 @@ import axiosClient from "../../api/axiosClient";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 
-const MOCK_EMPLOYEE_ID = 2; // TODO: Lấy từ Context/Auth
 
 function EmployeeRepairOrders() {
   const [orders, setOrders] = useState([]);
@@ -33,8 +32,17 @@ function EmployeeRepairOrders() {
   }, []);
 
   const fetchOrders = async () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const employeeId = user?.employeeId;
+
+    if (!employeeId) {
+      console.error("Không tìm thấy Employee ID");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await axiosClient.get(`/repair-orders/employee/${MOCK_EMPLOYEE_ID}`);
+      const response = await axiosClient.get(`/repair-orders/employee/${employeeId}`);
       setOrders(response.data);
     } catch (error) {
       console.error("Lỗi khi tải phiếu sửa chữa", error);
@@ -62,9 +70,12 @@ function EmployeeRepairOrders() {
       return;
     }
     try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const employeeId = user?.employeeId;
+
       await axiosClient.post("/repair-orders/receive", {
         appointmentId: selectedAppointment.id,
-        employeeId: MOCK_EMPLOYEE_ID,
+        employeeId: employeeId,
         notes: receiveNotes
       });
       setReceiveOpen(false);

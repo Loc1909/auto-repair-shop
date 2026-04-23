@@ -26,22 +26,35 @@ export default function Login() {
                 password
             });
             const loginData = res.data;
-            const { token, user } = loginData;
+            const { user } = loginData;
 
             localStorage.setItem("accessToken", loginData.accessToken);
             localStorage.setItem("refreshToken", loginData.refreshToken);
             localStorage.setItem("user", JSON.stringify({
                 id: loginData.user.id,
                 username: loginData.user.username,
-                role: loginData.user.role
+                role: loginData.user.role,
+                employeeId: loginData.user.employeeId,
+                customerId: loginData.user.customerId
             }));
-            // navigate("/");
+
+            // Điều hướng dựa trên Role
+            const role = loginData.user.role;
+            if (role === "ROLE_ADMIN") {
+                navigate("/admin");
+            } else if (role === "ROLE_STAFF") {
+                navigate("/employee");
+            } else {
+                navigate("/dashboard");
+            }
 
         } catch (err) {
-            console.log(err);
+            console.error("Login Error:", err);
 
             setError(
-                err.response?.data?.message || "Đăng nhập thất bại"
+                err.response?.data?.detail || 
+                err.response?.data?.message || 
+                "Đăng nhập thất bại"
             );
         } finally {
             setLoading(false);

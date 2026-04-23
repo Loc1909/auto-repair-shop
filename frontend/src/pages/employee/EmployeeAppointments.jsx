@@ -8,7 +8,6 @@ import { DirectionsCar, Person, AccessTime, EventAvailable, Cancel } from "@mui/
 import axiosClient from "../../api/axiosClient";
 import dayjs from "dayjs";
 
-const MOCK_EMPLOYEE_ID = 2; // TODO: Lấy từ Context/Auth
 
 function EmployeeAppointments() {
   const [appointments, setAppointments] = useState([]);
@@ -35,7 +34,9 @@ function EmployeeAppointments() {
 
   const handleConfirm = async (id) => {
     try {
-      await axiosClient.patch(`/appointments/${id}/confirm-by-employee?employeeId=${MOCK_EMPLOYEE_ID}`);
+      const user = JSON.parse(localStorage.getItem("user"));
+      const employeeId = user?.employeeId;
+      await axiosClient.patch(`/appointments/${id}/confirm-by-employee?employeeId=${employeeId}`);
       fetchAppointments();
     } catch (error) {
       console.error("Lỗi khi xác nhận lịch hẹn", error);

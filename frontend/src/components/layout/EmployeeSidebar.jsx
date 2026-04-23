@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Box, List, ListItem, ListItemButton,
   ListItemText, Typography, ListItemIcon,
@@ -10,7 +10,8 @@ import {
   EventNoteRounded,
   AssignmentTurnedInRounded,
   BuildRounded,
-  AccountCircle
+  AccountCircle,
+  ExitToApp
 } from "@mui/icons-material";
 
 const menuItems = [
@@ -24,6 +25,7 @@ const drawerWidth = 280;
 
 function EmployeeSidebar({ mobileOpen, handleDrawerToggle, isMobile }) {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const drawerContent = (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: '#1e1e2d', color: '#fff' }}>
@@ -83,14 +85,41 @@ function EmployeeSidebar({ mobileOpen, handleDrawerToggle, isMobile }) {
         })}
       </List>
 
+      <Box sx={{ flexGrow: 1 }} />
+
+      <List>
+        <ListItem disablePadding>
+          <ListItemButton 
+            onClick={() => {
+              localStorage.clear();
+              navigate("/login");
+            }}
+            sx={{ 
+              mx: 1, borderRadius: 2, 
+              color: "#ff5252",
+              '&:hover': { bgcolor: "rgba(255, 82, 82, 0.1)" } 
+            }}
+          >
+            <ListItemIcon sx={{ color: "inherit", minWidth: 40 }}>
+              <ExitToApp />
+            </ListItemIcon>
+            <ListItemText primary="Đăng xuất" primaryTypographyProps={{ fontWeight: 600 }} />
+          </ListItemButton>
+        </ListItem>
+      </List>
+
       {/* Thông tin User */}
       <Box sx={{ p: 2, m: 2, bgcolor: "rgba(255,255,255,0.05)", borderRadius: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
         <Avatar sx={{ bgcolor: "#4caf50", width: 44, height: 44 }}>
           <AccountCircle />
         </Avatar>
         <Box>
-          <Typography variant="subtitle2" fontWeight="bold">Kỹ thuật viên</Typography>
-          <Typography variant="caption" sx={{ color: "#a2a3b7" }}>NV #2</Typography>
+          <Typography variant="subtitle2" fontWeight="bold">
+            {JSON.parse(localStorage.getItem("user"))?.username || "Nhân viên"}
+          </Typography>
+          <Typography variant="caption" sx={{ color: "#a2a3b7" }}>
+            ID: #{JSON.parse(localStorage.getItem("user"))?.employeeId || "N/A"}
+          </Typography>
         </Box>
       </Box>
     </Box>

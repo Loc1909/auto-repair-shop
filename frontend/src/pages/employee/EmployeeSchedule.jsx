@@ -7,8 +7,6 @@ import { BuildCircle, EventAvailable } from "@mui/icons-material";
 import axiosClient from "../../api/axiosClient";
 import dayjs from "dayjs";
 
-const MOCK_EMPLOYEE_ID = 2; // TODO: Lấy từ Context/Auth
-
 const getAptStatusColor = (status) => {
   switch (status) {
     case "PENDING": return { color: "warning", label: "Chờ xác nhận" };
@@ -41,8 +39,17 @@ function EmployeeSchedule() {
   }, []);
 
   const fetchSchedule = async () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const employeeId = user?.employeeId;
+
+    if (!employeeId) {
+      console.error("Không tìm thấy Employee ID");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await axiosClient.get(`/staff/${MOCK_EMPLOYEE_ID}/schedule`);
+      const response = await axiosClient.get(`/staff/${employeeId}/schedule`);
       setScheduleData(response.data);
     } catch (error) {
       console.error("Lỗi khi tải lịch làm việc", error);

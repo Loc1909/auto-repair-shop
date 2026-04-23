@@ -24,6 +24,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -111,6 +113,7 @@ public class AuthService {
         throw new BadCredentialsException("Refresh token không hợp lệ");
     }
 
+    @Transactional(readOnly = true)
     public UserResponse getCurrentUser(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new ResourceNotFoundException("Chưa đăng nhập");

@@ -4,13 +4,12 @@ import com.ou.autorepairshop.dto.UserResponse;
 import com.ou.autorepairshop.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.springframework.stereotype.Component;
+import org.mapstruct.ReportingPolicy;
 
-@Component
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
-    // Map User entity sang UserResponse DTO
+    @Mapping(target = "employeeId", source = "employee.id")
+    @Mapping(target = "customerId", source = "customer.id")
     UserResponse toResponse(User user);
-
 }
