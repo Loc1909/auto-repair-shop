@@ -38,12 +38,12 @@ function EmployeeSidebar({ mobileOpen, handleDrawerToggle, isMobile }) {
       </Box>
 
       <Divider sx={{ borderColor: "rgba(255,255,255,0.08)", mb: 2, mx: 2 }} />
-      
+
       {/* Menu chính */}
       <List sx={{ px: 2, flexGrow: 1 }}>
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path || (item.path !== "/employee" && location.pathname.startsWith(item.path));
-          
+
           return (
             <ListItem key={item.path} disablePadding sx={{ mb: 1 }}>
               <ListItemButton
@@ -70,12 +70,12 @@ function EmployeeSidebar({ mobileOpen, handleDrawerToggle, isMobile }) {
                 <ListItemIcon sx={{ minWidth: 40, color: isActive ? "#4caf50" : "#a2a3b7", transition: "color 0.3s" }}>
                   {item.icon}
                 </ListItemIcon>
-                <ListItemText 
-                  primary={item.label} 
-                  primaryTypographyProps={{ 
+                <ListItemText
+                  primary={item.label}
+                  primaryTypographyProps={{
                     fontWeight: isActive ? 600 : 500,
                     fontSize: '0.95rem'
-                  }} 
+                  }}
                 />
               </ListItemButton>
             </ListItem>
@@ -86,11 +86,11 @@ function EmployeeSidebar({ mobileOpen, handleDrawerToggle, isMobile }) {
       {/* Thông tin User */}
       <Box sx={{ p: 2, m: 2, bgcolor: "rgba(255,255,255,0.05)", borderRadius: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
         <Avatar sx={{ bgcolor: "#4caf50", width: 44, height: 44 }}>
-           <AccountCircle />
+          <AccountCircle />
         </Avatar>
         <Box>
-           <Typography variant="subtitle2" fontWeight="bold">NV #14</Typography>
-           <Typography variant="caption" sx={{ color: "#a2a3b7" }}>Kỹ thuật viên</Typography>
+          <Typography variant="subtitle2" fontWeight="bold">Kỹ thuật viên</Typography>
+          <Typography variant="caption" sx={{ color: "#a2a3b7" }}>NV #2</Typography>
         </Box>
       </Box>
     </Box>
@@ -103,7 +103,7 @@ function EmployeeSidebar({ mobileOpen, handleDrawerToggle, isMobile }) {
         variant="temporary"
         open={mobileOpen}
         onClose={handleDrawerToggle}
-        ModalProps={{ keepMounted: true }} 
+        ModalProps={{ keepMounted: true }}
         sx={{
           display: { xs: "block", md: "none" },
           "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth, borderRight: "none", bgcolor: "#1e1e2d" }

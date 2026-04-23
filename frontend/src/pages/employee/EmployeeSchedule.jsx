@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { 
-  Typography, Box, Card, CardContent, Grid, CircularProgress, 
+import {
+  Typography, Box, Card, CardContent, Grid, CircularProgress,
   List, ListItem, ListItemText, Divider, Chip, Avatar
 } from "@mui/material";
 import { BuildCircle, EventAvailable } from "@mui/icons-material";
@@ -80,7 +80,7 @@ function EmployeeSchedule() {
                 </Typography>
               </Box>
               <Divider sx={{ mb: 2 }} />
-              
+
               {scheduleData?.appointments?.length === 0 ? (
                 <Typography color="textSecondary" sx={{ py: 2, textAlign: "center" }}>
                   Không có lịch hẹn nào
@@ -100,10 +100,10 @@ function EmployeeSchedule() {
                             }
                             secondary={`Thời gian: ${dayjs(apt.appointmentTime).format("DD/MM/YYYY HH:mm")}`}
                           />
-                          <Chip 
-                            label={st.label} 
-                            color={st.color} 
-                            size="small" 
+                          <Chip
+                            label={st.label}
+                            color={st.color}
+                            size="small"
                             sx={{ fontWeight: 600, mt: 1 }}
                           />
                         </ListItem>
@@ -130,7 +130,7 @@ function EmployeeSchedule() {
                 </Typography>
               </Box>
               <Divider sx={{ mb: 2 }} />
-              
+
               {scheduleData?.activeOrders?.length === 0 ? (
                 <Typography color="textSecondary" sx={{ py: 2, textAlign: "center" }}>
                   Không có phiếu sửa chữa nào
@@ -150,10 +150,10 @@ function EmployeeSchedule() {
                             }
                             secondary={`Ngày tạo: ${dayjs(order.createdDate).format("DD/MM/YYYY HH:mm")}`}
                           />
-                          <Chip 
-                            label={st.label} 
-                            color={st.color} 
-                            size="small" 
+                          <Chip
+                            label={st.label}
+                            color={st.color}
+                            size="small"
                             sx={{ fontWeight: 600, mt: 1 }}
                           />
                         </ListItem>

@@ -124,9 +124,9 @@ function EmployeeRepairOrders() {
             Quản lý các xe đang nằm xưởng và theo dõi tiến độ sửa chữa.
           </Typography>
         </Box>
-        <Button 
-          variant="contained" 
-          color="primary" 
+        <Button
+          variant="contained"
+          color="primary"
           size="large"
           startIcon={<AddCircle />}
           onClick={openReceiveDialog}
@@ -141,8 +141,8 @@ function EmployeeRepairOrders() {
           const statusInfo = getStatusColor(order.status);
           return (
             <Grid item xs={12} sm={6} md={4} xl={3} key={order.id}>
-              <Card sx={{ 
-                borderRadius: 4, 
+              <Card sx={{
+                borderRadius: 4,
                 boxShadow: "0 8px 16px rgba(0,0,0,0.03)",
                 transition: "transform 0.2s, box-shadow 0.2s",
                 "&:hover": { transform: "translateY(-4px)", boxShadow: "0 12px 24px rgba(0,0,0,0.06)" },
@@ -156,10 +156,10 @@ function EmployeeRepairOrders() {
                         #{order.id}
                       </Typography>
                     </Box>
-                    <Chip 
-                      label={statusInfo.label} 
-                      color={statusInfo.color} 
-                      size="small" 
+                    <Chip
+                      label={statusInfo.label}
+                      color={statusInfo.color}
+                      size="small"
                       sx={{ fontWeight: "bold" }}
                     />
                   </Box>
@@ -233,9 +233,9 @@ function EmployeeRepairOrders() {
       )}
 
       {/* Dialog Tiếp nhận xe */}
-      <Dialog 
-        open={receiveOpen} 
-        onClose={() => setReceiveOpen(false)} 
+      <Dialog
+        open={receiveOpen}
+        onClose={() => setReceiveOpen(false)}
         fullWidth maxWidth="sm"
         PaperProps={{ sx: { borderRadius: 3 } }}
       >
@@ -284,9 +284,9 @@ function EmployeeRepairOrders() {
       </Dialog>
 
       {/* Dialog Hoàn thành */}
-      <Dialog 
-        open={completeOpen} 
-        onClose={() => setCompleteOpen(false)} 
+      <Dialog
+        open={completeOpen}
+        onClose={() => setCompleteOpen(false)}
         fullWidth maxWidth="xs"
         PaperProps={{ sx: { borderRadius: 3 } }}
       >

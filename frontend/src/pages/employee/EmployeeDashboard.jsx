@@ -41,9 +41,9 @@ function EmployeeDashboard() {
 
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6} md={4}>
-          <Card 
-            sx={{ 
-              borderRadius: 4, 
+          <Card
+            sx={{
+              borderRadius: 4,
               background: "linear-gradient(135deg, #1e88e5 0%, #1565c0 100%)",
               color: "#fff",
               position: "relative",
@@ -64,11 +64,11 @@ function EmployeeDashboard() {
             </CardContent>
           </Card>
         </Grid>
-        
+
         <Grid item xs={12} sm={6} md={4}>
-          <Card 
-            sx={{ 
-              borderRadius: 4, 
+          <Card
+            sx={{
+              borderRadius: 4,
               background: "linear-gradient(135deg, #43a047 0%, #2e7d32 100%)",
               color: "#fff",
               position: "relative",

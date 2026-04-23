@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { 
-  Typography, Box, Grid, CircularProgress, 
-  Button, Chip, Dialog, DialogTitle, DialogContent, 
+import {
+  Typography, Box, Grid, CircularProgress,
+  Button, Chip, Dialog, DialogTitle, DialogContent,
   DialogActions, TextField, Card, CardContent, Divider, Paper
 } from "@mui/material";
 import { DirectionsCar, Person, AccessTime, EventAvailable, Cancel } from "@mui/icons-material";
@@ -13,7 +13,7 @@ const MOCK_EMPLOYEE_ID = 2; // TODO: Lấy từ Context/Auth
 function EmployeeAppointments() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelId, setCancelId] = useState(null);
   const [cancelReason, setCancelReason] = useState("");
@@ -92,8 +92,8 @@ function EmployeeAppointments() {
           const statusInfo = getStatusColor(apt.status);
           return (
             <Grid item xs={12} sm={6} md={4} key={apt.id}>
-              <Card sx={{ 
-                borderRadius: 3, 
+              <Card sx={{
+                borderRadius: 3,
                 boxShadow: "0 8px 16px rgba(0,0,0,0.03)",
                 transition: "transform 0.2s",
                 "&:hover": { transform: "translateY(-4px)", boxShadow: "0 12px 24px rgba(0,0,0,0.06)" }
@@ -106,14 +106,14 @@ function EmployeeAppointments() {
                         {apt?.licensePlate || "Không rõ xe"}
                       </Typography>
                     </Box>
-                    <Chip 
-                      label={statusInfo.label} 
-                      color={statusInfo.color} 
-                      size="small" 
+                    <Chip
+                      label={statusInfo.label}
+                      color={statusInfo.color}
+                      size="small"
                       sx={{ fontWeight: "bold" }}
                     />
                   </Box>
-                  
+
                   <Box display="flex" flexDirection="column" gap={1.5} mb={2}>
                     <Box display="flex" alignItems="center" gap={1}>
                       <Person fontSize="small" sx={{ color: "#888" }} />
@@ -141,9 +141,9 @@ function EmployeeAppointments() {
 
                   <Box display="flex" gap={1} justifyContent="flex-end">
                     {apt.status === "PENDING" && (
-                      <Button 
-                        variant="contained" 
-                        color="primary" 
+                      <Button
+                        variant="contained"
+                        color="primary"
                         size="small"
                         startIcon={<EventAvailable />}
                         onClick={() => handleConfirm(apt.id)}
@@ -152,11 +152,11 @@ function EmployeeAppointments() {
                         Xác nhận
                       </Button>
                     )}
-                    
+
                     {(apt.status === "PENDING" || apt.status === "CONFIRMED") && (
-                      <Button 
-                        variant="outlined" 
-                        color="error" 
+                      <Button
+                        variant="outlined"
+                        color="error"
                         size="small"
                         startIcon={<Cancel />}
                         onClick={() => openCancelDialog(apt.id)}
@@ -165,7 +165,7 @@ function EmployeeAppointments() {
                         Hủy lịch
                       </Button>
                     )}
-                    
+
                     {apt.status !== "PENDING" && apt.status !== "CONFIRMED" && (
                       <Typography variant="caption" color="textSecondary" sx={{ py: 0.5 }}>
                         Không có hành động
@@ -178,7 +178,7 @@ function EmployeeAppointments() {
           );
         })}
       </Grid>
-      
+
       {appointments.length === 0 && (
         <Paper sx={{ p: 4, textAlign: "center", borderRadius: 3, bgcolor: "#f8f9fa", mt: 2 }}>
           <Typography color="textSecondary">
@@ -188,10 +188,10 @@ function EmployeeAppointments() {
       )}
 
       {/* Dialog Hủy Lịch */}
-      <Dialog 
-        open={cancelOpen} 
-        onClose={() => setCancelOpen(false)} 
-        fullWidth 
+      <Dialog
+        open={cancelOpen}
+        onClose={() => setCancelOpen(false)}
+        fullWidth
         maxWidth="sm"
         PaperProps={{ sx: { borderRadius: 3 } }}
       >

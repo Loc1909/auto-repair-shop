@@ -43,12 +43,15 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/api/auth/**").permitAll()
-                                .requestMatchers("/api/appointments/**").permitAll()
-                                //hasAnyRole("ADMIN", "CUSTOMER")
-                                .requestMatchers("/api/reviews/**").hasAnyRole("ADMIN", "CUSTOMER","STAFF")
-                                .requestMatchers("/api/repair-orders/**").permitAll()
-                                //hasAnyRole("ADMIN", "CUSTOMER","STAFF")
-                                .anyRequest().permitAll()) //hoặc authenticated() -> tăng bảo mật, yêu cầu tất cả api khác cần login
+                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                                .requestMatchers("/api/quotations/**").hasAnyRole("ADMIN", "CUSTOMER", "STAFF")
+                                .requestMatchers("/api/appointments/**").hasAnyRole("ADMIN", "CUSTOMER", "STAFF")
+                                .requestMatchers("/api/reviews/**").hasAnyRole("ADMIN", "CUSTOMER", "STAFF")
+                                .requestMatchers("/api/repair-orders/**").hasAnyRole("ADMIN", "CUSTOMER", "STAFF")
+                                .requestMatchers("/api/part-requests/**").hasAnyRole("ADMIN", "STAFF")
+                                .requestMatchers("/api/repair-progress/**").hasAnyRole("ADMIN", "STAFF")
+                                .requestMatchers("/api/repair-order-service/**").hasAnyRole("ADMIN", "STAFF")
+                                .anyRequest().authenticated()) //hoặc authenticated() -> tăng bảo mật, yêu cầu tất cả api khác cần login
                 .exceptionHandling(ex
                         -> ex.authenticationEntryPoint(jwtAuthEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler))
