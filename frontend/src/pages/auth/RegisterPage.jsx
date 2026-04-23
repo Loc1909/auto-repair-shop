@@ -145,6 +145,7 @@ export default function RegisterPage() {
       try {
         setLoading(true);
         const res = await login({ emailOrUsername: form.username, password: form.password });
+        setUser(res.data.user);
         storeLoginToken(res.data);
       } catch (err) {
         console.log(err);

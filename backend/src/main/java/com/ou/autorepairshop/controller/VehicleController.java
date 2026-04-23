@@ -27,6 +27,11 @@ public class VehicleController {
         return ResponseEntity.ok(vehicleService.getById(id));
     }
 
+    @GetMapping("/my-vehicles")
+    public ResponseEntity<List<VehicleResponse>> getByUserId() {
+        return ResponseEntity.ok(vehicleService.getByUserId());
+    }
+
     @PostMapping
     public ResponseEntity<VehicleResponse> createVehicle(@RequestBody VehicleRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(vehicleService.createVehicle(request));

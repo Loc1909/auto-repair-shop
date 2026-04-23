@@ -43,6 +43,7 @@ export default function LoginPage() {
                 emailOrUsername,
                 password
             });
+            setUser(res.data.user);
             storeLoginToken(res.data);
 
             setTimeout(() => {

@@ -7,3 +7,7 @@ export const getVehicle = (id) => {
 export const createVehicle = (data) => {
   return api.post(`/vehicles`,data);
 };
+
+export const getCurrentUserVehicle = () => {
+  return api.get("/vehicles/my-vehicles");
+};
