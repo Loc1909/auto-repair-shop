@@ -16,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -48,9 +47,53 @@ public class PartRequestService {
                 .part(part)
                 .requestedQuantity(req.requestedQuantity())
                 .status(PartRequestStatus.PENDING)
-                .requestedAt(LocalDateTime.now())
+                // requestedAt set tự động qua @PrePersist
                 .build();
 
+        return partRequestMapper.toResponse(partRequestRepository.save(partRequest));
+    }
+
+    /**
+     * Duyệt yêu cầu phụ tùng: trừ tồn kho và cập nhật status → APPROVED.
+     */
+    @Transactional
+    public PartRequestResponse approvePartRequest(Long id) {
+        PartRequest partRequest = findById(id);
+
+        if (partRequest.getStatus() != PartRequestStatus.PENDING) {
+            throw new BusinessException(
+                    "PartRequest is already " + partRequest.getStatus() + ". Only PENDING requests can be approved.");
+        }
+
+        Part part = partRequest.getPart();
+        int remaining = part.getStockQuantity() - partRequest.getRequestedQuantity();
+        if (remaining < 0) {
+            throw new BusinessException(
+                    "Insufficient stock for part '%s'. Available: %d, Requested: %d"
+                    .formatted(part.getName(), part.getStockQuantity(), partRequest.getRequestedQuantity())
+            );
+        }
+
+        part.setStockQuantity(remaining);
+        partRepository.save(part);
+
+        partRequest.setStatus(PartRequestStatus.APPROVED);
+        return partRequestMapper.toResponse(partRequestRepository.save(partRequest));
+    }
+
+    /**
+     * Từ chối yêu cầu phụ tùng (hết hàng, không phù hợp...).
+     */
+    @Transactional
+    public PartRequestResponse rejectPartRequest(Long id) {
+        PartRequest partRequest = findById(id);
+
+        if (partRequest.getStatus() != PartRequestStatus.PENDING) {
+            throw new BusinessException(
+                    "PartRequest is already " + partRequest.getStatus() + ". Only PENDING requests can be rejected.");
+        }
+
+        partRequest.setStatus(PartRequestStatus.REJECTED);
         return partRequestMapper.toResponse(partRequestRepository.save(partRequest));
     }
 
@@ -61,5 +104,10 @@ public class PartRequestService {
         }
         return partRequestRepository.findByRepairOrderId(repairOrderId)
                 .stream().map(partRequestMapper::toResponse).toList();
+    }
+
+    private PartRequest findById(Long id) {
+        return partRequestRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("PartRequest", id));
     }
 }

@@ -1,18 +1,19 @@
 import { useState, useEffect } from "react";
-import { 
-  Typography, Box, Paper, Grid, CircularProgress, 
-  Button, Chip, Dialog, DialogTitle, DialogContent, 
-  DialogActions, TextField 
+import {
+  Typography, Box, Grid, CircularProgress,
+  Button, Chip, Dialog, DialogTitle, DialogContent,
+  DialogActions, TextField, Card, CardContent, Divider, Paper
 } from "@mui/material";
+import { DirectionsCar, Person, AccessTime, EventAvailable, Cancel } from "@mui/icons-material";
 import axiosClient from "../../api/axiosClient";
 import dayjs from "dayjs";
 
-const MOCK_EMPLOYEE_ID = 14; // TODO: Lấy từ Context/Auth
+const MOCK_EMPLOYEE_ID = 2; // TODO: Lấy từ Context/Auth
 
 function EmployeeAppointments() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelId, setCancelId] = useState(null);
   const [cancelReason, setCancelReason] = useState("");
@@ -34,7 +35,7 @@ function EmployeeAppointments() {
 
   const handleConfirm = async (id) => {
     try {
-      await axiosClient.patch(`/appointments/${id}/confirm?employeeId=${MOCK_EMPLOYEE_ID}`);
+      await axiosClient.patch(`/appointments/${id}/confirm-by-employee?employeeId=${MOCK_EMPLOYEE_ID}`);
       fetchAppointments();
     } catch (error) {
       console.error("Lỗi khi xác nhận lịch hẹn", error);
@@ -50,7 +51,7 @@ function EmployeeAppointments() {
 
   const handleCancelClick = async () => {
     try {
-      await axiosClient.patch(`/appointments/${cancelId}/cancel`, {
+      await axiosClient.patch(`/appointments/${cancelId}/cancel-by-employee`, {
         reason: cancelReason,
       });
       setCancelOpen(false);
@@ -67,94 +68,153 @@ function EmployeeAppointments() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "PENDING": return "warning";
-      case "CONFIRMED": return "success";
-      case "CANCELLED": return "error";
-      case "RECEIVED": return "info";
-      default: return "default";
+      case "PENDING": return { color: "warning", label: "Chờ xác nhận" };
+      case "CONFIRMED": return { color: "success", label: "Đã xác nhận" };
+      case "CANCELLED": return { color: "error", label: "Đã hủy" };
+      case "RECEIVED": return { color: "info", label: "Đã tiếp nhận" };
+      default: return { color: "default", label: status };
     }
   };
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: "bold" }}>
-        Quản lý Lịch hẹn
-      </Typography>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" sx={{ fontWeight: "bold", color: "#1e1e2d" }}>
+          Quản lý Lịch hẹn
+        </Typography>
+        <Typography variant="body1" sx={{ color: "#6e6e7c", mt: 1 }}>
+          Xem và cập nhật trạng thái các lịch hẹn của khách hàng.
+        </Typography>
+      </Box>
 
       <Grid container spacing={3}>
-        {appointments.map((apt) => (
-          <Grid item xs={12} sm={6} md={4} key={apt.id}>
-            <Paper sx={{ p: 2, borderRadius: 2, boxShadow: 3 }}>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                <Typography variant="h6" fontWeight="bold">
-                  {apt?.licensePlate || "Không rõ xe"}
-                </Typography>
-                <Chip label={apt.status} color={getStatusColor(apt.status)} size="small" />
-              </Box>
-              
-              <Typography variant="body2" color="textSecondary" gutterBottom>
-                <strong>Khách hàng:</strong> {apt.customer?.name || apt.customerName || "Không rõ"}
-              </Typography>
-              <Typography variant="body2" color="textSecondary" gutterBottom>
-                <strong>Thời gian:</strong> {apt.appointmentTime ? dayjs(apt.appointmentTime).format("DD/MM/YYYY HH:mm") : "N/A"}
-              </Typography>
-              <Typography variant="body2" color="textSecondary" gutterBottom>
-                <strong>Ghi chú:</strong> {apt.note || "Không có"}
-              </Typography>
+        {appointments.map((apt) => {
+          const statusInfo = getStatusColor(apt.status);
+          return (
+            <Grid item xs={12} sm={6} md={4} key={apt.id}>
+              <Card sx={{
+                borderRadius: 3,
+                boxShadow: "0 8px 16px rgba(0,0,0,0.03)",
+                transition: "transform 0.2s",
+                "&:hover": { transform: "translateY(-4px)", boxShadow: "0 12px 24px rgba(0,0,0,0.06)" }
+              }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <DirectionsCar color="primary" />
+                      <Typography variant="h6" fontWeight="bold">
+                        {apt?.licensePlate || "Không rõ xe"}
+                      </Typography>
+                    </Box>
+                    <Chip
+                      label={statusInfo.label}
+                      color={statusInfo.color}
+                      size="small"
+                      sx={{ fontWeight: "bold" }}
+                    />
+                  </Box>
 
-              <Box mt={2} display="flex" gap={1}>
-                {apt.status === "PENDING" && (
-                  <Button 
-                    variant="contained" 
-                    color="success" 
-                    size="small"
-                    onClick={() => handleConfirm(apt.id)}
-                  >
-                    Xác nhận
-                  </Button>
-                )}
-                
-                {(apt.status === "PENDING" || apt.status === "CONFIRMED") && (
-                  <Button 
-                    variant="outlined" 
-                    color="error" 
-                    size="small"
-                    onClick={() => openCancelDialog(apt.id)}
-                  >
-                    Hủy
-                  </Button>
-                )}
-              </Box>
-            </Paper>
-          </Grid>
-        ))}
+                  <Box display="flex" flexDirection="column" gap={1.5} mb={2}>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Person fontSize="small" sx={{ color: "#888" }} />
+                      <Typography variant="body2" color="textSecondary">
+                        Khách hàng: <strong>{apt.customer?.name || apt.customerName || "Không rõ"}</strong>
+                      </Typography>
+                    </Box>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <AccessTime fontSize="small" sx={{ color: "#888" }} />
+                      <Typography variant="body2" color="textSecondary">
+                        Thời gian: <strong>{apt.appointmentTime ? dayjs(apt.appointmentTime).format("DD/MM/YYYY HH:mm") : "N/A"}</strong>
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  {apt.note && (
+                    <Box sx={{ bgcolor: "#f8f9fa", p: 1.5, borderRadius: 2, mb: 2 }}>
+                      <Typography variant="body2" color="textSecondary">
+                        <em>"{apt.note}"</em>
+                      </Typography>
+                    </Box>
+                  )}
+
+                  <Divider sx={{ my: 2 }} />
+
+                  <Box display="flex" gap={1} justifyContent="flex-end">
+                    {apt.status === "PENDING" && (
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        startIcon={<EventAvailable />}
+                        onClick={() => handleConfirm(apt.id)}
+                        sx={{ borderRadius: 2 }}
+                      >
+                        Xác nhận
+                      </Button>
+                    )}
+
+                    {(apt.status === "PENDING" || apt.status === "CONFIRMED") && (
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        startIcon={<Cancel />}
+                        onClick={() => openCancelDialog(apt.id)}
+                        sx={{ borderRadius: 2 }}
+                      >
+                        Hủy lịch
+                      </Button>
+                    )}
+
+                    {apt.status !== "PENDING" && apt.status !== "CONFIRMED" && (
+                      <Typography variant="caption" color="textSecondary" sx={{ py: 0.5 }}>
+                        Không có hành động
+                      </Typography>
+                    )}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          );
+        })}
       </Grid>
-      
+
       {appointments.length === 0 && (
-        <Typography color="textSecondary" sx={{ mt: 2 }}>
-          Không có lịch hẹn nào tồn tại.
-        </Typography>
+        <Paper sx={{ p: 4, textAlign: "center", borderRadius: 3, bgcolor: "#f8f9fa", mt: 2 }}>
+          <Typography color="textSecondary">
+            Không có lịch hẹn nào tồn tại trong hệ thống.
+          </Typography>
+        </Paper>
       )}
 
       {/* Dialog Hủy Lịch */}
-      <Dialog open={cancelOpen} onClose={() => setCancelOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Lý do hủy lịch hẹn</DialogTitle>
+      <Dialog
+        open={cancelOpen}
+        onClose={() => setCancelOpen(false)}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{ sx: { borderRadius: 3 } }}
+      >
+        <DialogTitle sx={{ fontWeight: "bold" }}>Lý do hủy lịch hẹn</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             margin="dense"
-            label="Lý do"
+            label="Lý do hủy"
             type="text"
             fullWidth
+            multiline
+            rows={3}
             variant="outlined"
             value={cancelReason}
             onChange={(e) => setCancelReason(e.target.value)}
+            sx={{ mt: 1 }}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCancelOpen(false)}>Hủy bỏ</Button>
-          <Button onClick={handleCancelClick} color="error" variant="contained">
-            Đồng ý hủy
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button onClick={() => setCancelOpen(false)} color="inherit">Trở lại</Button>
+          <Button onClick={handleCancelClick} color="error" variant="contained" sx={{ borderRadius: 2 }}>
+            Xác nhận hủy
           </Button>
         </DialogActions>
       </Dialog>

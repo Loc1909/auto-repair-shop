@@ -2,22 +2,21 @@ package com.ou.autorepairshop.controller;
 
 import com.ou.autorepairshop.dto.AddServiceRequest;
 import com.ou.autorepairshop.service.RepairOrderDetailService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/staff/repair-order-service")
+@RequestMapping("/api/repair-order-service")
+@RequiredArgsConstructor
 public class RepairOrderServiceController {
 
-    @Autowired
-    private RepairOrderDetailService service;
+    private final RepairOrderDetailService repairOrderDetailService;
 
     @PostMapping("/add")
-    public String addService(@RequestBody AddServiceRequest request) {
-        service.addService(request);
-        return "Service added successfully";
+    public ResponseEntity<Void> addService(@RequestBody @Valid AddServiceRequest request) {
+        repairOrderDetailService.addService(request);
+        return ResponseEntity.noContent().build();
     }
 }

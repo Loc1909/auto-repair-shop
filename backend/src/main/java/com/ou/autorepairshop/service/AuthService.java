@@ -33,7 +33,6 @@ public class AuthService {
     private final AuthenticationManager authManager;
     private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
-
     public UserResponse register(UserRegisterRequest request) {
         if (userRepository.existsByUsername(request.username())) {
             throw new DuplicateResourceException("Username này đã tồn tại");
@@ -71,12 +70,12 @@ public class AuthService {
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByUsername(request.emailOrUsername())
                 .orElseGet(() -> userRepository.findByEmail(request.emailOrUsername())
-                        .orElseThrow(() -> new RuntimeException("User not found")));
+                        .orElseThrow(() -> new org.springframework.security.authentication.BadCredentialsException("Sai tên đăng nhập hoặc mật khẩu")));
 
         authManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), request.password()));
-//        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-//            throw new RuntimeException("Invalid password");
-//        }
+        // if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+        // throw new RuntimeException("Invalid password");
+        // }
 
         UserDetails userDetails = userDetailsService
                 .loadUserByUsername(user.getUsername());
@@ -90,7 +89,7 @@ public class AuthService {
                 "Bearer",
                 expiresIn,
                 UserResponse.fromEntity(user));
-//                userMapper.toResponse(user));
+        // userMapper.toResponse(user));
     }
 
     public UserResponse getCurrentUser(Authentication authentication) {
