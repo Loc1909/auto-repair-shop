@@ -32,6 +32,11 @@ public class AuthController {
                 .body(authService.register(request));
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refresh(@RequestBody String refreshToken) {
+        return ResponseEntity.ok(authService.refreshToken(refreshToken));
+    }
+
     @GetMapping("/me")
     public ResponseEntity<UserResponse> me(Authentication authentication) {
         UserResponse user = authService.getCurrentUser(authentication);

@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -88,8 +89,30 @@ public class AuthService {
         // userMapper.toResponse(user));
     }
 
+    public AuthResponse refreshToken(String refreshToken) {
+        String username = jwtService.extractUsername(refreshToken);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User", username));
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
+
+        // Kiểm tra token có hợp lệ không
+        if (jwtService.validateToken(refreshToken, userDetails)) {
+            String accessToken = jwtService.generateAccessToken(userDetails);
+            String newRefreshToken = jwtService.generateRefreshToken(userDetails);
+            Long expiresIn = jwtProperties.getAccessTokenExpiresMs();
+
+            return AuthResponse.of(accessToken,
+                    newRefreshToken,
+                    "Bearer",
+                    expiresIn,
+                    UserResponse.fromEntity(user));
+        }
+        throw new BadCredentialsException("Refresh token không hợp lệ");
+    }
+
     public UserResponse getCurrentUser(Authentication authentication) {
-        if (authentication != null || !authentication.isAuthenticated()) {
+        if (authentication == null || !authentication.isAuthenticated()) {
             throw new ResourceNotFoundException("Chưa đăng nhập");
         }
         String username = authentication.getName();
