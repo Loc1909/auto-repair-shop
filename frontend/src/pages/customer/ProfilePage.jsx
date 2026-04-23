@@ -1,28 +1,29 @@
 // src/pages/customer/ProfilePage.jsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useOutletContext } from "react-router-dom";
 import BackgroundOrbs from "../../components/effects/BackgroundOrbs";
 import { C } from "../../constants/colors";
 import "../../styles/customer.css";
+import { getCurrentCustomerInfo } from "../../api/customerApi";
 
 const FIELDS = [
-  ["name",    "👤", "Họ và tên",       "Nguyễn Văn A"],
-  ["phone",   "📱", "Số điện thoại",   "0901 234 567"],
-  ["email",   "📧", "Email",           "email@example.com"],
-  ["address", "📍", "Địa chỉ",        "123 Đường ABC"],
+  ["name", "👤", "Họ và tên", "Nguyễn Văn A"],
+  ["phone", "📱", "Số điện thoại", "0901 234 567"],
+  ["email", "📧", "Email", "email@example.com"],
+  ["address", "📍", "Địa chỉ", "123 Đường ABC"],
 ];
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { user, showToast } = useOutletContext();
-
+  const [customerData, setCustomerData] = useState(null);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
-    name:    user?.name    || "",
-    phone:   user?.phone   || "",
-    email:   user?.email   || "",
-    address: "123 Lê Văn Sỹ, Q.3, TP.HCM",
+    name: customerData?.name || "",
+    phone: customerData?.phone || "",
+    email: user?.email || "",
+    address: customerData?.address || "",
   });
 
   const upd = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
@@ -31,6 +32,45 @@ export default function ProfilePage() {
     setEditing(false);
     showToast("Cập nhật thông tin thành công ✓", "success");
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await getCurrentCustomerInfo();
+        setCustomerData(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    setForm({
+      name: customerData?.name || "",
+      phone: customerData?.phone || "",
+      email: user?.email || "",
+      address: customerData?.address || "",
+    });
+  }, [customerData]);
+
+  if (!user) {
+    return (
+      <div style={{ minHeight: "100vh", padding: "6rem 5% 3rem", position: "relative" }}>
+        <BackgroundOrbs />
+        Chưa đăng nhập!
+      </div>
+    );
+  }
+  if (!customerData) {
+    return (
+      <div style={{ minHeight: "100vh", padding: "6rem 5% 3rem", position: "relative" }}>
+        <BackgroundOrbs />
+        Đang tải...
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: "100vh", padding: "6rem 5% 3rem", position: "relative" }}>
@@ -147,7 +187,7 @@ export default function ProfilePage() {
               transition: "all .25s",
             }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,107,43,.3)"; e.currentTarget.style.color = C.text; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border;              e.currentTarget.style.color = C.textSub; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textSub; }}
           >
             <span>Đổi mật khẩu</span>
             <span>→</span>
@@ -166,7 +206,7 @@ export default function ProfilePage() {
               transition: "all .25s",
             }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,107,43,.3)"; e.currentTarget.style.color = C.text; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border;              e.currentTarget.style.color = C.textSub; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textSub; }}
           >
             <span>Xác thực 2 lớp (2FA)</span>
             <span style={{ color: C.amber, fontSize: ".78rem" }}>Chưa bật →</span>

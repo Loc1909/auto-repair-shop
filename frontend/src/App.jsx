@@ -26,8 +26,6 @@ import EmployeeRepairProgress from "./pages/employee/EmployeeRepairProgress";
 
 //===== HOME PAGE =====
 import HomePage from "./pages/home/HomePage";
-import Login from "./pages/auth/Login.jsx";
-import Register from "./pages/auth/Register.jsx";
 
 import { listenForegroundMessages } from "./firebase";
 
@@ -64,8 +62,7 @@ function App() {
 
         {/* ===== HOME ===== */}
         <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        
         {/* ===== CUSTOMER ===== */}
         <Route path="/*" element={<CustomerRoutes />} />
         

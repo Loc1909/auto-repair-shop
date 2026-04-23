@@ -4,15 +4,15 @@ import {
   ListItemText, Typography, ListItemIcon,
   Drawer, Avatar, Divider
 } from "@mui/material";
-
 import {
   DashboardRounded,
   EventNoteRounded,
   AssignmentTurnedInRounded,
   BuildRounded,
   AccountCircle,
-  ExitToApp
+  LogoutRounded
 } from "@mui/icons-material";
+import { logout } from "../../api/authApi";
 
 const menuItems = [
   { label: "Bảng điều khiển", path: "/employee", icon: <DashboardRounded /> },
@@ -87,40 +87,54 @@ function EmployeeSidebar({ mobileOpen, handleDrawerToggle, isMobile }) {
 
       <Box sx={{ flexGrow: 1 }} />
 
-      <List>
-        <ListItem disablePadding>
-          <ListItemButton 
-            onClick={() => {
-              localStorage.clear();
-              navigate("/login");
-            }}
-            sx={{ 
-              mx: 1, borderRadius: 2, 
-              color: "#ff5252",
-              '&:hover': { bgcolor: "rgba(255, 82, 82, 0.1)" } 
-            }}
-          >
-            <ListItemIcon sx={{ color: "inherit", minWidth: 40 }}>
-              <ExitToApp />
-            </ListItemIcon>
-            <ListItemText primary="Đăng xuất" primaryTypographyProps={{ fontWeight: 600 }} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-
       {/* Thông tin User */}
       <Box sx={{ p: 2, m: 2, bgcolor: "rgba(255,255,255,0.05)", borderRadius: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Avatar sx={{ bgcolor: "#4caf50", width: 44, height: 44 }}>
+        <Avatar sx={{ background: "linear-gradient(135deg, #4caf50, #2e7d32)", width: 44, height: 44 }}>
           <AccountCircle />
         </Avatar>
-        <Box>
-          <Typography variant="subtitle2" fontWeight="bold">
+        <Box sx={{ overflow: 'hidden' }}>
+          <Typography variant="subtitle2" fontWeight={700} noWrap>
             {JSON.parse(localStorage.getItem("user"))?.username || "Nhân viên"}
           </Typography>
           <Typography variant="caption" sx={{ color: "#a2a3b7" }}>
             ID: #{JSON.parse(localStorage.getItem("user"))?.employeeId || "N/A"}
           </Typography>
         </Box>
+      </Box>
+
+      {/* Nút Đăng xuất */}
+      <Box sx={{ px: 2, pb: 2 }}>
+        <ListItemButton
+          onClick={() => {
+            logout();
+            navigate("/login");
+          }}
+          sx={{
+            borderRadius: 2,
+            py: 1.25,
+            px: 2,
+            background: "rgba(255, 72, 66, 0.08)",
+            border: "1px solid rgba(255, 72, 66, 0.15)",
+            color: "#ff6b6b",
+            transition: "all 0.25s ease",
+            '&:hover': {
+              background: "linear-gradient(135deg, rgba(255,72,66,0.22), rgba(255,107,107,0.18))",
+              border: "1px solid rgba(255, 72, 66, 0.4)",
+              color: "#ff4842",
+              transform: "translateY(-1px)",
+              boxShadow: "0 4px 16px rgba(255, 72, 66, 0.2)",
+            },
+            '&:active': { transform: "translateY(0px)" }
+          }}
+        >
+          <ListItemIcon sx={{ color: "inherit", minWidth: 38 }}>
+            <LogoutRounded fontSize="small" />
+          </ListItemIcon>
+          <ListItemText
+            primary="Đăng xuất"
+            primaryTypographyProps={{ fontWeight: 600, fontSize: '0.9rem' }}
+          />
+        </ListItemButton>
       </Box>
     </Box>
   );

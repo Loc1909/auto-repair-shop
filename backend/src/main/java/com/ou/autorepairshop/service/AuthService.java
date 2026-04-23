@@ -1,10 +1,7 @@
 package com.ou.autorepairshop.service;
 
 import com.ou.autorepairshop.config.JwtProperties;
-import com.ou.autorepairshop.dto.AuthResponse;
-import com.ou.autorepairshop.dto.LoginRequest;
-import com.ou.autorepairshop.dto.UserRegisterRequest;
-import com.ou.autorepairshop.dto.UserResponse;
+import com.ou.autorepairshop.dto.*;
 import com.ou.autorepairshop.entity.Customer;
 import com.ou.autorepairshop.entity.Role;
 import com.ou.autorepairshop.entity.User;
@@ -56,7 +53,14 @@ public class AuthService {
         User s = userRepository.save(user);
 
         Customer customer = new Customer();
-        customer.setName(request.username());
+
+        if (request.customer() != null) {
+            CustomerRequest c = request.customer();
+            customer.setName(c.name());
+            customer.setPhone(c.phone());
+            customer.setAddress(c.address());
+        }
+
         customer.setUser(user);
 
         s.setCustomer(customer);

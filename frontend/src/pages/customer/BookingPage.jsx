@@ -1,10 +1,13 @@
 // src/pages/customer/BookingPage.jsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useOutletContext } from "react-router-dom";
 import BackgroundOrbs from "../../components/effects/BackgroundOrbs";
 import { C } from "../../constants/colors";
 import "../../styles/customer.css";
+import { getCurrentUserVehicle } from "../../api/vehicleApi";
+import { getCurrentCustomerInfo } from "../../api/customerApi";
+import { makeAppointment } from "../../api/appointmentApi";
 
 const SERVICES_LIST = [
   "Bảo dưỡng định kỳ",
@@ -31,24 +34,68 @@ const STEP_LABELS = ["Chọn dịch vụ", "Chọn thời gian", "Xác nhận"];
 
 export default function BookingPage() {
   const navigate = useNavigate();
-  const { showToast } = useOutletContext();
-
+  const { user, showToast } = useOutletContext();
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState({ car: "", service: "", date: "", time: "", note: "" });
+  const [form, setForm] = useState({
+    vehicleId: "", appointmentTime: "", note: "",
+    customerId: "", status: "PENDING",
+    date: "", time: ""
+  });
+  const [vehicleData, setVehicleData] = useState([]);
+  const [customerData, setCustomerData] = useState(null);
   const [submitted, setSubmitted] = useState(false);
-
+  const selectedVehicle = vehicleData.find(v => v.id === form.vehicleId);
   const upd = k => v => setForm(f => ({ ...f, [k]: v }));
 
   const canNext = () => {
-    if (step === 0) return form.car && form.service;
+    if (step === 0) return form.vehicleId && form.note;
     if (step === 1) return form.date && form.time;
     return true;
   };
 
-  const handleSubmit = () => {
-    setSubmitted(true);
-    showToast("Đặt lịch thành công! Mã APG-" + Math.floor(Math.random() * 999 + 100), "success");
+  const handleSubmit = async () => {
+    try {
+      const res = await makeAppointment({
+        vehicleId: form.vehicleId,
+        note: form.note,
+        appointmentTime: `${form.date}T${form.time.split("–")[0]}:00`,
+        status: "PENDING",
+        customerId: customerData.id
+      });
+      setSubmitted(true);
+      showToast("Đặt lịch thành công!", "success");
+    } catch (err) {
+      setSubmitted(false);
+      console.error(err)
+      showToast("Lỗi đặt lịch sửa chữa", "error");
+    } finally {
+
+    }
   };
+
+  useEffect(() => {
+    const fetchVehicleData = async () => {
+      try {
+        const res = await getCurrentUserVehicle();
+        setVehicleData(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchVehicleData();
+  }, []);
+  useEffect(() => {
+    if (!user?.id) return;
+    const fetchCustomerData = async () => {
+      try {
+        const res = await getCurrentCustomerInfo();
+        setCustomerData(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchCustomerData();
+  }, [user]);
 
   // ── Success screen ──────────────────────────────────────────────────────────
   if (submitted) return (
@@ -67,7 +114,7 @@ export default function BookingPage() {
 
         <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 18, padding: "1.5rem", marginBottom: "2rem", textAlign: "left" }}>
           {[
-            ["🚗", "Xe", form.car],
+            ["🚗", "Xe", form.vehicleName],
             ["🔧", "Dịch vụ", form.service],
             ["📅", "Ngày", form.date],
             ["🕐", "Giờ", form.time],
@@ -129,9 +176,15 @@ export default function BookingPage() {
             <div>
               <div className="input-wrap">
                 <label>Xe của bạn</label>
-                <select value={form.car} onChange={e => upd("car")(e.target.value)}>
+                <select
+                  value={form.vehicleId}
+                  onChange={e => upd("vehicleId")(Number(e.target.value))} >
                   <option value="">Chọn xe...</option>
-                  <option value="Toyota Fortuner — 51F-123.45">Toyota Fortuner — 51F-123.45</option>
+                  {vehicleData.map(v => (
+                    <option key={v.id} value={v.id}>
+                      {v.brand} {v.model} — {v.licensePlate}
+                    </option>
+                  ))}
                   <option value="+ Thêm xe mới">+ Thêm xe mới</option>
                 </select>
               </div>
@@ -233,7 +286,7 @@ export default function BookingPage() {
               </h3>
 
               {[
-                ["🚗", "Xe", form.car],
+                ["🚗", "Xe", selectedVehicle ? `${selectedVehicle.brand} ${selectedVehicle.model} — ${selectedVehicle.licensePlate}` : "Chưa chọn"],
                 ["🔧", "Dịch vụ", form.service],
                 ["📅", "Ngày", form.date],
                 ["🕐", "Giờ", form.time],
