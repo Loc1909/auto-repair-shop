@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/quotations")
 @RequiredArgsConstructor
@@ -29,13 +31,13 @@ public class QuotationController {
     }
 
     @GetMapping("/by-order/{repairOrderId}")
-    public ResponseEntity<QuotationResponse> getByRepairOrder(@PathVariable Long repairOrderId) {
+    public ResponseEntity<List<QuotationResponse>> getByRepairOrder(@PathVariable Long repairOrderId) {
         return ResponseEntity.ok(quotationService.getByRepairOrder(repairOrderId));
     }
 
-    @PutMapping("/repair-order/{repairOrderId}")
-    public ResponseEntity<QuotationResponse> updateStatus(@PathVariable Long repairOrderId,
+    @PutMapping("/{id}/status")
+    public ResponseEntity<QuotationResponse> updateStatus(@PathVariable Long id,
                                                           @RequestParam String action) {
-        return ResponseEntity.ok(quotationService.updateQuotationStatus(repairOrderId, action));
+        return ResponseEntity.ok(quotationService.updateQuotationStatus(id, action));
     }
 }

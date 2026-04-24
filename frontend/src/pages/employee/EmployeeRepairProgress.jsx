@@ -31,7 +31,7 @@ function EmployeeRepairProgress() {
   const [partRequests, setPartRequests] = useState([]);
   const [parts, setParts] = useState([]);
   const [services, setServices] = useState([]);
-  const [quotation, setQuotation] = useState(null);
+  const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -55,9 +55,9 @@ function EmployeeRepairProgress() {
 
       try {
         const quotRes = await axiosClient.get(`/quotations/by-order/${id}`);
-        setQuotation(quotRes.data);
+        setQuotations(quotRes.data || []);
       } catch {
-        setQuotation(null);
+        setQuotations([]);
       }
     } catch (error) {
       console.error("Lỗi khi tải dữ liệu chi tiết phiếu sửa chữa", error);
@@ -107,7 +107,7 @@ function EmployeeRepairProgress() {
       <TabPanel value={tabValue} index={1}>
         <RepairQuotationTab
           repairOrderId={id}
-          quotation={quotation}
+          quotations={quotations}
           parts={parts}
           services={services}
           refreshData={fetchData}
