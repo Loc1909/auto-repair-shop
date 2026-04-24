@@ -140,7 +140,7 @@ public class RepairOrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
         List<RepairOrder> repairOrders =
-                repairOrderRepository.findByVehicleCustomerIdOrderByCreatedDateDesc(customer.getId());
+                repairOrderRepository.findAllByCustomerId(customer.getId());
 
         return repairOrders.stream()
                 .map(repairOrderMapper::toResponse)

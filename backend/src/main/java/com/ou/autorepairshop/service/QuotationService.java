@@ -187,4 +187,55 @@ public class QuotationService {
         return quotationMapper.toResponse(quotation, details, quotationDetailMapper);
     }
 
+    @Transactional
+    public QuotationResponse confirmQuotationStatus(Long repairOrderId, String action) {
+        String username = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Customer customer = customerRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+
+        RepairOrder repairOrder = repairOrderRepository.findByIdAndVehicleCustomerId(repairOrderId, customer.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Repair order not found or not yours"));
+
+        Quotation quotation = quotationRepository.findTopByRepairOrderIdOrderByCreatedAtDesc(repairOrder.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation not found"));
+
+        if (!repairOrder.getVehicle().getCustomer().getId().equals(customer.getId())) {
+            throw new BusinessException("You do not have permission to access this quotation");
+        }
+
+        if (quotation.getStatus() != QuotationStatus.PENDING) {
+            throw new BusinessException("Quotation already processed");
+        }
+
+        if ("APPROVE".equalsIgnoreCase(action)) {
+            quotation.setStatus(QuotationStatus.APPROVED);
+            repairOrder.setStatus(RepairStatus.APPROVED);
+            repairOrderRepository.save(repairOrder);
+            List<QuotationDetail> details = quotationDetailRepository.findByQuotationId(quotation.getId());
+            List<RepairOrderDetail> repairDetails = details.stream().map(qd -> RepairOrderDetail.builder()
+                    .repairOrder(repairOrder)
+                    .itemType(qd.getItemType())
+                    .quantity(qd.getQuantity())
+                    .price(qd.getUnitPrice())
+                    .part(qd.getPart())
+                    .service(qd.getService())
+                    .build()).toList();
+            repairOrderDetailRepository.saveAll(repairDetails);
+
+        } else if ("REJECT".equalsIgnoreCase(action)) {
+            quotation.setStatus(QuotationStatus.REJECTED);
+            repairOrder.setStatus(RepairStatus.DIAGNOSING);
+            repairOrderRepository.save(repairOrder);
+        } else {
+            throw new BadRequestException("Invalid action. Use APPROVE or REJECT.");
+        }
+        quotationRepository.save(quotation);
+        List<QuotationDetail> details = quotationDetailRepository.findByQuotationId(quotation.getId());
+        return quotationMapper.toResponse(quotation, details, quotationDetailMapper);
+    }
 }
