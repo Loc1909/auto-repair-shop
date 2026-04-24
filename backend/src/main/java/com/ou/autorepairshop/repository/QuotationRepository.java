@@ -7,5 +7,6 @@ import java.util.Optional;
 
 public interface QuotationRepository extends JpaRepository<Quotation, Long> {
     List<Quotation> findByRepairOrderId(Long repairOrderId);
+    Optional<Quotation> findTopByRepairOrderIdOrderByCreatedAtDesc(Long repairOrderId);
     boolean existsByRepairOrderId(Long repairOrderId);
 }

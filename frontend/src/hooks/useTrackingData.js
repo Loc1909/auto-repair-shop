@@ -39,7 +39,9 @@ export const useTrackingData = (id, initialOrder) => {
             const fetchQuotation = async () => {
                 try {
                     const response = await quotationAPI.getQuotationById(id);
-                    setQuotation(response.data);
+                    const quotations = response.data;
+                    const latest = quotations?.[0];
+                    setQuotation(latest);
                 } catch (error) {
                     console.error("Không có dữ liệu báo giá:", error);
                 } finally {
