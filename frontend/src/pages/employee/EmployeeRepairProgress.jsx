@@ -11,6 +11,8 @@ import RepairStatusTab from "../../components/employee/RepairStatusTab";
 import RepairQuotationTab from "../../components/employee/RepairQuotationTab";
 import PartRequestTab from "../../components/employee/PartRequestTab";
 
+import { socket, connectSocket, disconnectSocket } from "../../api/socket";
+
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
   return (
@@ -36,6 +38,23 @@ function EmployeeRepairProgress() {
 
   useEffect(() => {
     fetchData();
+    
+    connectSocket();
+    socket.on("repair_progress_updated", (newProgress) => {
+      if (String(newProgress.repairOrderId) === String(id)) {
+        setProgresses(prev => {
+          if (prev.find(p => p.id === newProgress.id)) return prev;
+          // Thêm vào đầu danh sách (giả sử danh sách hiển thị từ mới đến cũ)
+          // Hoặc thêm vào cuối tùy logic UI. Trong RepairStatusTab là map từ mảng.
+          return [newProgress, ...prev];
+        });
+      }
+    });
+
+    return () => {
+      socket.off("repair_progress_updated");
+      disconnectSocket();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
