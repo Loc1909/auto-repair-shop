@@ -5,7 +5,9 @@ import com.ou.autorepairshop.dto.RepairServiceDTO;
 import com.ou.autorepairshop.dto.RepairServiceRequest;
 import com.ou.autorepairshop.entity.RepairService;
 import com.ou.autorepairshop.entity.ServiceCategory;
+import com.ou.autorepairshop.exception.ResourceNotFoundException;
 import com.ou.autorepairshop.repository.RepairServiceRepository;
+import com.ou.autorepairshop.repository.ReviewRepository;
 import com.ou.autorepairshop.repository.ServiceCategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,6 +22,7 @@ public class RepairServiceService {
 
     private final RepairServiceRepository repository;
     private final ServiceCategoryRepository categoryRepository;
+    private final ReviewRepository reviewRepository;
 
     public List<RepairServiceDTO> getAll() {
         return repository.findAllWithCategory()
@@ -118,5 +121,13 @@ public class RepairServiceService {
 
     public Page<RepairServiceDTO> getServices(String search, Pageable pageable) {
         return repository.findAllWithCategoryDTO(search, pageable);
+    }
+
+    public Double getAverageRating(Long serviceId) {
+        repository.findById(serviceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
+
+        Double avg = reviewRepository.getAverageRatingByServiceId(serviceId);
+        return avg != null ? avg : 0.0;
     }
 }

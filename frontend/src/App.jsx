@@ -1,8 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
+import CustomerRoutes from "./routes/CustomerRoutes";
 
-import AdminLayout from "./components/AdminLayout";
-import EmployeeLayout from "./components/EmployeeLayout";
+import AdminLayout from "./components/layout/AdminLayout";
+import EmployeeLayout from "./components/layout/EmployeeLayout";
 
 // ===== ADMIN PAGES =====
 import AdminDashboard from "./pages/admin/dashboard/Dashboard";
@@ -23,6 +24,8 @@ import EmployeeRepairOrders from "./pages/employee/EmployeeRepairOrders";
 import EmployeeRepairProgress from "./pages/employee/EmployeeRepairProgress";
 
 
+//===== HOME PAGE =====
+import HomePage from "./pages/home/HomePage";
 
 import { listenForegroundMessages } from "./firebase";
 
@@ -57,6 +60,12 @@ function App() {
           <Route path="repair-orders/:id" element={<EmployeeRepairProgress />} />
         </Route>
 
+        {/* ===== HOME ===== */}
+        <Route path="/" element={<HomePage />} />
+        
+        {/* ===== CUSTOMER ===== */}
+        <Route path="/*" element={<CustomerRoutes />} />
+        
       </Routes>
     </BrowserRouter>
   );

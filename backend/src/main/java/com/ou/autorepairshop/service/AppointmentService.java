@@ -1,6 +1,7 @@
 package com.ou.autorepairshop.service;
 
 import com.ou.autorepairshop.dto.*;
+
 import com.ou.autorepairshop.entity.*;
 import com.ou.autorepairshop.enums.AppointmentStatus;
 import com.ou.autorepairshop.exception.BusinessException;
@@ -9,6 +10,7 @@ import com.ou.autorepairshop.mapper.AppointmentMapper;
 import com.ou.autorepairshop.repository.*;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,7 @@ public class AppointmentService {
     private final VehicleRepository vehicleRepository;
     private final EmployeeRepository employeeRepository;
     private final NotificationService notificationService;
+    private final UserRepository userRepository;
 
     // ================= CREATE =================
     @Transactional
@@ -47,6 +50,28 @@ public class AppointmentService {
         return appointmentMapper.toResponse(appointment);
     }
 
+    @Transactional(readOnly = true)
+    public List<AppointmentResponse> getAppointmentsByCustomer(Long customerId) {
+
+        List<Appointment> appointments = appointmentRepository.findByCustomerIdOrderByAppointmentTimeDesc(customerId);
+
+        return appointmentMapper.toResponseList(appointments);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AppointmentResponse> getMyAppointments() {
+
+        String username = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return appointmentMapper.toResponseList(
+                appointmentRepository.findByCustomerUserId(user.getId()));
+    }
+
     // ================= CONFIRM (CUSTOMER FLOW) =================
     @Transactional
     public AppointmentResponse confirmAppointment(Long id) {
@@ -56,8 +81,7 @@ public class AppointmentService {
         if (appointment.getStatus() != AppointmentStatus.PENDING) {
             throw new BusinessException(
                     "Cannot confirm appointment with status: " + appointment.getStatus()
-                            + ". Only PENDING appointments can be confirmed."
-            );
+                            + ". Only PENDING appointments can be confirmed.");
         }
 
         appointment.setStatus(AppointmentStatus.CONFIRMED);
@@ -75,8 +99,7 @@ public class AppointmentService {
 
         if (AppointmentStatus.PENDING != appointment.getStatus()) {
             throw new BusinessException(
-                    "Cannot confirm appointment with status: " + appointment.getStatus()
-            );
+                    "Cannot confirm appointment with status: " + appointment.getStatus());
         }
 
         Employee employee = employeeRepository.findById(employeeId)
@@ -89,8 +112,7 @@ public class AppointmentService {
 
         sendNotificationSafe(
                 NotificationEvent.APPOINTMENT_CONFIRMED,
-                saved
-        );
+                saved);
 
         return appointmentMapper.toResponseForEmployee(saved);
     }
@@ -136,8 +158,7 @@ public class AppointmentService {
 
         sendNotificationSafe(
                 NotificationEvent.APPOINTMENT_CANCELLED,
-                saved
-        );
+                saved);
 
         return appointmentMapper.toResponseForEmployee(saved);
     }

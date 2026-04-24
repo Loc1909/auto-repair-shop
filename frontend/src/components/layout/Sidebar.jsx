@@ -4,30 +4,44 @@ import {
   ListItemText, Typography, ListItemIcon
 } from "@mui/material";
 
+
+
 import {
   Dashboard,
-  EventNote,
-  AssignmentTurnedIn,
-  Build
+  MiscellaneousServices,
+  Build,
+  People,
+  Engineering,
+  Person,
+  Category,
+  AttachMoney,
+  Notifications
 } from "@mui/icons-material";
 
 const menuItems = [
-  { label: "Bảng điều khiển", path: "/employee", icon: <Dashboard /> },
-  { label: "Lịch làm việc", path: "/employee/schedule", icon: <EventNote /> },
-  { label: "Lịch hẹn", path: "/employee/appointments", icon: <AssignmentTurnedIn /> },
-  { label: "Phiếu sửa chữa", path: "/employee/repair-orders", icon: <Build /> }
+  { label: "Bảng điều khiển", path: "/admin", icon: <Dashboard /> },
+  { label: "Dịch vụ", path: "/admin/services", icon: <MiscellaneousServices /> },
+  { label: "Phụ tùng", path: "/admin/parts", icon: <Build /> },
+  { label: "Người dùng", path: "/admin/users", icon: <People /> },
+  { label: "Nhân viên", path: "/admin/employees", icon: <Engineering /> },
+  { label: "Khách hàng", path: "/admin/customers", icon: <Person /> },
+  { label: "Danh mục dịch vụ", path: "/admin/service-categories", icon: <Category /> },
+  { label: "Doanh thu", path: "/admin/revenue", icon: <AttachMoney /> },
+  { label: "Cấu hình thông báo", path: "/admin/notification-config", icon: <Notifications /> }
 ];
 
-function EmployeeSidebar() {
+function Sidebar() {
   const location = useLocation();
 
   return (
     <Box
       sx={{
-        width: 240,
+        width: 270,
+        flexShrink: 0,
         bgcolor: "#fff",
         borderRight: "1px solid #e0e0e0",
         minHeight: "100vh",
+        color: "#3f51b5",
         px: 2,
         py: 3,
         boxShadow: "2px 0 10px rgba(0,0,0,0.05)"
@@ -38,18 +52,18 @@ function EmployeeSidebar() {
         sx={{
           mb: 4,
           fontWeight: "bold",
-          color: "#4caf50",
+          color: "#3f51b5",
           textAlign: "center"
         }}
       >
-        Nhân viên
+        Admin Panel
       </Typography>
 
       <List>
         {menuItems.map((item) => {
           const isActive =
             location.pathname === item.path ||
-            (item.path !== "/employee" && location.pathname.startsWith(item.path));
+            (item.path !== "/admin" && location.pathname.startsWith(item.path));
 
           return (
             <ListItem key={item.path} disablePadding>
@@ -62,10 +76,10 @@ function EmployeeSidebar() {
                   mb: 1,
                   transition: "0.2s",
                   "&:hover": {
-                    bgcolor: "#e8f5e9",
+                    bgcolor: "#f0f2ff",
                   },
                   "&.Mui-selected": {
-                    bgcolor: "#4caf50",
+                    bgcolor: "#3f51b5",
                     color: "#fff",
                     fontWeight: "bold",
                     "& .MuiListItemIcon-root": {
@@ -77,7 +91,7 @@ function EmployeeSidebar() {
                 {/* ICON */}
                 <ListItemIcon
                   sx={{
-                    color: isActive ? "#fff" : "#4caf50",
+                    color: isActive ? "#fff" : "#3f51b5",
                     minWidth: 35
                   }}
                 >
@@ -95,4 +109,4 @@ function EmployeeSidebar() {
   );
 }
 
-export default EmployeeSidebar;
+export default Sidebar;

@@ -3,7 +3,7 @@ const formatMoney = (value) =>
 
 function RevenueSummary({ stats }) {
   return (
-    <div style={{ marginBottom: 20 }}>
+    <div style={{ marginBottom: 20, color: "#000000"}}>
       <b>Tổng:</b> {formatMoney(stats.total)} VND |{" "}
       <b>Cao nhất:</b> {formatMoney(stats.max)} |{" "}
       <b>Thấp nhất:</b> {formatMoney(stats.min)}

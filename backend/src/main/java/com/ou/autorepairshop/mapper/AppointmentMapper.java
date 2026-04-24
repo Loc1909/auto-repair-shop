@@ -10,6 +10,8 @@ import com.ou.autorepairshop.entity.Vehicle;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring")
 public interface AppointmentMapper {
 
@@ -21,9 +23,14 @@ public interface AppointmentMapper {
                          Employee employee);
 
     @Mapping(source = "customer.id", target = "customerId")
-    @Mapping(source = "vehicle.id", target = "vehicleId")
+    @Mapping(source = "vehicle.licensePlate", target = "vehicleName")
     @Mapping(source = "assignedEmployee.id", target = "employeeId")
+    @Mapping(source = "status", target = "status")
     AppointmentResponse toResponse(Appointment appointment);
+    List<AppointmentResponse> toResponseList(List<Appointment> appointments);
+    default String mapVehicleName(Vehicle vehicle) {
+        return vehicle != null ? vehicle.getLicensePlate() : null;
+    }
 
     @Mapping(target = "customerId", source = "customer.id")
     @Mapping(target = "customerName", source = "customer.name")

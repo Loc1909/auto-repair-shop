@@ -1,5 +1,7 @@
 package com.ou.autorepairshop.service;
 
+import com.ou.autorepairshop.enums.RepairStatus;
+import com.ou.autorepairshop.exception.BusinessException;
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
 import com.ou.autorepairshop.mapper.RepairProgressMapper;
 import com.ou.autorepairshop.entity.RepairOrder;
@@ -22,11 +24,17 @@ public class RepairProgressService {
     private final RepairProgressRepository repairProgressRepository;
     private final RepairOrderRepository repairOrderRepository;
     private final RepairProgressMapper repairProgressMapper;
+    private final SocketIOService socketIOService;
 
     @Transactional
     public RepairProgressResponse addProgress(UpdateProgressRequest req) {
         RepairOrder order = repairOrderRepository.findById(req.repairOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("RepairOrder", req.repairOrderId()));
+
+        if (order.getStatus() == RepairStatus.COMPLETED) {
+            throw new BusinessException(
+                    "Cannot update progress: repair order is already COMPLETED.");
+        }
 
         order.setStatus(req.status());
         repairOrderRepository.save(order);
@@ -38,7 +46,14 @@ public class RepairProgressService {
                 .updateTime(LocalDateTime.now())
                 .build();
 
-        return repairProgressMapper.toResponse(repairProgressRepository.save(progress));
+        // return repairProgressMapper.toResponse(repairProgressRepository.save(progress));
+
+        RepairProgressResponse response = repairProgressMapper.toResponse(repairProgressRepository.save(progress));
+        
+        // Gửi thông báo real-time
+        socketIOService.emit("repair_progress_updated", response);
+        
+        return response;
     }
 
     @Transactional(readOnly = true)

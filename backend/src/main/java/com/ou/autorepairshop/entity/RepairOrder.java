@@ -42,6 +42,8 @@ public class RepairOrder {
     @JoinColumn(name = "appointment_id")
     private Appointment appointment;
 
+    @OneToMany(mappedBy = "repairOrder", cascade = CascadeType.ALL)
+    private List<Quotation> quotations;
     @OneToMany(mappedBy = "repairOrder", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RepairOrderDetail> details;
 

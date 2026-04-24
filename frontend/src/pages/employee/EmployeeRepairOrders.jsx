@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
 import {
-  Typography, Box, Paper, Grid, CircularProgress,
+  Typography, Box, Grid, CircularProgress,
   Button, Chip, Dialog, DialogTitle, DialogContent,
-  DialogActions, TextField,
-  Autocomplete
+  DialogActions, TextField, Autocomplete,
+  Card, CardContent, Divider, Paper
 } from "@mui/material";
+import { AddCircle, CheckCircle, ArrowForward, Build, AirportShuttle, LocalOffer } from "@mui/icons-material";
 import axiosClient from "../../api/axiosClient";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 
-const MOCK_EMPLOYEE_ID = 14; // TODO: Lấy từ Context/Auth
 
 function EmployeeRepairOrders() {
   const [orders, setOrders] = useState([]);
@@ -32,8 +32,17 @@ function EmployeeRepairOrders() {
   }, []);
 
   const fetchOrders = async () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const employeeId = user?.employeeId;
+
+    if (!employeeId) {
+      console.error("Không tìm thấy Employee ID");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await axiosClient.get(`/repair-orders/employee/${MOCK_EMPLOYEE_ID}`);
+      const response = await axiosClient.get(`/repair-orders/employee/${employeeId}`);
       setOrders(response.data);
     } catch (error) {
       console.error("Lỗi khi tải phiếu sửa chữa", error);
@@ -61,9 +70,12 @@ function EmployeeRepairOrders() {
       return;
     }
     try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const employeeId = user?.employeeId;
+
       await axiosClient.post("/repair-orders/receive", {
         appointmentId: selectedAppointment.id,
-        employeeId: MOCK_EMPLOYEE_ID,
+        employeeId: employeeId,
         notes: receiveNotes
       });
       setReceiveOpen(false);
@@ -101,89 +113,152 @@ function EmployeeRepairOrders() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "PENDING": return "warning";
-      case "DIAGNOSING": return "secondary";
-      case "QUOTING": return "info";
-      case "APPROVED": return "primary";
-      case "REPAIRING": return "success";
-      case "COMPLETED": return "success";
-      case "CANCELLED": return "error";
-      default: return "default";
+      case "PENDING": return { color: "warning", label: "Chờ xử lý" };
+      case "DIAGNOSING": return { color: "secondary", label: "Đang chẩn đoán" };
+      case "QUOTING": return { color: "info", label: "Đang làm báo giá" };
+      case "APPROVED": return { color: "primary", label: "Khách đã duyệt" };
+      case "REPAIRING": return { color: "success", label: "Đang sửa chữa" };
+      case "COMPLETED": return { color: "success", label: "Hoàn thành" };
+      case "CANCELLED": return { color: "error", label: "Đã hủy" };
+      default: return { color: "default", label: status };
     }
   };
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight="bold">
-          Quản lý Phiếu sửa chữa
-        </Typography>
-        <Button variant="contained" color="primary" onClick={openReceiveDialog}>
-          + Tiếp nhận xe
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4} flexWrap="wrap" gap={2}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: "bold", color: "#1e1e2d" }}>
+            Phiếu sửa chữa & Bảo dưỡng
+          </Typography>
+          <Typography variant="body1" sx={{ color: "#6e6e7c", mt: 1 }}>
+            Quản lý các xe đang nằm xưởng và theo dõi tiến độ sửa chữa.
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          color="primary"
+          size="large"
+          startIcon={<AddCircle />}
+          onClick={openReceiveDialog}
+          sx={{ borderRadius: 2, px: 3, py: 1.5, fontWeight: "bold", boxShadow: "0 4px 12px rgba(25, 118, 210, 0.2)" }}
+        >
+          Tiếp nhận xe mới
         </Button>
       </Box>
 
-      <Grid container spacing={3}>
-        {orders.map((order) => (
-          <Grid item xs={12} sm={6} md={4} key={order.id}>
-            <Paper sx={{ p: 2, borderRadius: 2, boxShadow: 3 }}>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                <Typography variant="h6" fontWeight="bold">
-                  Mã phiếu: #{order.id}
-                </Typography>
-                <Chip label={order.status} color={getStatusColor(order.status)} size="small" />
-              </Box>
+      <Grid container spacing={4}>
+        {orders.map((order) => {
+          const statusInfo = getStatusColor(order.status);
+          return (
+            <Grid item xs={12} sm={6} md={4} xl={3} key={order.id}>
+              <Card sx={{
+                borderRadius: 4,
+                boxShadow: "0 8px 16px rgba(0,0,0,0.03)",
+                transition: "transform 0.2s, box-shadow 0.2s",
+                "&:hover": { transform: "translateY(-4px)", boxShadow: "0 12px 24px rgba(0,0,0,0.06)" },
+                border: "1px solid rgba(0,0,0,0.05)"
+              }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Build color="primary" />
+                      <Typography variant="h6" fontWeight="bold">
+                        #{order.id}
+                      </Typography>
+                    </Box>
+                    <Chip
+                      label={statusInfo.label}
+                      color={statusInfo.color}
+                      size="small"
+                      sx={{ fontWeight: "bold" }}
+                    />
+                  </Box>
 
-              <Typography variant="body2" color="textSecondary" gutterBottom>
-                <strong>Xe:</strong> {order.vehicleLicensePlate || "Không rõ"}
-              </Typography>
-              <Typography variant="body2" color="textSecondary" gutterBottom>
-                <strong>Ngày tạo:</strong> {order.createdDate ? dayjs(order.createdDate).format("DD/MM/YYYY HH:mm") : "N/A"}
-              </Typography>
-              <Typography variant="body2" color="textSecondary" gutterBottom>
-                <strong>Ghi chú:</strong> {order.notes || "Không có"}
-              </Typography>
+                  <Box display="flex" flexDirection="column" gap={1.5} mb={2}>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <AirportShuttle fontSize="small" sx={{ color: "#888" }} />
+                      <Typography variant="body2" color="textSecondary">
+                        Xe: <strong>{order.vehicleLicensePlate || "Không rõ biển số"}</strong>
+                      </Typography>
+                    </Box>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <LocalOffer fontSize="small" sx={{ color: "#888" }} />
+                      <Typography variant="body2" color="textSecondary">
+                        Ngày tạo: <strong>{order.createdDate ? dayjs(order.createdDate).format("DD/MM/YYYY HH:mm") : "N/A"}</strong>
+                      </Typography>
+                    </Box>
+                  </Box>
 
-              <Box mt={2} display="flex" gap={1} flexWrap="wrap">
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  size="small"
-                  onClick={() => navigate(`/employee/repair-orders/${order.id}`)}
-                >
-                  Tiến độ & Vật tư
-                </Button>
+                  {order.notes && (
+                    <Box sx={{ bgcolor: "#f8f9fa", p: 1.5, borderRadius: 2, mb: 2 }}>
+                      <Typography variant="body2" color="textSecondary" sx={{ fontStyle: "italic", fontSize: "0.85rem" }}>
+                        "{order.notes}"
+                      </Typography>
+                    </Box>
+                  )}
 
-                {order.status !== "COMPLETED" && order.status !== "CANCELLED" && (
-                  <Button
-                    variant="contained"
-                    color="success"
-                    size="small"
-                    onClick={() => openCompleteDialog(order.id)}
-                  >
-                    Hoàn thành
-                  </Button>
-                )}
-              </Box>
-            </Paper>
-          </Grid>
-        ))}
+                  <Divider sx={{ my: 2 }} />
+
+                  <Box display="flex" gap={1} flexWrap="wrap">
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      size="small"
+                      endIcon={<ArrowForward />}
+                      onClick={() => navigate(`/employee/repair-orders/${order.id}`)}
+                      sx={{ borderRadius: 2, flexGrow: 1 }}
+                    >
+                      Chi tiết & Tiến độ
+                    </Button>
+
+                    {order.status !== "COMPLETED" && order.status !== "CANCELLED" && (
+                      <Button
+                        variant="contained"
+                        color="success"
+                        size="small"
+                        startIcon={<CheckCircle />}
+                        onClick={() => openCompleteDialog(order.id)}
+                        sx={{ borderRadius: 2, flexGrow: 1 }}
+                      >
+                        Hoàn thành
+                      </Button>
+                    )}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          );
+        })}
       </Grid>
 
       {orders.length === 0 && (
-        <Typography color="textSecondary" sx={{ mt: 2 }}>
-          Không có phiếu sửa chữa nào được phân công cho bạn.
-        </Typography>
+        <Paper sx={{ p: 6, textAlign: "center", borderRadius: 4, bgcolor: "#f8f9fa", mt: 2, border: "1px dashed #ccc" }}>
+          <Typography variant="h6" color="textSecondary" gutterBottom>
+            Danh sách trống
+          </Typography>
+          <Typography color="textSecondary">
+            Chưa có phiếu sửa chữa nào được phân công cho bạn.
+          </Typography>
+        </Paper>
       )}
 
       {/* Dialog Tiếp nhận xe */}
-      <Dialog open={receiveOpen} onClose={() => setReceiveOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Tiếp nhận xe (Tạo phiếu sửa chữa)</DialogTitle>
-        <DialogContent>
+      <Dialog
+        open={receiveOpen}
+        onClose={() => setReceiveOpen(false)}
+        fullWidth maxWidth="sm"
+        PaperProps={{ sx: { borderRadius: 3 } }}
+      >
+        <DialogTitle sx={{ fontWeight: "bold", pb: 1 }}>
+          Tiếp nhận xe (Tạo phiếu sửa chữa)
+        </DialogTitle>
+        <Divider />
+        <DialogContent sx={{ pt: 3 }}>
           <Autocomplete
             options={confirmedAppointments}
             getOptionLabel={(apt) =>
-              `#${apt.id} — Xe: ${apt.licensePlate || "N/A"} | Khách: ${apt.customerName || "N/A"}`
+              `Lịch #${apt.id} - Xe: ${apt.licensePlate || "N/A"} - Khách: ${apt.customerName || "N/A"}`
             }
             isOptionEqualToValue={(option, value) => option.id === value.id}
             value={selectedAppointment}
@@ -193,39 +268,46 @@ function EmployeeRepairOrders() {
               <TextField
                 {...params}
                 label="Chọn lịch hẹn đã xác nhận"
-                margin="dense"
                 placeholder="Gõ để tìm kiếm..."
+                variant="outlined"
               />
             )}
-            sx={{ mb: 2 }}
+            sx={{ mb: 3 }}
           />
           <TextField
-            margin="dense"
             label="Ghi chú nhận xe (tuỳ chọn)"
             type="text"
             fullWidth
             multiline
-            rows={3}
+            rows={4}
             variant="outlined"
             value={receiveNotes}
             onChange={(e) => setReceiveNotes(e.target.value)}
+            placeholder="Ghi chú về ngoại thất, nội thất xe lúc nhận..."
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setReceiveOpen(false)}>Hủy bỏ</Button>
-          <Button onClick={handleReceiveVehicle} color="primary" variant="contained">
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button onClick={() => setReceiveOpen(false)} color="inherit">Hủy bỏ</Button>
+          <Button onClick={handleReceiveVehicle} color="primary" variant="contained" sx={{ borderRadius: 2 }}>
             Xác nhận tiếp nhận
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Dialog Hoàn thành */}
-      <Dialog open={completeOpen} onClose={() => setCompleteOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Hoàn thành phiếu sửa chữa</DialogTitle>
-        <DialogContent>
+      <Dialog
+        open={completeOpen}
+        onClose={() => setCompleteOpen(false)}
+        fullWidth maxWidth="xs"
+        PaperProps={{ sx: { borderRadius: 3 } }}
+      >
+        <DialogTitle sx={{ fontWeight: "bold", color: "#2e7d32", pb: 1 }}>
+          Xác nhận Hoàn thành
+        </DialogTitle>
+        <Divider />
+        <DialogContent sx={{ pt: 3 }}>
           <TextField
             autoFocus
-            margin="dense"
             label="Ghi chú hoàn thành"
             type="text"
             fullWidth
@@ -234,12 +316,13 @@ function EmployeeRepairOrders() {
             variant="outlined"
             value={completeNotes}
             onChange={(e) => setCompleteNotes(e.target.value)}
+            placeholder="Nhập lưu ý cho khách nếu có..."
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCompleteOpen(false)}>Hủy bỏ</Button>
-          <Button onClick={handleCompleteOrder} color="success" variant="contained">
-            Đồng ý hoàn thành
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button onClick={() => setCompleteOpen(false)} color="inherit">Trở lại</Button>
+          <Button onClick={handleCompleteOrder} color="success" variant="contained" sx={{ borderRadius: 2 }}>
+            Hoàn tất giao xe
           </Button>
         </DialogActions>
       </Dialog>

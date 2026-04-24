@@ -29,4 +29,16 @@ public class PartRequestController {
     public ResponseEntity<List<PartRequestResponse>> getByRepairOrder(@PathVariable Long repairOrderId) {
         return ResponseEntity.ok(partRequestService.getByRepairOrder(repairOrderId));
     }
+
+    /** Kho duyệt yêu cầu → trừ tồn kho, status APPROVED */
+    @PatchMapping("/{id}/approve")
+    public ResponseEntity<PartRequestResponse> approve(@PathVariable Long id) {
+        return ResponseEntity.ok(partRequestService.approvePartRequest(id));
+    }
+
+    /** Kho từ chối yêu cầu → status REJECTED */
+    @PatchMapping("/{id}/reject")
+    public ResponseEntity<PartRequestResponse> reject(@PathVariable Long id) {
+        return ResponseEntity.ok(partRequestService.rejectPartRequest(id));
+    }
 }

@@ -22,7 +22,7 @@ function NotificationConfig() {
 
     return (
         <Box sx={{ p: 3 }}>
-            <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
+            <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" ,color: "#3f51b5"}}>
                 Quản lý cấu hình thông báo
             </Typography>
 

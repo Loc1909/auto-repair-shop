@@ -10,7 +10,9 @@ public record UserResponse(
         String username,
         String email,
         Role role,
-        boolean active
+        boolean active,
+        Long employeeId,
+        Long customerId
 ) {
     public static UserResponse fromEntity(User user) {
         if (user == null) return null;
@@ -20,7 +22,9 @@ public record UserResponse(
                 user.getUsername(),
                 user.getEmail(),
                 user.getRole(),
-                user.isActive()
+                user.isActive(),
+                user.getEmployee() != null ? user.getEmployee().getId() : null,
+                user.getCustomer() != null ? user.getCustomer().getId() : null
         );
     }
 

@@ -1,5 +1,6 @@
 package com.ou.autorepairshop.repository;
 
+import com.ou.autorepairshop.entity.Role;
 import com.ou.autorepairshop.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +18,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
 
-
     @Query("""
         SELECT u FROM User u
         WHERE LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%'))
@@ -25,6 +25,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
     """)
     Page<User> searchUsers(@Param("search") String search, Pageable pageable);
 
+    @Query("SELECT u FROM User u WHERE " +
+            "(:search IS NULL " +
+            "OR LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')) " +
+            "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+            "AND (:role IS NULL OR u.role = :role)")
+    Page<User> findAllSearchAndRole(
+            @Param("search") String search,
+            @Param("role") Role role,
+            Pageable pageable);
     @Query("""
         SELECT DISTINCT u FROM User u
         LEFT JOIN FETCH u.deviceTokens

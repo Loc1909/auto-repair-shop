@@ -2,25 +2,20 @@ package com.ou.autorepairshop.service;
 
 import com.ou.autorepairshop.dto.CreateQuotationRequest;
 import com.ou.autorepairshop.dto.QuotationDetailItem;
+import com.ou.autorepairshop.dto.QuotationDetailResponse;
 import com.ou.autorepairshop.dto.QuotationResponse;
+import com.ou.autorepairshop.entity.*;
 import com.ou.autorepairshop.enums.ItemType;
 import com.ou.autorepairshop.enums.QuotationStatus;
 import com.ou.autorepairshop.enums.RepairStatus;
+import com.ou.autorepairshop.exception.BadRequestException;
 import com.ou.autorepairshop.exception.BusinessException;
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
-import com.ou.autorepairshop.entity.Part;
-import com.ou.autorepairshop.entity.Quotation;
-import com.ou.autorepairshop.entity.QuotationDetail;
-import com.ou.autorepairshop.entity.RepairOrder;
-import com.ou.autorepairshop.entity.RepairService;
 import com.ou.autorepairshop.mapper.QuotationDetailMapper;
 import com.ou.autorepairshop.mapper.QuotationMapper;
-import com.ou.autorepairshop.repository.QuotationRepository;
-import com.ou.autorepairshop.repository.QuotationDetailRepository;
-import com.ou.autorepairshop.repository.RepairOrderRepository;
-import com.ou.autorepairshop.repository.PartRepository;
-import com.ou.autorepairshop.repository.RepairServiceRepository;
+import com.ou.autorepairshop.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,14 +35,19 @@ public class QuotationService {
     private final RepairServiceRepository serviceRepository;
     private final QuotationDetailMapper quotationDetailMapper;
     private final QuotationMapper quotationMapper;
+    private final UserRepository userRepository;
+    private final CustomerRepository customerRepository;
+    private final RepairOrderDetailRepository repairOrderDetailRepository;
 
     @Transactional
     public QuotationResponse createQuotation(CreateQuotationRequest req) {
         RepairOrder order = repairOrderRepository.findById(req.repairOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("RepairOrder", req.repairOrderId()));
 
-        if (quotationRepository.existsByRepairOrderId(req.repairOrderId())) {
-            throw new BusinessException("A quotation already exists for this repair order.");
+        // Cho phép tạo báo giá miễn là đơn hàng chưa hoàn thành
+        if (order.getStatus() == RepairStatus.COMPLETED) {
+            throw new BusinessException(
+                    "Cannot create quotation for order with status: " + order.getStatus());
         }
 
         Quotation quotation = Quotation.builder()
@@ -80,12 +80,13 @@ public class QuotationService {
     }
 
     @Transactional(readOnly = true)
-    public QuotationResponse getByRepairOrder(Long repairOrderId) {
-        Quotation quotation = quotationRepository.findByRepairOrderId(repairOrderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Quotation for RepairOrder", repairOrderId));
+    public List<QuotationResponse> getByRepairOrder(Long repairOrderId) {
+        List<Quotation> quotations = quotationRepository.findByRepairOrderId(repairOrderId);
 
-        List<QuotationDetail> details = quotationDetailRepository.findByQuotationId(quotation.getId());
-        return quotationMapper.toResponse(quotation, details, quotationDetailMapper);
+        return quotations.stream().map(q -> {
+            List<QuotationDetail> details = quotationDetailRepository.findByQuotationId(q.getId());
+            return quotationMapper.toResponse(q, details, quotationDetailMapper);
+        }).toList();
     }
 
     @Transactional(readOnly = true)
@@ -129,4 +130,61 @@ public class QuotationService {
 
         return builder.build();
     }
+
+    @Transactional
+    public QuotationResponse updateQuotationStatus(Long quotationId, String action) {
+        String username = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Customer customer = customerRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+
+        Quotation quotation = quotationRepository.findById(quotationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
+
+        RepairOrder repairOrder = quotation.getRepairOrder();
+
+        // Kiểm tra quyền sở hữu đơn hàng
+        if (!repairOrder.getVehicle().getCustomer().getId().equals(customer.getId())) {
+            throw new BusinessException("You do not have permission to access this quotation");
+        }
+
+        if (quotation.getStatus() != QuotationStatus.PENDING) {
+            throw new BusinessException("Quotation already processed");
+        }
+
+        if ("APPROVE".equalsIgnoreCase(action)) {
+            quotation.setStatus(QuotationStatus.APPROVED);
+            repairOrder.setStatus(RepairStatus.APPROVED);
+            repairOrderRepository.save(repairOrder);
+
+            // Tự động copy từ báo giá sang chi tiết sửa chữa thực tế
+            List<QuotationDetail> details = quotationDetailRepository.findByQuotationId(quotation.getId());
+            List<RepairOrderDetail> repairDetails = details.stream().map(qd -> RepairOrderDetail.builder()
+                    .repairOrder(repairOrder)
+                    .itemType(qd.getItemType())
+                    .quantity(qd.getQuantity())
+                    .price(qd.getUnitPrice())
+                    .part(qd.getPart())
+                    .service(qd.getService())
+                    .build()).toList();
+            repairOrderDetailRepository.saveAll(repairDetails);
+
+        } else if ("REJECT".equalsIgnoreCase(action)) {
+            // Khách từ chối: đặt báo giá = REJECTED, nhưng order về DIAGNOSING
+            // để nhân viên có thể lập báo giá mới
+            quotation.setStatus(QuotationStatus.REJECTED);
+            repairOrder.setStatus(RepairStatus.DIAGNOSING);
+            repairOrderRepository.save(repairOrder);
+        } else {
+            throw new BadRequestException("Invalid action. Use APPROVE or REJECT.");
+        }
+        quotationRepository.save(quotation);
+        List<QuotationDetail> details = quotationDetailRepository.findByQuotationId(quotation.getId());
+        return quotationMapper.toResponse(quotation, details, quotationDetailMapper);
+    }
+
 }
