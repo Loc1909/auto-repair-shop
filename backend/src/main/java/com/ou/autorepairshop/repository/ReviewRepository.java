@@ -19,7 +19,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
                 SELECT AVG(r.rating)
                 FROM Review r
                 JOIN r.repairOrder ro
-                JOIN ro.quotation q
+                JOIN ro.quotations q
                 JOIN q.details d
                 WHERE d.service.id = :serviceId
             """)

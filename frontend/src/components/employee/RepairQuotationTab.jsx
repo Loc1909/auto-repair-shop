@@ -8,7 +8,7 @@ import { Add, Delete } from "@mui/icons-material";
 import axiosClient from "../../api/axiosClient";
 import dayjs from "dayjs";
 
-export default function RepairQuotationTab({ repairOrderId, quotation, parts, services, refreshData }) {
+export default function RepairQuotationTab({ repairOrderId, quotations, parts, services, refreshData }) {
   const [quotationItems, setQuotationItems] = useState([]);
   const [quotationItemType, setQuotationItemType] = useState("PART");
   const [quotationSelectedItem, setQuotationSelectedItem] = useState(null);
@@ -67,43 +67,53 @@ export default function RepairQuotationTab({ repairOrderId, quotation, parts, se
         <Card sx={{ borderRadius: 4, boxShadow: "0 8px 16px rgba(0,0,0,0.03)", height: "100%" }}>
           <CardContent sx={{ p: 3 }}>
             <Typography variant="h6" sx={{ mb: 3, fontWeight: "bold", color: "#388e3c" }}>
-              Bản Báo Giá Đã Lưu
+              Danh Sách Báo Giá
             </Typography>
-            {quotation ? (
+            {quotations && quotations.length > 0 ? (
               <Box>
-                <Box display="flex" gap={2} alignItems="center" mb={3}>
-                  <Chip label={quotation.status} color={quotation.status === "APPROVED" ? "success" : quotation.status === "REJECTED" ? "error" : "warning"} sx={{ fontWeight: "bold" }} />
-                  <Typography variant="body2" color="textSecondary">
-                    Lập ngày: {dayjs(quotation.createdAt).format("DD/MM/YYYY HH:mm")}
-                  </Typography>
-                </Box>
-                <Table size="small" sx={{ "& th": { fontWeight: "bold" } }}>
-                  <TableHead sx={{ bgcolor: "#f5f5f5" }}>
-                    <TableRow>
-                      <TableCell>Tên Hạng Mục</TableCell>
-                      <TableCell>Phân loại</TableCell>
-                      <TableCell align="right">SL</TableCell>
-                      <TableCell align="right">Đơn giá</TableCell>
-                      <TableCell align="right">Thành tiền</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {quotation.details.map((d) => (
-                      <TableRow key={d.id} hover>
-                        <TableCell>{d.itemName}</TableCell>
-                        <TableCell>{d.itemType === "PART" ? "Vật tư" : "Dịch vụ"}</TableCell>
-                        <TableCell align="right">{d.quantity}</TableCell>
-                        <TableCell align="right">{d.unitPrice?.toLocaleString()} đ</TableCell>
-                        <TableCell align="right"><strong>{d.subtotal?.toLocaleString()} đ</strong></TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                <Box mt={3} textAlign="right" sx={{ p: 2, bgcolor: "rgba(76, 175, 80, 0.05)", borderRadius: 2 }}>
-                  <Typography variant="h5" fontWeight="bold" color="success.main">
-                    Tổng cộng: {quotation.totalPrice?.toLocaleString()} đ
-                  </Typography>
-                </Box>
+                {[...quotations].reverse().map((q, qIndex) => (
+                   <Box key={q.id} sx={{ mb: 4, pb: 3, borderBottom: qIndex !== quotations.length - 1 ? "1px solid #eee" : "none" }}>
+                      <Box display="flex" gap={2} alignItems="center" mb={2}>
+                        <Typography variant="subtitle1" fontWeight="bold">Báo giá #{q.id}</Typography>
+                        <Chip 
+                          label={q.status} 
+                          size="small"
+                          color={q.status === "APPROVED" ? "success" : q.status === "REJECTED" ? "error" : "warning"} 
+                          sx={{ fontWeight: "bold" }} 
+                        />
+                        <Typography variant="caption" color="textSecondary">
+                          Lập ngày: {dayjs(q.createdAt).format("DD/MM/YYYY HH:mm")}
+                        </Typography>
+                      </Box>
+                      <Table size="small" sx={{ "& th": { fontWeight: "bold" } }}>
+                        <TableHead sx={{ bgcolor: "#f5f5f5" }}>
+                          <TableRow>
+                            <TableCell>Tên Hạng Mục</TableCell>
+                            <TableCell>Phân loại</TableCell>
+                            <TableCell align="right">SL</TableCell>
+                            <TableCell align="right">Đơn giá</TableCell>
+                            <TableCell align="right">Thành tiền</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {q.details.map((d) => (
+                            <TableRow key={d.id} hover>
+                              <TableCell>{d.itemName}</TableCell>
+                              <TableCell>{d.itemType === "PART" ? "Vật tư" : "Dịch vụ"}</TableCell>
+                              <TableCell align="right">{d.quantity}</TableCell>
+                              <TableCell align="right">{d.unitPrice?.toLocaleString()} đ</TableCell>
+                              <TableCell align="right"><strong>{d.subtotal?.toLocaleString()} đ</strong></TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                      <Box mt={2} textAlign="right">
+                        <Typography variant="h6" fontWeight="bold" color="success.main">
+                          Tổng cộng: {q.totalPrice?.toLocaleString()} đ
+                        </Typography>
+                      </Box>
+                   </Box>
+                ))}
               </Box>
             ) : (
               <Alert severity="info" sx={{ borderRadius: 2 }}>Phiếu này hiện chưa lưu báo giá nào.</Alert>
@@ -116,7 +126,7 @@ export default function RepairQuotationTab({ repairOrderId, quotation, parts, se
         <Card sx={{ borderRadius: 4, boxShadow: "0 8px 16px rgba(0,0,0,0.03)", height: "100%" }}>
           <CardContent sx={{ p: 3 }}>
             <Typography variant="h6" sx={{ mb: 2, color: "#f57c00", fontWeight: "bold" }}>
-              {quotation ? "Tạo báo giá mới (Ghi đè)" : "Khởi tạo Bảng Báo Giá"}
+              {quotations.length > 0 ? "Lập báo giá bổ sung" : "Khởi tạo Bảng Báo Giá"}
             </Typography>
             
             <Box display="flex" flexDirection="column" gap={2} mb={3}>

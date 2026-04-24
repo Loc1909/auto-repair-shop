@@ -93,7 +93,7 @@ export default function RepairStatusTab({ repairOrderId, progresses, refreshData
                         {p.status}
                       </Typography>
                       <Typography variant="caption" sx={{ color: "#888" }}>
-                        {dayjs(p.timestamp).format("DD/MM/YYYY HH:mm")}
+                        {dayjs(p.updateTime).format("DD/MM/YYYY HH:mm")}
                       </Typography>
                     </Box>
                     {p.note && (

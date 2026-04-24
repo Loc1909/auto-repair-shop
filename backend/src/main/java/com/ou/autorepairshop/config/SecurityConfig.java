@@ -28,8 +28,8 @@ public class SecurityConfig {
     private final CustomAccessDeniedHandler accessDeniedHandler;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter,
-                          JwtAuthenticationEntryPoint jwtAuthEntryPoint,
-                          CustomAccessDeniedHandler accessDeniedHandler) {
+            JwtAuthenticationEntryPoint jwtAuthEntryPoint,
+            CustomAccessDeniedHandler accessDeniedHandler) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.jwtAuthEntryPoint = jwtAuthEntryPoint;
         this.accessDeniedHandler = accessDeniedHandler;
@@ -38,26 +38,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.cors(cors -> {
-                })  // <--- thêm cors Customizer rỗng
+        }) // <--- thêm cors Customizer rỗng
                 .csrf(csrf -> csrf.disable()) // tắt CSRF cho dev
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/auth/**").permitAll()
-                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                                .requestMatchers("/api/quotations/**").hasAnyRole("ADMIN", "CUSTOMER", "STAFF")
-                                .requestMatchers("/api/appointments/**").hasAnyRole("ADMIN", "CUSTOMER", "STAFF")
-                                .requestMatchers("/api/reviews/**").hasAnyRole("ADMIN", "CUSTOMER", "STAFF")
-                                .requestMatchers("/api/repair-orders/**").hasAnyRole("ADMIN", "CUSTOMER", "STAFF")
-                                .requestMatchers("/api/part-requests/**").hasAnyRole("ADMIN", "STAFF")
-                                .requestMatchers("/api/repair-progress/**").hasAnyRole("ADMIN", "CUSTOMER", "STAFF")
-                                .requestMatchers("/api/repair-order-service/**").hasAnyRole("ADMIN", "STAFF")
-                                .requestMatchers(HttpMethod.GET, "/api/customers/user/**").permitAll()
-                                .requestMatchers("/api/customers/**").hasAnyRole("ADMIN", "CUSTOMER","STAFF")
-                                .requestMatchers("/api/vehicles/**").hasAnyRole("ADMIN", "CUSTOMER","STAFF")
-                                .anyRequest().authenticated()) //hoặc authenticated() -> tăng bảo mật, yêu cầu tất cả api khác cần login
-                .exceptionHandling(ex
-                        -> ex.authenticationEntryPoint(jwtAuthEntryPoint)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/quotations/**").hasAnyRole("ADMIN", "CUSTOMER", "STAFF")
+                        .requestMatchers("/api/appointments/**").hasAnyRole("ADMIN", "CUSTOMER", "STAFF")
+                        .requestMatchers("/api/reviews/**").hasAnyRole("ADMIN", "CUSTOMER", "STAFF")
+                        .requestMatchers("/api/repair-orders/**").hasAnyRole("ADMIN", "CUSTOMER", "STAFF")
+                        .requestMatchers("/api/part-requests/**").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers("/api/repair-progress/**").hasAnyRole("ADMIN", "CUSTOMER", "STAFF")
+                        .requestMatchers("/api/repair-order-service/**").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers(HttpMethod.GET, "/api/customers/user/**").permitAll()
+                        .requestMatchers("/api/customers/**").hasAnyRole("ADMIN", "CUSTOMER", "STAFF")
+                        .requestMatchers("/api/vehicles/**").hasAnyRole("ADMIN", "CUSTOMER", "STAFF")
+                        .anyRequest().authenticated()) // hoặc authenticated() -> tăng bảo mật, yêu cầu tất cả api khác
+                                                       // cần login
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
@@ -74,7 +72,7 @@ public class SecurityConfig {
     }
 
     public JwtAuthenticationFilter jwtAuthenticationFilter(JwtService jwtService,
-                                                           UserDetailsService userDetailsService) {
+            UserDetailsService userDetailsService) {
         return new JwtAuthenticationFilter(jwtService, userDetailsService);
     }
 }

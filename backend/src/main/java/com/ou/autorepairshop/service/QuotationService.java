@@ -37,29 +37,18 @@ public class QuotationService {
     private final QuotationMapper quotationMapper;
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
+    private final RepairOrderDetailRepository repairOrderDetailRepository;
 
     @Transactional
     public QuotationResponse createQuotation(CreateQuotationRequest req) {
         RepairOrder order = repairOrderRepository.findById(req.repairOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("RepairOrder", req.repairOrderId()));
 
-        // #7: Chỉ cho phép tạo báo giá khi xe đang ở trạng thái hợp lệ
-        if (order.getStatus() != RepairStatus.PENDING && order.getStatus() != RepairStatus.DIAGNOSING) {
+        // Cho phép tạo báo giá miễn là đơn hàng chưa hoàn thành
+        if (order.getStatus() == RepairStatus.COMPLETED) {
             throw new BusinessException(
-                    "Cannot create quotation for order with status: " + order.getStatus()
-                            + ". Order must be PENDING or DIAGNOSING.");
+                    "Cannot create quotation for order with status: " + order.getStatus());
         }
-
-        // #8: Nếu báo giá cũ đã bị REJECTED, xóa đi để tạo báo giá mới
-        quotationRepository.findByRepairOrderId(req.repairOrderId()).ifPresent(existing -> {
-            if (existing.getStatus() == QuotationStatus.REJECTED) {
-                quotationDetailRepository.deleteAll(
-                        quotationDetailRepository.findByQuotationId(existing.getId()));
-                quotationRepository.delete(existing);
-            } else {
-                throw new BusinessException("A quotation already exists for this repair order.");
-            }
-        });
 
         Quotation quotation = Quotation.builder()
                 .repairOrder(order)
@@ -91,12 +80,13 @@ public class QuotationService {
     }
 
     @Transactional(readOnly = true)
-    public QuotationResponse getByRepairOrder(Long repairOrderId) {
-        Quotation quotation = quotationRepository.findByRepairOrderId(repairOrderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Quotation for RepairOrder", repairOrderId));
+    public List<QuotationResponse> getByRepairOrder(Long repairOrderId) {
+        List<Quotation> quotations = quotationRepository.findByRepairOrderId(repairOrderId);
 
-        List<QuotationDetail> details = quotationDetailRepository.findByQuotationId(quotation.getId());
-        return quotationMapper.toResponse(quotation, details, quotationDetailMapper);
+        return quotations.stream().map(q -> {
+            List<QuotationDetail> details = quotationDetailRepository.findByQuotationId(q.getId());
+            return quotationMapper.toResponse(q, details, quotationDetailMapper);
+        }).toList();
     }
 
     @Transactional(readOnly = true)
@@ -142,7 +132,7 @@ public class QuotationService {
     }
 
     @Transactional
-    public QuotationResponse updateQuotationStatus(Long repairOrderId, String action) {
+    public QuotationResponse updateQuotationStatus(Long quotationId, String action) {
         String username = SecurityContextHolder.getContext()
                 .getAuthentication().getName();
 
@@ -152,12 +142,15 @@ public class QuotationService {
         Customer customer = customerRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
-        RepairOrder repairOrder = repairOrderRepository.findByIdAndVehicleCustomerId(repairOrderId, customer.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Repair order not found or not yours"));
+        Quotation quotation = quotationRepository.findById(quotationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
-        Quotation quotation = quotationRepository
-                .findByRepairOrderId(repairOrder.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Quotation not found"));
+        RepairOrder repairOrder = quotation.getRepairOrder();
+
+        // Kiểm tra quyền sở hữu đơn hàng
+        if (!repairOrder.getVehicle().getCustomer().getId().equals(customer.getId())) {
+            throw new BusinessException("You do not have permission to access this quotation");
+        }
 
         if (quotation.getStatus() != QuotationStatus.PENDING) {
             throw new BusinessException("Quotation already processed");
@@ -167,6 +160,19 @@ public class QuotationService {
             quotation.setStatus(QuotationStatus.APPROVED);
             repairOrder.setStatus(RepairStatus.APPROVED);
             repairOrderRepository.save(repairOrder);
+
+            // Tự động copy từ báo giá sang chi tiết sửa chữa thực tế
+            List<QuotationDetail> details = quotationDetailRepository.findByQuotationId(quotation.getId());
+            List<RepairOrderDetail> repairDetails = details.stream().map(qd -> RepairOrderDetail.builder()
+                    .repairOrder(repairOrder)
+                    .itemType(qd.getItemType())
+                    .quantity(qd.getQuantity())
+                    .price(qd.getUnitPrice())
+                    .part(qd.getPart())
+                    .service(qd.getService())
+                    .build()).toList();
+            repairOrderDetailRepository.saveAll(repairDetails);
+
         } else if ("REJECT".equalsIgnoreCase(action)) {
             // Khách từ chối: đặt báo giá = REJECTED, nhưng order về DIAGNOSING
             // để nhân viên có thể lập báo giá mới

@@ -13,50 +13,50 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class DashboardService {
 
-    private final PartRepository partRepository;
-    private final RepairServiceRepository serviceRepository;
-    private final EmployeeRepository employeeRepository;
-    private final PaymentRepository paymentRepository;
+        private final PartRepository partRepository;
+        private final RepairServiceRepository serviceRepository;
+        private final EmployeeRepository employeeRepository;
+        private final PaymentRepository paymentRepository;
 
-    private final UserRepository userRepository;
-    private final CustomerRepository customerRepository;
-    private final ServiceCategoryRepository categoryRepository;
+        private final UserRepository userRepository;
+        private final CustomerRepository customerRepository;
+        private final ServiceCategoryRepository categoryRepository;
 
-    public Map<String, Object> getDashboard() {
+        public Map<String, Object> getDashboard() {
 
-        Map<String, Object> data = new HashMap<>();
+                Map<String, Object> data = new HashMap<>();
 
-        long totalParts = partRepository.count();
-        long totalServices = serviceRepository.count();
-        long totalEmployees = employeeRepository.count();
+                long totalParts = partRepository.count();
+                long totalServices = serviceRepository.count();
+                long totalEmployees = employeeRepository.count();
 
-        long totalUsers = userRepository.count();
-        long totalCustomers = customerRepository.count();
-        long totalCategories = categoryRepository.count();
+                long totalUsers = userRepository.count();
+                long totalCustomers = customerRepository.count();
+                long totalCategories = categoryRepository.count();
 
-        long lowStockParts = partRepository
-                .findAll()
-                .stream()
-                .filter(p -> p.getStockQuantity() < p.getMinStockLevel())
-                .count();
+                long lowStockParts = partRepository
+                                .findAll()
+                                .stream()
+                                .filter(p -> p.getStockQuantity() < p.getMinStockLevel())
+                                .count();
 
-        BigDecimal totalRevenue = paymentRepository.findAll()
-                .stream()
-                .filter(p -> p.getStatus() == PaymentStatus.COMPLETED)
-                .map(p -> p.getAmount())
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal totalRevenue = paymentRepository.findAll()
+                                .stream()
+                                .filter(p -> p.getStatus() == PaymentStatus.COMPLETED)
+                                .map(p -> p.getAmount())
+                                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        data.put("totalParts", totalParts);
-        data.put("lowStockParts", lowStockParts);
-        data.put("totalServices", totalServices);
-        data.put("totalEmployees", totalEmployees);
+                data.put("totalParts", totalParts);
+                data.put("lowStockParts", lowStockParts);
+                data.put("totalServices", totalServices);
+                data.put("totalEmployees", totalEmployees);
 
-        data.put("totalUsers", totalUsers);
-        data.put("totalCustomers", totalCustomers);
-        data.put("totalCategories", totalCategories);
+                data.put("totalUsers", totalUsers);
+                data.put("totalCustomers", totalCustomers);
+                data.put("totalCategories", totalCategories);
 
-        data.put("totalRevenue", totalRevenue);
+                data.put("totalRevenue", totalRevenue);
 
-        return data;
-    }
+                return data;
+        }
 }

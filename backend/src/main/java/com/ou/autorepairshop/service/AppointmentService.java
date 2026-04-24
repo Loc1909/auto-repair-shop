@@ -53,8 +53,7 @@ public class AppointmentService {
     @Transactional(readOnly = true)
     public List<AppointmentResponse> getAppointmentsByCustomer(Long customerId) {
 
-        List<Appointment> appointments =
-                appointmentRepository.findByCustomerIdOrderByAppointmentTimeDesc(customerId);
+        List<Appointment> appointments = appointmentRepository.findByCustomerIdOrderByAppointmentTimeDesc(customerId);
 
         return appointmentMapper.toResponseList(appointments);
     }
@@ -70,8 +69,7 @@ public class AppointmentService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return appointmentMapper.toResponseList(
-                appointmentRepository.findByCustomerUserId(user.getId())
-        );
+                appointmentRepository.findByCustomerUserId(user.getId()));
     }
 
     // ================= CONFIRM (CUSTOMER FLOW) =================
@@ -83,8 +81,7 @@ public class AppointmentService {
         if (appointment.getStatus() != AppointmentStatus.PENDING) {
             throw new BusinessException(
                     "Cannot confirm appointment with status: " + appointment.getStatus()
-                            + ". Only PENDING appointments can be confirmed."
-            );
+                            + ". Only PENDING appointments can be confirmed.");
         }
 
         appointment.setStatus(AppointmentStatus.CONFIRMED);
@@ -102,8 +99,7 @@ public class AppointmentService {
 
         if (AppointmentStatus.PENDING != appointment.getStatus()) {
             throw new BusinessException(
-                    "Cannot confirm appointment with status: " + appointment.getStatus()
-            );
+                    "Cannot confirm appointment with status: " + appointment.getStatus());
         }
 
         Employee employee = employeeRepository.findById(employeeId)
@@ -116,8 +112,7 @@ public class AppointmentService {
 
         sendNotificationSafe(
                 NotificationEvent.APPOINTMENT_CONFIRMED,
-                saved
-        );
+                saved);
 
         return appointmentMapper.toResponseForEmployee(saved);
     }
@@ -163,8 +158,7 @@ public class AppointmentService {
 
         sendNotificationSafe(
                 NotificationEvent.APPOINTMENT_CANCELLED,
-                saved
-        );
+                saved);
 
         return appointmentMapper.toResponseForEmployee(saved);
     }
