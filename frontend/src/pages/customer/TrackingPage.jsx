@@ -7,7 +7,7 @@ import QuotationBill from "../../components/customer/QuotationBill";
 import HeaderCard from "../../components/customer/TrackingHeaderCard";
 import ProgressSteps from "../../components/customer/ProgressSteps";
 import { useTrackingData } from "../../hooks/useTrackingData";
-import { STATUS_ORDER, STATUS_LABELS } from "../../constants/repairStatus";
+import { STATUS_ORDER, STATUS_LABELS, getStatusInfo } from "../../constants/repairStatus";
 import { quotationAPI } from "../../api/quotationApi";
 
 export default function TrackingPage() {
@@ -36,22 +36,6 @@ export default function TrackingPage() {
             active: index === sorted.length - 1,
             note: item.note || "",
         }));
-    };
-
-    const getStatusInfo = (status) => {
-        const statusColorMap = {
-            "PENDING": { bgColor: "rgba(107,114,128,.15)", color: "#9CA3AF" },
-            "DIAGNOSING": { bgColor: "rgba(59,130,246,.15)", color: "#3B82F6" },
-            "QUOTING": { bgColor: "rgba(168,85,247,.15)", color: "#A855F7" },
-            "APPROVED": { bgColor: "rgba(34,197,94,.15)", color: "#22C55E" },
-            "REPAIRING": { bgColor: "rgba(251,146,60,.15)", color: "#FB923C" },
-            "COMPLETED": { bgColor: "rgba(34,197,94,.15)", color: "#22C55E" },
-            "REJECTED": { bgColor: "rgba(239,68,68,.15)", color: "#EF4444" },
-        };
-        return {
-            ...statusColorMap[status],
-            label: STATUS_LABELS[status] || status
-        };
     };
 
     const calculateProgress = (repairProgressData) => {
