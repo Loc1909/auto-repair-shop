@@ -25,6 +25,7 @@ public interface AppointmentMapper {
     @Mapping(source = "customer.id", target = "customerId")
     @Mapping(source = "vehicle.licensePlate", target = "vehicleName")
     @Mapping(source = "assignedEmployee.id", target = "employeeId")
+    @Mapping(target = "employeeName", source = "assignedEmployee.name", defaultValue = "")
     @Mapping(source = "status", target = "status")
     AppointmentResponse toResponse(Appointment appointment);
     List<AppointmentResponse> toResponseList(List<Appointment> appointments);
