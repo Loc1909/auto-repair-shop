@@ -18,6 +18,11 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
         List<Appointment> findByCustomerIdOrderByAppointmentTimeDesc(Long customerId);
 
+        @Query("""
+        SELECT a FROM Appointment a
+        LEFT JOIN FETCH a.assignedEmployee
+        WHERE a.customer.user.id = :userId
+        """)
         List<Appointment> findByCustomerUserId(Long userId);
 
         List<Appointment> findAllByStatusAndAppointmentTimeBetween(

@@ -40,4 +40,10 @@ public class QuotationController {
                                                           @RequestParam String action) {
         return ResponseEntity.ok(quotationService.updateQuotationStatus(id, action));
     }
+
+    @PutMapping("/repair-order/{repairOrderId}")
+    public ResponseEntity<QuotationResponse> confirmStatus(@PathVariable Long repairOrderId,
+                                                          @RequestParam String action) {
+        return ResponseEntity.ok(quotationService.confirmQuotationStatus(repairOrderId, action));
+    }
 }

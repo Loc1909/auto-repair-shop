@@ -4,6 +4,7 @@ import com.ou.autorepairshop.dto.ReviewRequest;
 import com.ou.autorepairshop.dto.ReviewResponse;
 import com.ou.autorepairshop.entity.*;
 import com.ou.autorepairshop.enums.RepairStatus;
+import com.ou.autorepairshop.exception.BadRequestException;
 import com.ou.autorepairshop.exception.ResourceNotFoundException;
 import com.ou.autorepairshop.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -38,11 +39,11 @@ public class ReviewService {
                 .orElseThrow(() -> new ResourceNotFoundException("Repair order not found"));
 
         if (!repairOrder.getStatus().equals(RepairStatus.COMPLETED)) {
-            throw new RuntimeException("Orders didn't finish to review");
+            throw new BadRequestException("Orders didn't finish to review");
         }
 
         if (reviewRepository.findByRepairOrderId(request.repairOrderId()).isPresent()) {
-            throw new RuntimeException("You already reviewed this order");
+            throw new BadRequestException("You already reviewed this order");
         }
 
         Review review = Review.builder()

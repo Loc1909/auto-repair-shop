@@ -8,6 +8,7 @@ public record AppointmentResponse(
         String note,
         String status,
         Long employeeId,
+        String employeeName,
         Long customerId,
         String vehicleName
 ) {

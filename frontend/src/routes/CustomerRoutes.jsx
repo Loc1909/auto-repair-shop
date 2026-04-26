@@ -15,6 +15,7 @@ import HistoryPage from "../pages/customer/HistoryPage";
 import PaymentPage from "../pages/customer/PaymentPage";
 import ReviewPage from "../pages/customer/ReviewPage";
 import ProfilePage from "../pages/customer/ProfilePage";
+import VehicleTrackingPage from "../pages/customer/VehicleTrackingPage";
 
 export default function CustomerRoutes() {
   return (
@@ -28,12 +29,14 @@ export default function CustomerRoutes() {
         {/* Customer */}
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/booking" element={<BookingPage />} />
-        <Route path="/tracking" element={<TrackingPage />} />
+        <Route path="/tracking" element={<VehicleTrackingPage />} />
         <Route path="/quotes" element={<QuotesPage />} />
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/payment" element={<PaymentPage />} />
         <Route path="/review" element={<ReviewPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+
+        <Route path="/tracking/:id" element={<TrackingPage />} />
 
         {/* fallback */}
         <Route path="*" element={<Navigate to="/login" />} />

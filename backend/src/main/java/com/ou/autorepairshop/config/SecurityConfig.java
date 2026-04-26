@@ -48,7 +48,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/reviews/**").hasAnyRole("ADMIN", "CUSTOMER", "STAFF")
                         .requestMatchers("/api/repair-orders/**").hasAnyRole("ADMIN", "CUSTOMER", "STAFF")
                         .requestMatchers("/api/part-requests/**").hasAnyRole("ADMIN", "STAFF")
-                        .requestMatchers("/api/repair-progress/**").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers("/api/repair-progress/**").hasAnyRole("ADMIN", "CUSTOMER", "STAFF")
                         .requestMatchers("/api/repair-order-service/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers(HttpMethod.GET, "/api/customers/user/**").permitAll()
                         .requestMatchers("/api/customers/**").hasAnyRole("ADMIN", "CUSTOMER", "STAFF")

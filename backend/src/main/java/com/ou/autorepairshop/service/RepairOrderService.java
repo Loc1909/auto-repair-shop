@@ -140,10 +140,17 @@ public class RepairOrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
         List<RepairOrder> repairOrders =
-                repairOrderRepository.findByVehicleCustomerIdOrderByCreatedDateDesc(customer.getId());
+                repairOrderRepository.findAllByCustomerId(customer.getId());
 
         return repairOrders.stream()
                 .map(repairOrderMapper::toResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public RepairOrderResponse getByAppointmentId(Long appointmentId) {
+        RepairOrder repairOrders = repairOrderRepository.findByAppointmentId(appointmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("RepairOrder not found"));
+        return repairOrderMapper.toResponse(repairOrders);
     }
 }
