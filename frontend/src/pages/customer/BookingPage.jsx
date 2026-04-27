@@ -185,7 +185,6 @@ export default function BookingPage() {
                       {v.brand} {v.model} — {v.licensePlate}
                     </option>
                   ))}
-                  <option value="+ Thêm xe mới">+ Thêm xe mới</option>
                 </select>
               </div>
 

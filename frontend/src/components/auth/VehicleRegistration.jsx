@@ -1,6 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 
 export default function VehicleRegistration({ vehicleForm, setVehicleForm, updateVehicleFrom }) {
+  const [customBrand, setCustomBrand] = useState("");
+  const [customYear, setCustomYear] = useState(vehicleForm.year || "");
+
+  const handleBrandChange = (e) => {
+    const value = e.target.value;
+    setVehicleForm((prev) => ({ ...prev, brand: value }));
+    setCustomBrand(value);
+  };
+
+  const handleYearChange = (e) => {
+    const value = e.target.value;
+    setVehicleForm((prev) => ({ ...prev, year: value }));
+    setCustomYear(value);
+  };
+
   return (
     <div>
       <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
@@ -17,25 +32,30 @@ export default function VehicleRegistration({ vehicleForm, setVehicleForm, updat
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
           <div className="input-wrap" style={{ marginBottom: 0 }}>
             <label>Hãng xe</label>
-            <select value={vehicleForm.brand} onChange={updateVehicleFrom("brand")}>
-              <option value="">Chọn hãng...</option>
+            <input
+              placeholder="Nhập hãng xe..."
+              value={customBrand}
+              onChange={handleBrandChange}
+              list="brand-options"
+            />
+            <datalist id="brand-options">
               {["Toyota", "Honda", "Mazda", "Ford", "Hyundai", "Kia", "Mitsubishi", "Suzuki"].map((b) => (
-                <option key={b} value={b}>
-                  {b}
-                </option>
+                <option key={b} value={b} />
               ))}
-            </select>
+            </datalist>
           </div>
           <div className="input-wrap" style={{ marginBottom: 0 }}>
             <label>Năm sản xuất</label>
-            <select value={vehicleForm.year} onChange={updateVehicleFrom("year")}>
-              <option value="">Năm...</option>
-              {Array.from({ length: 15 }, (_, i) => 2025 - i).map((y) => (
+
+            <input placeholder="Nhập năm..." value={customYear}
+              onChange={handleYearChange} list="year-options" />
+            <datalist id="year-options">
+              {Array.from({ length: 4 }, (_, i) => new Date().getFullYear() - i).map((y) => (
                 <option key={y} value={y}>
                   {y}
                 </option>
               ))}
-            </select>
+            </datalist>
           </div>
         </div>
         <div className="input-wrap" style={{ marginBottom: 0 }}>
