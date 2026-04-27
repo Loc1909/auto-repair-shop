@@ -16,6 +16,7 @@ import PaymentPage from "../pages/customer/PaymentPage";
 import ReviewPage from "../pages/customer/ReviewPage";
 import ProfilePage from "../pages/customer/ProfilePage";
 import VehicleTrackingPage from "../pages/customer/VehicleTrackingPage";
+import VehiclePage from "../pages/customer/VehiclePage";
 
 export default function CustomerRoutes() {
   return (
@@ -35,6 +36,7 @@ export default function CustomerRoutes() {
         <Route path="/payment" element={<PaymentPage />} />
         <Route path="/review" element={<ReviewPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/mycars" element={<VehiclePage />} />
 
         <Route path="/tracking/:id" element={<TrackingPage />} />
 
