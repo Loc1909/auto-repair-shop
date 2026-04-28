@@ -15,13 +15,15 @@ import {
   Person,
   Category,
   AttachMoney,
-  Notifications
+  Notifications,
+  TaskAlt
 } from "@mui/icons-material";
 
 const menuItems = [
   { label: "Bảng điều khiển", path: "/admin", icon: <Dashboard /> },
   { label: "Dịch vụ", path: "/admin/services", icon: <MiscellaneousServices /> },
   { label: "Phụ tùng", path: "/admin/parts", icon: <Build /> },
+  { label: "Duyệt Yêu Cầu PT", path: "/admin/part-requests", icon: <TaskAlt /> },
   { label: "Người dùng", path: "/admin/users", icon: <People /> },
   { label: "Nhân viên", path: "/admin/employees", icon: <Engineering /> },
   { label: "Khách hàng", path: "/admin/customers", icon: <Person /> },
