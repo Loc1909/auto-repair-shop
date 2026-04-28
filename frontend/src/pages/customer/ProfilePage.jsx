@@ -97,7 +97,7 @@ export default function ProfilePage() {
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: "1.8rem", fontWeight: 800, fontFamily: "'Syne',sans-serif",
             }}>
-              {user?.name?.charAt(0) || "U"}
+              {user?.username?.charAt(0)?.toUpperCase() || "U"}
             </div>
             <div style={{
               position: "absolute", bottom: 0, right: 0,

@@ -6,6 +6,7 @@ import BackgroundOrbs from "../../components/effects/BackgroundOrbs";
 import { useOutletContext } from "react-router-dom";
 import "../../styles/vehiclePage.css"
 import BrandBadge from "../../components/customer/VehicleBrandBadge";
+import { FaCarSide  } from "react-icons/fa";
 
 export default function VehiclePage() {
     const { setUser, showToast } = useOutletContext();
@@ -89,7 +90,7 @@ export default function VehiclePage() {
                     {/* Stat bar */}
                     <div className="stat-bar">
                         <div className="stat-pill">
-                            <span className="stat-icon">🚗</span>
+                            <span className="stat-icon"><FaCarSide /></span>
                             <div>
                                 <div className="stat-value">{vehicles.length}</div>
                                 <div className="stat-label">Xe đã đăng ký</div>

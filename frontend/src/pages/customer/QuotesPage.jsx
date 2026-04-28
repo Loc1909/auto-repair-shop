@@ -38,24 +38,7 @@ export default function QuotesPage() {
   };
 
   const handleApprove = async (quote) => {
-    try {
-      setLoading(true);
-      await quotationAPI.approveQuotation(quote.repairOrderId);
-      showToast("Đã duyệt báo giá " + quote.id + " ✓", "success");
-      setActiveQuote(null);
-
-      await loadQuotations();
-
-      setTimeout(() => {
-        // gọi thanh toán (nên gọi trước khi gọi api duyệt báo giá)
-        // navigate("/payment");
-      }, 500);
-    } catch (err) {
-      showToast("Lỗi duyệt báo giá: " + err.message, "error");
-      console.error("Error approving quotation:", err);
-    } finally {
-      setLoading(false);
-    }
+    navigate(`/payment/${quote.repairOrderId}`);
   };
 
   const handleReject = async (quote) => {

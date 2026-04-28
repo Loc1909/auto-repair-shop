@@ -33,7 +33,7 @@ export default function CustomerRoutes() {
         <Route path="/tracking" element={<VehicleTrackingPage />} />
         <Route path="/quotes" element={<QuotesPage />} />
         <Route path="/history" element={<HistoryPage />} />
-        <Route path="/payment" element={<PaymentPage />} />
+        <Route path="/payment/:repairOrderId" element={<PaymentPage />} />
         <Route path="/review" element={<ReviewPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/mycars" element={<VehiclePage />} />
