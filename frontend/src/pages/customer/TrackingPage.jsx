@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams, useLocation, useOutletContext } from "react-router-dom";
 import BackgroundOrbs from "../../components/effects/BackgroundOrbs";
 import { C } from "../../constants/colors";
 import "../../styles/customer.css";
@@ -8,9 +8,9 @@ import HeaderCard from "../../components/customer/TrackingHeaderCard";
 import ProgressSteps from "../../components/customer/ProgressSteps";
 import { useTrackingData } from "../../hooks/useTrackingData";
 import { STATUS_ORDER, STATUS_LABELS, getStatusInfo } from "../../constants/repairStatus";
-import { quotationAPI } from "../../api/quotationApi";
 
 export default function TrackingPage() {
+    const { showToast } = useOutletContext();
     const navigate = useNavigate();
     const { id } = useParams();
     const location = useLocation();
@@ -54,29 +54,6 @@ export default function TrackingPage() {
         const percentage = Math.round((completedSteps / totalSteps) * 100);
 
         return { completedSteps, totalSteps, percentage, currentStatus };
-    };
-
-    const handleConfirmQuotation = async (action) => {
-        if (!quotation || confirmingQuotation) return;
-
-        setConfirmingQuotation(true);
-        try {
-            const response = await quotationAPI.confirmQuotation(order.id, action);
-            setQuotation(response.data);
-
-            alert(action === "APPROVE" ? "Xác nhận báo giá thành công!" : "Từ chối báo giá thành công!");
-
-            if (action === "APPROVE") {
-                setTimeout(() => {
-                    // navigate(`/payment/${order.id}`, { state: { order, quotation: response.data } });
-                }, 500);
-            }
-        } catch (error) {
-            console.error("Lỗi khi xác nhận báo giá:", error);
-            alert(error.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại");
-        } finally {
-            setConfirmingQuotation(false);
-        }
     };
 
     if (loading) {
@@ -138,8 +115,6 @@ export default function TrackingPage() {
                     <QuotationBill
                         quotation={quotation}
                         order={order}
-                        handleConfirmQuotation={handleConfirmQuotation}
-                        confirmingQuotation={confirmingQuotation}
                     />
                 ) : (
                     <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 24, padding: "2rem", animation: "fadeUp .5s ease .2s both", textAlign: "center" }}>

@@ -31,32 +31,35 @@ export const useTrackingData = (id, initialOrder) => {
         if (!id) return;
 
         if (id) {
-            const fetchRepairProgress = async () => {
-                try {
-                    const response = await repairProgressAPI.getProgressById(id);
-                    setRepairProgress(response.data);
-                } catch (error) {
-                    console.error("Lỗi khi lấy tiến độ sửa chữa:", error);
-                } finally {
-                    setLoading(false);
-                }
-            };
+            const getLatestQuotation = (quotations) => {
+                if (!quotations || quotations.length === 0) return null;
 
-            const fetchQuotation = async () => {
+                return quotations.reduce((latest, current) => {
+                    return new Date(current.createdAt) > new Date(latest.createdAt)
+                        ? current
+                        : latest;
+                });
+            };
+            const fetchData = async () => {
+                setLoading(true);
                 try {
-                    const response = await quotationAPI.getQuotationById(id);
-                    const quotations = response.data;
-                    const latest = quotations?.[0];
+                    const [progressRes, quotationRes] = await Promise.all([
+                        repairProgressAPI.getProgressById(id),
+                        quotationAPI.getQuotationById(id),
+                    ]);
+
+                    setRepairProgress(progressRes.data);
+
+                    const latest = getLatestQuotation(quotationRes.data);
                     setQuotation(latest);
                 } catch (error) {
-                    console.error("Không có dữ liệu báo giá:", error);
+                    console.error(error);
                 } finally {
                     setLoading(false);
                 }
             };
 
-            fetchRepairProgress();
-            fetchQuotation();
+            fetchData();
         }
     }, [id]);
 
