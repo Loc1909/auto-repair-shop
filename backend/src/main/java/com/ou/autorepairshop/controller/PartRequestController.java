@@ -25,6 +25,16 @@ public class PartRequestController {
                 .body(partRequestService.requestPart(request));
     }
 
+    @GetMapping
+    public ResponseEntity<List<PartRequestResponse>> getAll(
+            @RequestParam(required = false) String status
+    ) {
+        if (status != null) {
+            return ResponseEntity.ok(partRequestService.getByStatus(status));
+        }
+        return ResponseEntity.ok(partRequestService.getAll());
+    }
+
     @GetMapping("/by-order/{repairOrderId}")
     public ResponseEntity<List<PartRequestResponse>> getByRepairOrder(@PathVariable Long repairOrderId) {
         return ResponseEntity.ok(partRequestService.getByRepairOrder(repairOrderId));
@@ -35,6 +45,8 @@ public class PartRequestController {
     public ResponseEntity<PartRequestResponse> approve(@PathVariable Long id) {
         return ResponseEntity.ok(partRequestService.approvePartRequest(id));
     }
+
+
 
     /** Kho từ chối yêu cầu → status REJECTED */
     @PatchMapping("/{id}/reject")

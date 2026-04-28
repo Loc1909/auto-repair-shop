@@ -4,7 +4,7 @@ import {
   TextField, Button, Table, TableBody, TableCell,
   TableHead, TableRow, Chip, Autocomplete
 } from "@mui/material";
-import axiosClient from "../../api/axiosClient";
+import { createPartRequest } from "../../api/partRequestApi";
 import dayjs from "dayjs";
 
 export default function PartRequestTab({ repairOrderId, partRequests, parts, refreshData }) {
@@ -17,7 +17,7 @@ export default function PartRequestTab({ repairOrderId, partRequests, parts, ref
       return;
     }
     try {
-      await axiosClient.post("/part-requests", {
+      await createPartRequest({
         repairOrderId: Number(repairOrderId),
         partId: selectedPart.id,
         requestedQuantity: Number(quantity)

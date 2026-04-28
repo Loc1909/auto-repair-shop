@@ -9,6 +9,7 @@ import EmployeeLayout from "./components/layout/EmployeeLayout";
 import AdminDashboard from "./pages/admin/dashboard/Dashboard";
 import AdminServices from "./pages/admin/service/Services";
 import AdminParts from "./pages/admin/part/Parts";
+import AdminPartRequests from "./pages/admin/part/PartRequests";
 import AdminUsers from "./pages/admin/user/Users";
 import AdminEmployees from "./pages/admin/employee/Employees";
 import AdminCustomers from "./pages/admin/customer/Customers";
@@ -43,6 +44,7 @@ function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="services" element={<AdminServices />} />
           <Route path="parts" element={<AdminParts />} />
+          <Route path="part-requests" element={<AdminPartRequests />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="employees" element={<AdminEmployees />} />
           <Route path="customers" element={<AdminCustomers />} />
