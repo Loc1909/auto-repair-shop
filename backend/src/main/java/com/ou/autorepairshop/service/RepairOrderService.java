@@ -146,4 +146,11 @@ public class RepairOrderService {
                 .map(repairOrderMapper::toResponse)
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    public RepairOrderResponse getByAppointmentId(Long appointmentId) {
+        RepairOrder repairOrders = repairOrderRepository.findByAppointmentId(appointmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("RepairOrder not found"));
+        return repairOrderMapper.toResponse(repairOrders);
+    }
 }

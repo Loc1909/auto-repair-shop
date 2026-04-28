@@ -1,0 +1,349 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: #0F0E17;
+}
+
+.page-root {
+    min-height: 100vh;
+    background: #0F0E17;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    color: #E8E6F0;
+    padding: 2.5rem 1rem 4rem;
+}
+
+/* ── Orbs ── */
+.orb {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.orb-1 {
+    top: 5%;
+    right: 5%;
+    width: 520px;
+    height: 520px;
+    background: radial-gradient(circle, rgba(255, 107, 43, .10) 0%, transparent 70%);
+}
+
+.orb-2 {
+    bottom: -5%;
+    left: -12%;
+    width: 440px;
+    height: 440px;
+    background: radial-gradient(circle, rgba(100, 60, 255, .07) 0%, transparent 70%);
+}
+
+/* ── Container ── */
+.container {
+    position: relative;
+    z-index: 1;
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+/* ── Header ── */
+.page-header {
+    text-align: center;
+    margin-bottom: 2.8rem;
+}
+
+.page-title {
+    font-family: 'Sora', sans-serif;
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, #FF6B2B 0%, #FF9A5C 60%, #FFD0AA 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -.02em;
+    line-height: 1.15;
+}
+
+.page-sub {
+    margin-top: .5rem;
+    font-size: .9rem;
+    color: rgba(232, 230, 240, .45);
+    letter-spacing: .03em;
+}
+
+/* ── Stat bar ── */
+.stat-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-pill {
+    flex: 1;
+    padding: .7rem 1rem;
+    background: rgba(255, 255, 255, .04);
+    border: 1px solid rgba(255, 255, 255, .08);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+}
+
+.stat-icon {
+    font-size: 1.1rem;
+}
+
+.stat-value {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #FF6B2B;
+}
+
+.stat-label {
+    font-size: .75rem;
+    color: rgba(232, 230, 240, .5);
+    margin-top: 1px;
+}
+
+/* ── Empty state ── */
+.empty {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: rgba(232, 230, 240, .35);
+    font-size: .95rem;
+    border: 1px dashed rgba(255, 255, 255, .1);
+    border-radius: 20px;
+}
+
+.empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: .8rem;
+}
+
+/* ── Vehicle card ── */
+.card-list {
+    display: flex;
+    flex-direction: column;
+    gap: .85rem;
+}
+
+.vehicle-card {
+    background: rgba(255, 255, 255, .04);
+    border: 1px solid rgba(255, 255, 255, .09);
+    border-radius: 18px;
+    padding: 1.1rem 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+    cursor: default;
+}
+
+.vehicle-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 107, 43, .35);
+    box-shadow: 0 8px 32px rgba(255, 107, 43, .08);
+}
+
+.brand-badge {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Sora', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -.02em;
+}
+
+.card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.card-name {
+    font-family: 'Sora', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #F0EEF8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-meta {
+    display: flex;
+    gap: .6rem;
+    flex-wrap: wrap;
+    margin-top: .35rem;
+}
+
+.meta-tag {
+    font-size: .75rem;
+    font-weight: 500;
+    padding: .2rem .55rem;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, .07);
+    color: rgba(232, 230, 240, .6);
+    letter-spacing: .01em;
+}
+
+.meta-tag.plate {
+    background: rgba(255, 107, 43, .12);
+    color: #FF9A5C;
+    border: 1px solid rgba(255, 107, 43, .2);
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
+    font-size: .8rem;
+    letter-spacing: .06em;
+}
+
+/* ── Action row ── */
+.action-row {
+    display: flex;
+    gap: .8rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .7rem 1.3rem;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: .875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease, opacity .15s;
+}
+
+.btn:active {
+    transform: scale(.97);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #FF6B2B, #FF8C50);
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(255, 107, 43, .3);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 6px 24px rgba(255, 107, 43, .45);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, .07);
+    border: 1px solid rgba(255, 255, 255, .12);
+    color: rgba(232, 230, 240, .75);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, .10);
+}
+
+.btn-save {
+    background: linear-gradient(135deg, #2EC77A, #4ADAA0);
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(74, 218, 160, .25);
+}
+
+.btn-save:hover {
+    box-shadow: 0 6px 24px rgba(74, 218, 160, .4);
+}
+
+/* ── Registration panel ── */
+.reg-panel {
+    margin-top: 1.5rem;
+    background: rgba(255, 255, 255, .03);
+    border: 1px solid rgba(255, 255, 255, .08);
+    border-radius: 20px;
+    padding: 1.5rem;
+    animation: slideDown .25s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.reg-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #F0EEF8;
+    margin-bottom: 1.2rem;
+}
+
+.reg-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: .9rem;
+}
+
+.field-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+}
+
+.field-label {
+    font-size: .75rem;
+    font-weight: 600;
+    color: rgba(232, 230, 240, .5);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+.field-input {
+    background: rgba(255, 255, 255, .06);
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: 10px;
+    padding: .6rem .85rem;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: .9rem;
+    color: #E8E6F0;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+}
+
+.field-input::placeholder {
+    color: rgba(232, 230, 240, .3);
+}
+
+.field-input:focus {
+    border-color: rgba(255, 107, 43, .5);
+    box-shadow: 0 0 0 3px rgba(255, 107, 43, .1);
+}
+
+.reg-footer {
+    display: flex;
+    gap: .8rem;
+    margin-top: 1.3rem;
+    flex-wrap: wrap;
+}
+
+/* ── Divider ── */
+.divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .08), transparent);
+    margin: 2rem 0;
+}

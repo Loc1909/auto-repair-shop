@@ -23,4 +23,5 @@ public interface RepairOrderRepository extends JpaRepository<RepairOrder, Long> 
                 ORDER BY ro.createdDate DESC
             """)
     List<RepairOrder> findAllByCustomerId(Long customerId);
+    Optional<RepairOrder> findByAppointmentId(Long appointmentId);
 }

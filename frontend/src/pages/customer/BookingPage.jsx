@@ -57,7 +57,7 @@ export default function BookingPage() {
     try {
       const res = await makeAppointment({
         vehicleId: form.vehicleId,
-        note: form.note,
+        note: `${form.note ? `Service: ${form.service} | ${form.note}` : `Service: ${form.service}`}`,
         appointmentTime: `${form.date}T${form.time.split("–")[0]}:00`,
         status: "PENDING",
         customerId: customerData.id
@@ -185,7 +185,6 @@ export default function BookingPage() {
                       {v.brand} {v.model} — {v.licensePlate}
                     </option>
                   ))}
-                  <option value="+ Thêm xe mới">+ Thêm xe mới</option>
                 </select>
               </div>
 

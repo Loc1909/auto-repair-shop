@@ -1,6 +1,7 @@
 package com.ou.autorepairshop.controller;
 
 import com.ou.autorepairshop.dto.CreateQuotationRequest;
+import com.ou.autorepairshop.dto.QuotationNoDetailResponse;
 import com.ou.autorepairshop.dto.QuotationResponse;
 import com.ou.autorepairshop.service.QuotationService;
 import jakarta.validation.Valid;
@@ -45,5 +46,10 @@ public class QuotationController {
     public ResponseEntity<QuotationResponse> confirmStatus(@PathVariable Long repairOrderId,
                                                           @RequestParam String action) {
         return ResponseEntity.ok(quotationService.confirmQuotationStatus(repairOrderId, action));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<List<QuotationNoDetailResponse>> getMyQuotations() {
+        return ResponseEntity.ok(quotationService.getMyQuotations());
     }
 }

@@ -4,6 +4,7 @@ import BackgroundOrbs from "../../components/effects/BackgroundOrbs";
 import { C } from "../../constants/colors";
 import "../../styles/customer.css";
 import { repairOrderAPI } from "../../api/repairOrderApi";
+import { getStatusDisplay } from "../../constants/repairStatus";
 
 export default function VehicleTrackingPage() {
     const navigate = useNavigate();
@@ -26,19 +27,6 @@ export default function VehicleTrackingPage() {
         fetchRepairOrders();
     }, []);
 
-    const getStatusDisplay = (status) => {
-        const statusMap = {
-            PENDING: { label: "Chờ tiếp nhận", color: "#9E9E9E", bgColor: "rgba(158, 158, 158, 0.1)" },
-            DIAGNOSING: { label: "Đang chẩn đoán", color: "#2196F3", bgColor: "rgba(33, 150, 243, 0.1)" },
-            APPROVED: { label: "Đã duyệt báo giá", color: "#4CAF50", bgColor: "rgba(76, 175, 80, 0.1)" },
-            REJECTED: { label: "Từ chối", color: "#F44336", bgColor: "rgba(244, 67, 54, 0.1)" },
-            QUOTING: { label: "Chờ duyệt báo giá", color: "#FFB84D", bgColor: "rgba(255, 184, 77, 0.1)" },
-            REPAIRING: { label: "Đang sửa chữa", color: "#FF6B2B", bgColor: "rgba(255, 107, 43, 0.1)" },
-            COMPLETED: { label: "Hoàn thành", color: "#4CAF50", bgColor: "rgba(76, 175, 80, 0.1)" },
-            CANCELLED: { label: "Hủy", color: "#FF6B6B", bgColor: "rgba(255, 107, 107, 0.1)" },
-        };
-        return statusMap[status] || { label: status, color: C.textMuted, bgColor: "rgba(255,255,255,.05)" };
-    };
 
     const getStatusIcon = (status) => {
         const icons = {

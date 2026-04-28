@@ -58,4 +58,9 @@ public class RepairOrderController {
             @RequestBody CompleteRepairRequest request) {
         return ResponseEntity.ok(repairOrderService.completeRepair(id, request));
     }
+
+    @GetMapping("/by-appointment/{appointmentId}")
+    public ResponseEntity<RepairOrderResponse> getByAppointment(@PathVariable Long appointmentId) {
+        return ResponseEntity.ok(repairOrderService.getByAppointmentId(appointmentId));
+    }
 }
