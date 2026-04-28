@@ -15,7 +15,12 @@ export default function QuoteCard({
 
     return (
         <div
-            className="card"
+            className={`
+                rounded-2xl border backdrop-blur-md
+                duration-200 hover:-translate-y-px
+                ${isActive ? "bg-white/6 border-orange-500/30"
+                    : "bg-white/4.5 border-white/9 hover:bg-white/[0.07] hover:border-white/16"
+                } `}
             style={{
                 padding: "1.5rem",
                 marginBottom: "1.2rem",
@@ -44,18 +49,10 @@ export default function QuoteCard({
                     >
                         {quote.id} · {quote.date}
                     </p>
-                    <h3
-                        style={{
-                            fontFamily: "'Kanit',sans-serif",
-                            fontWeight: 700,
-                            fontSize: "1rem",
-                            marginBottom: ".2rem",
-                            color: "#fff",
-                        }}
-                    >
+                    <h3 className="font-[Kanit] font-bold text-base text-white mb-0.5">
                         {quote.car}
                     </h3>
-                    <p style={{ fontSize: ".82rem", color: "#aaa" }}>
+                    <p className="text-sm text-neutral-400">
                         {quote.service}
                     </p>
                 </div>

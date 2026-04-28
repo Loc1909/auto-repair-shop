@@ -4,7 +4,7 @@ import {
   TextField, Button, Table, TableBody, TableCell,
   TableHead, TableRow, Chip, Autocomplete
 } from "@mui/material";
-import axiosClient from "../../api/axiosClient";
+import { createPartRequest } from "../../api/partRequestApi";
 import dayjs from "dayjs";
 
 export default function PartRequestTab({ repairOrderId, partRequests, parts, refreshData }) {
@@ -17,7 +17,7 @@ export default function PartRequestTab({ repairOrderId, partRequests, parts, ref
       return;
     }
     try {
-      await axiosClient.post("/part-requests", {
+      await createPartRequest({
         repairOrderId: Number(repairOrderId),
         partId: selectedPart.id,
         requestedQuantity: Number(quantity)
@@ -76,18 +76,21 @@ export default function PartRequestTab({ repairOrderId, partRequests, parts, ref
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {partRequests.map((req) => (
+                  {partRequests.map((req) => {
+                    const partInfo = parts.find(p => p.id === req.partId);
+                    return (
                     <TableRow key={req.id}>
-                      <TableCell sx={{ fontWeight: "bold" }}>{req.part?.name || `ID ${req.partId}`}</TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>{partInfo?.name || req.part?.name || `ID ${req.partId}`}</TableCell>
                       <TableCell align="center">{req.requestedQuantity}</TableCell>
                       <TableCell>
                         <Chip label={req.status} size="small" color={req.status === "APPROVED" ? "success" : req.status === "REJECTED" ? "error" : "warning"} />
                       </TableCell>
                       <TableCell align="right" sx={{ color: "#888", fontSize: "0.85rem" }}>
-                        {dayjs(req.requestDate).format("DD/MM HH:mm")}
+                        {req.requestedAt ? dayjs(req.requestedAt).format("DD/MM HH:mm") : "N/A"}
                       </TableCell>
                     </TableRow>
-                  ))}
+                  );
+                  })}
                 </TableBody>
               </Table>
             )}

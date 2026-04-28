@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -33,12 +34,14 @@ public class CustomerController {
 
     // ================= CREATE =================
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public Customer createCustomer(@RequestBody Customer customer) {
         return customerService.createCustomer(customer);
     }
 
     // ================= UPDATE =================
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public Customer updateCustomer(@PathVariable Long id,
                                    @RequestBody Customer customer) {
         return customerService.updateCustomer(id, customer);
@@ -46,6 +49,7 @@ public class CustomerController {
 
     // ================= DELETE =================
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteCustomer(@PathVariable Long id) {
         customerService.deleteCustomer(id);
     }
@@ -53,6 +57,7 @@ public class CustomerController {
 
     //PAGINATION
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public Page<Customer> getCustomers(
             @RequestParam(required = false) String search,
             Pageable pageable

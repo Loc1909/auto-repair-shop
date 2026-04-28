@@ -74,10 +74,10 @@ export default function TopNav({ user, onLogout }) {
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: ".85rem", fontWeight: 700,
           }}>
-            {user?.name?.charAt(0) ?? "U"}
+            {user?.username?.charAt(0)?.toUpperCase() ?? "U"}
           </div>
           <span style={{ fontSize: ".85rem", fontWeight: 500 }}>
-            {user?.name ?? "Khách"}
+            {user?.username ?? "Khách"}
           </span>
           <span style={{ fontSize: ".65rem", color: "#5A5A7A" }}>
             {dropOpen ? "▲" : "▼"}
@@ -96,7 +96,6 @@ export default function TopNav({ user, onLogout }) {
             {[
               ["👤", "Hồ sơ", "/profile"],
               ["🚗", "Xe của tôi", "/mycars"],
-              ["⚙️", "Cài đặt", "/settings"],
             ].map(([ic, lb, path]) => (
               <button
                 key={path}

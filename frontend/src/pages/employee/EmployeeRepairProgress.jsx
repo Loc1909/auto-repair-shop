@@ -5,13 +5,11 @@ import {
 } from "@mui/material";
 import { Update, FormatQuote, PrecisionManufacturing } from "@mui/icons-material";
 import { useParams, useNavigate } from "react-router-dom";
-import axiosClient from "../../api/axiosClient";
 
 import RepairStatusTab from "../../components/employee/RepairStatusTab";
 import RepairQuotationTab from "../../components/employee/RepairQuotationTab";
 import PartRequestTab from "../../components/employee/PartRequestTab";
-
-import { socket, connectSocket, disconnectSocket } from "../../api/socket";
+import { useEmployeeRepairProgress } from "../../hooks/useEmployeeRepairProgress";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -27,63 +25,16 @@ function EmployeeRepairProgress() {
   const navigate = useNavigate();
 
   const [tabValue, setTabValue] = useState(0);
-  
-  // Dữ liệu API dùng chung
-  const [progresses, setProgresses] = useState([]);
-  const [partRequests, setPartRequests] = useState([]);
-  const [parts, setParts] = useState([]);
-  const [services, setServices] = useState([]);
-  const [quotations, setQuotations] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchData();
-    
-    connectSocket();
-    socket.on("repair_progress_updated", (newProgress) => {
-      if (String(newProgress.repairOrderId) === String(id)) {
-        setProgresses(prev => {
-          if (prev.find(p => p.id === newProgress.id)) return prev;
-          // Thêm vào đầu danh sách (giả sử danh sách hiển thị từ mới đến cũ)
-          // Hoặc thêm vào cuối tùy logic UI. Trong RepairStatusTab là map từ mảng.
-          return [newProgress, ...prev];
-        });
-      }
-    });
-
-    return () => {
-      socket.off("repair_progress_updated");
-      disconnectSocket();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const [progRes, reqRes, partsRes, servicesRes] = await Promise.all([
-        axiosClient.get(`/repair-progress/by-order/${id}`),
-        axiosClient.get(`/part-requests/by-order/${id}`),
-        axiosClient.get(`/employee/parts`),
-        axiosClient.get(`/employee/services`)
-      ]);
-      setProgresses(progRes.data);
-      setPartRequests(reqRes.data);
-      setParts(partsRes.data || []);
-      setServices(servicesRes.data || []);
-
-      try {
-        const quotRes = await axiosClient.get(`/quotations/by-order/${id}`);
-        setQuotations(quotRes.data || []);
-      } catch {
-        setQuotations([]);
-      }
-    } catch (error) {
-      console.error("Lỗi khi tải dữ liệu chi tiết phiếu sửa chữa", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    progresses,
+    partRequests,
+    parts,
+    services,
+    quotations,
+    loading,
+    fetchData
+  } = useEmployeeRepairProgress(id);
 
   if (loading) {
     return <CircularProgress sx={{ display: "block", mx: "auto", mt: 4 }} />;

@@ -67,13 +67,18 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
 
     @Query("""
-    SELECT 
-        CONCAT('Q', FUNCTION('QUARTER', p.paymentDate), '/', FUNCTION('YEAR', p.paymentDate)),
-        SUM(p.amount)
-    FROM Payment p
-    WHERE p.status = com.ou.autorepairshop.entity.PaymentStatus.COMPLETED
-    GROUP BY FUNCTION('YEAR', p.paymentDate), FUNCTION('QUARTER', p.paymentDate)
-    ORDER BY FUNCTION('YEAR', p.paymentDate), FUNCTION('QUARTER', p.paymentDate)
+SELECT 
+    YEAR(p.paymentDate),
+    FLOOR((MONTH(p.paymentDate)-1)/3)+1,
+    SUM(p.amount)
+FROM Payment p
+WHERE p.status = com.ou.autorepairshop.entity.PaymentStatus.COMPLETED
+GROUP BY 
+    YEAR(p.paymentDate),
+    FLOOR((MONTH(p.paymentDate)-1)/3)+1
+ORDER BY 
+    YEAR(p.paymentDate),
+    FLOOR((MONTH(p.paymentDate)-1)/3)+1
 """)
     List<Object[]> getRevenueRawByQuarter();
 

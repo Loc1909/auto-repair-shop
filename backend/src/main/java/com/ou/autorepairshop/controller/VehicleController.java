@@ -6,6 +6,7 @@ import com.ou.autorepairshop.service.VehicleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,7 +18,9 @@ import java.util.List;
 public class VehicleController {
     private final VehicleService vehicleService;
 
+    /** Chỉ ADMIN/STAFF xem toàn bộ xe trong hệ thống */
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<List<VehicleResponse>> getAll() {
         return ResponseEntity.ok(vehicleService.getAll());
     }
@@ -27,12 +30,16 @@ public class VehicleController {
         return ResponseEntity.ok(vehicleService.getById(id));
     }
 
+    /** Khách hàng xem xe của mình */
     @GetMapping("/my-vehicles")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     public ResponseEntity<List<VehicleResponse>> getByUserId() {
         return ResponseEntity.ok(vehicleService.getByUserId());
     }
 
+    /** Khách hàng / Admin tạo xe */
     @PostMapping
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     public ResponseEntity<VehicleResponse> createVehicle(@RequestBody VehicleRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(vehicleService.createVehicle(request));
     }

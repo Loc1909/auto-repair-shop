@@ -12,5 +12,5 @@ import java.math.BigDecimal;
 public class RevenueDTO {
 
     private String label;
-    private BigDecimal revenue;
+    private BigDecimal value;
 }

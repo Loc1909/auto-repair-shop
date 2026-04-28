@@ -3,7 +3,7 @@ import {
   Typography, Box, Grid, Card, CardContent,
   FormControl, InputLabel, Select, MenuItem, TextField, Button, Paper
 } from "@mui/material";
-import axiosClient from "../../api/axiosClient";
+import { repairProgressAPI } from "../../api/repairProgressApi";
 import dayjs from "dayjs";
 
 const REPAIR_STATUSES = [
@@ -20,7 +20,7 @@ export default function RepairStatusTab({ repairOrderId, progresses, refreshData
 
   const handleUpdateProgress = async () => {
     try {
-      await axiosClient.post("/repair-progress", {
+      await repairProgressAPI.addProgress({
         repairOrderId: Number(repairOrderId),
         status: newStatus,
         note: progressNote

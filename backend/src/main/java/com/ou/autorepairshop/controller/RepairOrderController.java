@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,7 +21,9 @@ public class RepairOrderController {
 
     private final RepairOrderService repairOrderService;
 
+    /** Chỉ ADMIN/STAFF tiếp nhận xe */
     @PostMapping("/receive")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<RepairOrderResponse> receiveVehicle(
             @RequestBody @Valid ReceiveVehicleRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -42,7 +45,9 @@ public class RepairOrderController {
         return ResponseEntity.ok(repairOrderService.getById(id));
     }
 
+    /** Chỉ ADMIN/STAFF xem toàn bộ đơn sửa chữa */
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<List<RepairOrderResponse>> getAll() {
         return ResponseEntity.ok(repairOrderService.getAll());
     }
@@ -52,7 +57,9 @@ public class RepairOrderController {
         return ResponseEntity.ok(repairOrderService.getByEmployee(employeeId));
     }
 
+    /** Chỉ ADMIN/STAFF đánh dấu hoàn thành */
     @PutMapping("/{id}/complete")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<RepairOrderResponse> completeRepair(
             @PathVariable Long id,
             @RequestBody CompleteRepairRequest request) {

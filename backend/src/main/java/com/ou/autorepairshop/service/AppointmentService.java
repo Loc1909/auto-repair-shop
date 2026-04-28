@@ -66,10 +66,13 @@ public class AppointmentService {
                 .getName();
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Customer customer = customerRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
         return appointmentMapper.toResponseList(
-                appointmentRepository.findByCustomerUserId(user.getId()));
+                appointmentRepository.findByCustomerIdOrderByAppointmentTimeDesc(customer.getId()));
     }
 
     // ================= CONFIRM (CUSTOMER FLOW) =================

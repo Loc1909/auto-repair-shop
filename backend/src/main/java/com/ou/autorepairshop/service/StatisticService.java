@@ -16,28 +16,45 @@ public class StatisticService {
 
     public List<RevenueDTO> getRevenue(String type) {
 
-        List<Object[]> results;
+        return switch (type.toLowerCase()) {
 
-        switch (type) {
-            case "month":
-                results = paymentRepository.getRevenueRawByMonth();
-                break;
-            case "quarter":
-                results = paymentRepository.getRevenueRawByQuarter();
-                break;
-            case "year":
-                results = paymentRepository.getRevenueRawByYear();
-                break;
-            case "day":
-            default:
-                results = paymentRepository.getRevenueRawByDay();
-        }
+            case "month" -> mapDefault(paymentRepository.getRevenueRawByMonth());
 
+            case "year" -> mapDefault(paymentRepository.getRevenueRawByYear());
+
+            case "quarter" -> mapQuarter(paymentRepository.getRevenueRawByQuarter());
+
+            case "day" -> mapDefault(paymentRepository.getRevenueRawByDay());
+
+            default -> throw new IllegalArgumentException("Invalid type: " + type);
+        };
+    }
+
+    // ===== DEFAULT MAPPER (day/month/year) =====
+    private List<RevenueDTO> mapDefault(List<Object[]> results) {
         return results.stream()
                 .map(r -> new RevenueDTO(
                         r[0].toString(),
-                        (BigDecimal) r[1]
+                        toBigDecimal(r[1])
                 ))
                 .toList();
+    }
+
+    // ===== QUARTER MAPPER =====
+    private List<RevenueDTO> mapQuarter(List<Object[]> results) {
+        return results.stream()
+                .map(r -> {
+                    int year = ((Number) r[0]).intValue();
+                    int quarter = ((Number) r[1]).intValue();
+                    BigDecimal revenue = toBigDecimal(r[2]);
+
+                    return new RevenueDTO("Q" + quarter + "/" + year, revenue);
+                })
+                .toList();
+    }
+
+    // ===== SAFE CONVERTER =====
+    private BigDecimal toBigDecimal(Object value) {
+        return value == null ? BigDecimal.ZERO : new BigDecimal(value.toString());
     }
 }

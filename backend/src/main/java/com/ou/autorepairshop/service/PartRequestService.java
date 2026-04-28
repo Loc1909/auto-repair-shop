@@ -53,6 +53,25 @@ public class PartRequestService {
         return partRequestMapper.toResponse(partRequestRepository.save(partRequest));
     }
 
+    @Transactional(readOnly = true)
+    public List<PartRequestResponse> getByStatus(String status) {
+        PartRequestStatus enumStatus =
+                PartRequestStatus.valueOf(status.trim().toUpperCase());
+
+        return partRequestRepository.findByStatusWithFetch(enumStatus)
+                .stream()
+                .map(partRequestMapper::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PartRequestResponse> getAll() {
+        return partRequestRepository.findAllWithFetch()
+                .stream()
+                .map(partRequestMapper::toResponse)
+                .toList();
+    }
+
     /**
      * Duyệt yêu cầu phụ tùng: trừ tồn kho và cập nhật status → APPROVED.
      */

@@ -1,62 +1,12 @@
 import { useState, useEffect } from "react";
-import {
-  Typography, Box, Card, CardContent, Grid, CircularProgress,
-  List, ListItem, ListItemText, Divider, Chip, Avatar
-} from "@mui/material";
+import { Typography, Box, Card, CardContent, Grid, CircularProgress, List, ListItem, ListItemText, Divider, Chip, Avatar } from "@mui/material";
 import { BuildCircle, EventAvailable } from "@mui/icons-material";
-import axiosClient from "../../api/axiosClient";
+import { useEmployeeSchedule } from "../../hooks/useEmployeeSchedule";
+import { getAppointmentStatusMeta, getRepairOrderStatusMeta } from "../../constants/employeeStatus";
 import dayjs from "dayjs";
 
-const getAptStatusColor = (status) => {
-  switch (status) {
-    case "PENDING": return { color: "warning", label: "Chờ xác nhận" };
-    case "CONFIRMED": return { color: "success", label: "Đã xác nhận" };
-    case "CANCELLED": return { color: "error", label: "Đã hủy" };
-    case "RECEIVED": return { color: "info", label: "Đã tiếp nhận" };
-    default: return { color: "default", label: status };
-  }
-};
-
-const getRepairStatusColor = (status) => {
-  switch (status) {
-    case "PENDING": return { color: "warning", label: "Chờ xử lý" };
-    case "DIAGNOSING": return { color: "secondary", label: "Đang chẩn đoán" };
-    case "QUOTING": return { color: "info", label: "Đang báo giá" };
-    case "APPROVED": return { color: "primary", label: "Khách đã duyệt" };
-    case "REPAIRING": return { color: "success", label: "Đang sửa chữa" };
-    case "COMPLETED": return { color: "success", label: "Hoàn thành" };
-    case "CANCELLED": return { color: "error", label: "Đã hủy" };
-    default: return { color: "default", label: status };
-  }
-};
-
 function EmployeeSchedule() {
-  const [scheduleData, setScheduleData] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchSchedule();
-  }, []);
-
-  const fetchSchedule = async () => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const employeeId = user?.employeeId;
-
-    if (!employeeId) {
-      console.error("Không tìm thấy Employee ID");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response = await axiosClient.get(`/staff/${employeeId}/schedule`);
-      setScheduleData(response.data);
-    } catch (error) {
-      console.error("Lỗi khi tải lịch làm việc", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { scheduleData, loading } = useEmployeeSchedule();
 
   if (loading) {
     return <CircularProgress sx={{ display: "block", mx: "auto", mt: 4 }} />;
@@ -95,7 +45,7 @@ function EmployeeSchedule() {
               ) : (
                 <List disablePadding>
                   {scheduleData?.appointments.map((apt, index) => {
-                    const st = getAptStatusColor(apt.status);
+                    const st = getAppointmentStatusMeta(apt.status);
                     return (
                       <div key={apt.id}>
                         <ListItem alignItems="flex-start" sx={{ px: 0, py: 2 }}>
@@ -145,7 +95,7 @@ function EmployeeSchedule() {
               ) : (
                 <List disablePadding>
                   {scheduleData?.activeOrders.map((order, index) => {
-                    const st = getRepairStatusColor(order.status);
+                    const st = getRepairOrderStatusMeta(order.status);
                     return (
                       <div key={order.id}>
                         <ListItem alignItems="flex-start" sx={{ px: 0, py: 2 }}>

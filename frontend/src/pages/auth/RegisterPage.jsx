@@ -1,4 +1,3 @@
-// src/pages/auth/RegisterPage.jsx
 import { useState, useRef } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import Logo from "../../components/common/Logo";
@@ -9,6 +8,10 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 import { login, register, storeLoginToken } from "../../api/authApi";
 import { createVehicle } from "../../api/vehicleApi";
 import { getCustomerByUserId } from "../../api/customerApi";
+import RegisterForm from "../../components/auth/RegisterForm";
+import OtpVerification from "../../components/auth/OtpVerification";
+import VehicleRegistration from "../../components/auth/VehicleRegistration";
+import RegistrationSuccess from "../../components/auth/RegistrationSuccess";
 
 const C = {
   bg: "#0D0D14", bgCard: "rgba(255,255,255,0.04)",
@@ -174,7 +177,7 @@ export default function RegisterPage() {
     setLoading(true);
     setTimeout(() => {
       showToast("Đăng ký thành công! Chào mừng đến AutoPro 🎉", "success");
-      navigate("/dashboard"); // ← fix: dùng navigate thay vì setPage
+      navigate("/dashboard");
     }, 1500);
   };
 
@@ -267,198 +270,14 @@ export default function RegisterPage() {
         <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 24, padding: "2.5rem", backdropFilter: "blur(20px)" }}>
 
           {/* Step 0: Thông tin */}
-          {step === 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div className="input-wrap" style={{ marginBottom: 0 }}>
-                <label>Họ và tên </label>
-                <input placeholder="Nguyễn Văn A" value={form.name} onChange={upd("name")} />
-              </div>
-              <div className="input-wrap" style={{ marginBottom: 0 }}>
-                <label>Tên người dùng</label>
-                <input placeholder="username" value={form.username} onChange={upd("username")} />
-              </div>
-              <div className="input-wrap" style={{ marginBottom: 0 }}>
-                <label>Email</label>
-                <input placeholder="email@example.com" value={form.email} onChange={upd("email")} />
-              </div>
-              <div className="input-wrap" style={{ marginBottom: 0 }}>
-                <label>Số điện thoại (tùy chọn)</label>
-                <input placeholder="0901 234 567" value={form.phone} onChange={upd("phone")} />
-              </div>
-              <div className="input-wrap" style={{ marginBottom: 0 }}>
-                <label>Địa chỉ (tùy chọn)</label>
-                <input placeholder="97 Võ Văn Tần, Xuân Hòa, Hồ Chí Minh" value={form.address} onChange={upd("address")} />
-              </div>
-              <div className="input-wrap" style={{ marginBottom: 0, position: "relative" }}>
-                <label>Mật khẩu</label>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Tối thiểu 8 ký tự"
-                  value={form.password}
-                  onChange={upd("password")}
-                />
-                <div
-                  onClick={() => setShowPassword(!showPassword)}
-                  style={{
-                    position: "absolute",
-                    right: "1rem",
-                    top: "65%",
-                    transform: "translateY(-50%)",
-                    background: "none",
-                    border: "none",
-                    color: C.textMuted,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center"
-                  }} >
-                  {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
-                </div>
-              </div>
-              <div className="input-wrap" style={{ marginBottom: 0, position: "relative" }}>
-                <label>Xác nhận mật khẩu</label>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Nhập lại mật khẩu"
-                  value={form.confirm}
-                  onChange={upd("confirm")}
-                />
-
-                <div
-                  onClick={() => setShowPassword(!showPassword)}
-                  style={{
-                    position: "absolute",
-                    right: "1rem",
-                    top: "65%",
-                    transform: "translateY(-50%)",
-                    background: "none",
-                    border: "none",
-                    color: C.textMuted,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center"
-                  }}
-                >
-                  {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
-                </div>
-              </div>
-              <p style={{ fontSize: ".78rem", color: C.textMuted, lineHeight: 1.6 }}>
-                Bằng cách đăng ký, bạn đồng ý với{" "}
-                <span style={{ color: C.orangeLight, cursor: "pointer" }}>Điều khoản sử dụng</span>
-                {" "}và{" "}
-                <span style={{ color: C.orangeLight, cursor: "pointer" }}>Chính sách bảo mật</span>.
-              </p>
-            </div>
-          )}
-
+          {step === 0 && <RegisterForm form={form} setForm={setForm} upd={upd} toggleShowPassword={toggleShowPassword} showPassword={showPassword} />}
           {/* Step 1: OTP */}
-          {step === 1 && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>📱</div>
-              <h3 style={{ fontFamily: "'Kanit',sans-serif", fontWeight: 700, fontSize: "1.1rem", marginBottom: ".5rem" }}>
-                Xác Thực Số Điện Thoại
-              </h3>
-              <p style={{ color: C.textSub, fontSize: ".85rem", marginBottom: "2rem", lineHeight: 1.7 }}>
-                Nhập mã OTP 6 chữ số đã gửi đến<br />
-                <strong style={{ color: C.text }}>{form.phone}</strong>
-              </p>
-              <div style={{ display: "flex", gap: ".6rem", justifyContent: "center", marginBottom: "1.5rem" }}>
-                {otp.map((d, i) => (
-                  <input
-                    key={i}
-                    ref={el => otpRefs.current[i] = el}
-                    value={d}
-                    onChange={e => handleOtp(i, e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === "Backspace" && !d && i > 0)
-                        otpRefs.current[i - 1]?.focus();
-                    }}
-                    style={{ width: 48, height: 54, textAlign: "center", fontSize: "1.3rem", fontWeight: 700, fontFamily: "'Kanit',sans-serif", borderRadius: 12, padding: 0 }}
-                    maxLength={1}
-                  />
-                ))}
-              </div>
-              <p style={{ fontSize: ".82rem", color: C.textMuted }}>
-                Không nhận được mã?{" "}
-                <button style={{ background: "none", border: "none", color: C.orangeLight, cursor: "pointer", fontSize: ".82rem" }}>
-                  Gửi lại (60s)
-                </button>
-              </p>
-            </div>
-          )}
-
+          {step === 1 && <OtpVerification otp={otp} handleOtp={handleOtp} otpRefs={otpRefs} />}
           {/* Step 2: Thêm xe */}
-          {step === 2 && (
-            <div>
-              <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-                <div style={{ fontSize: "2rem", marginBottom: ".5rem" }}>🚗</div>
-                <h3 style={{ fontFamily: "'Kanit',sans-serif", fontWeight: 700, fontSize: "1.1rem", marginBottom: ".3rem" }}>
-                  Thêm Xe Của Bạn
-                </h3>
-                <p style={{ color: C.textSub, fontSize: ".82rem" }}>Tuỳ chọn — có thể thêm sau</p>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                <div className="input-wrap" style={{ marginBottom: 0 }}>
-                  <label>Biển số xe</label>
-                  <input placeholder="VD: 51F-123.45" value={form.plate} onChange={updateVehicleFrom("plate")} />
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                  <div className="input-wrap" style={{ marginBottom: 0 }}>
-                    <label>Hãng xe</label>
-                    <select value={form.brand} onChange={updateVehicleFrom("brand")}>
-                      <option value="">Chọn hãng...</option>
-                      {["Toyota", "Honda", "Mazda", "Ford", "Hyundai", "Kia", "Mitsubishi", "Suzuki"].map(b => (
-                        <option key={b} value={b}>{b}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="input-wrap" style={{ marginBottom: 0 }}>
-                    <label>Năm sản xuất</label>
-                    <select value={form.year} onChange={updateVehicleFrom("year")}>
-                      <option value="">Năm...</option>
-                      {Array.from({ length: 15 }, (_, i) => 2025 - i).map(y => (
-                        <option key={y} value={y}>{y}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="input-wrap" style={{ marginBottom: 0 }}>
-                  <label>Model</label>
-                  <input placeholder="VD: Fortuner 2.7V" value={form.model} onChange={updateVehicleFrom("model")} />
-                </div>
-              </div>
-            </div>
-          )}
-
+          {step === 2 && <VehicleRegistration vehicleForm={vehicleForm} setVehicleForm={setVehicleForm} updateVehicleFrom={updateVehicleFrom} />}
           {/* Step 3: Hoàn tất */}
-          {step === 3 && (
-            <div style={{ textAlign: "center", padding: "1.5rem 0" }}>
-              <div style={{ fontSize: "3.5rem", marginBottom: "1rem" }}>🎉</div>
-              <h3 style={{ fontFamily: "'Kanit',sans-serif", fontWeight: 800, fontSize: "1.4rem", marginBottom: ".8rem" }}>
-                Đăng Ký Thành Công!
-              </h3>
-              <p style={{ color: C.textSub, lineHeight: 1.8, fontSize: ".9rem", marginBottom: "2rem" }}>
-                Tài khoản của <strong style={{ color: C.text }}>{form.name}</strong> đã được tạo.<br />
-                Bắt đầu đặt lịch bảo dưỡng ngay hôm nay!
-              </p>
-              <div style={{ background: "rgba(74,218,160,.08)", border: "1px solid rgba(74,218,160,.2)", borderRadius: 14, padding: "1.2rem", marginBottom: "1.5rem", textAlign: "left" }}>
-                {[
-                  ["👤", "Tên", form.name],
-                  ["📱", "SĐT", form.phone],
-                  form.plate ? ["🚗", "Biển số", form.plate] : null
-                ].filter(Boolean).map(([ic, lb, v]) => (
-                  <div key={lb} style={{ display: "flex", justifyContent: "space-between", padding: ".3rem 0", fontSize: ".85rem" }}>
-                    <span style={{ color: C.textSub }}>{ic} {lb}</span>
-                    <span style={{ color: C.text, fontWeight: 500 }}>{v}</span>
-                  </div>
-                ))}
-              </div>
-              <button className="btn-p" onClick={finish} disabled={loading} style={{ width: "100%", padding: "1rem" }}>
-                {loading ? "Đang xử lý..." : "Vào Trang Cá Nhân →"}
-              </button>
-            </div>
-          )}
+          {step === 3 && <RegistrationSuccess form={form} finish={finish} loading={loading} />}
 
-          {/* Next button (step 0–2) */}
           {step < 3 && (
             <button className="btn-p" onClick={next} disabled={loading}
               style={{ width: "100%", marginTop: "1.5rem", padding: "1rem" }}>
