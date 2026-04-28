@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { repairOrderAPI } from "../api/repairOrderApi";
 import { getAllAppointments } from "../api/appointmentApi";
+import { getCurrentEmployeeId } from "../utils/auth";
 
 export const useEmployeeOrders = () => {
     const [orders, setOrders] = useState([]);
@@ -22,8 +23,7 @@ export const useEmployeeOrders = () => {
     }, []);
 
     const fetchOrders = async () => {
-        const user = JSON.parse(localStorage.getItem("user"));
-        const employeeId = user?.employeeId;
+        const employeeId = getCurrentEmployeeId();
 
         if (!employeeId) {
             console.error("Không tìm thấy Employee ID");
@@ -60,8 +60,7 @@ export const useEmployeeOrders = () => {
             return;
         }
         try {
-            const user = JSON.parse(localStorage.getItem("user"));
-            const employeeId = user?.employeeId;
+            const employeeId = getCurrentEmployeeId();
 
             await repairOrderAPI.receiveVehicle({
                 appointmentId: selectedAppointment.id,

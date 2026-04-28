@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 import { AddCircle, CheckCircle, ArrowForward, Build, AirportShuttle, LocalOffer } from "@mui/icons-material";
 import { useEmployeeOrders } from "../../hooks/useEmployeeOrders";
+import { getRepairOrderStatusMeta } from "../../constants/employeeStatus";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 
@@ -37,19 +38,6 @@ function EmployeeRepairOrders() {
     return <CircularProgress sx={{ display: "block", mx: "auto", mt: 4 }} />;
   }
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "PENDING": return { color: "warning", label: "Chờ xử lý" };
-      case "DIAGNOSING": return { color: "secondary", label: "Đang chẩn đoán" };
-      case "QUOTING": return { color: "info", label: "Đang làm báo giá" };
-      case "APPROVED": return { color: "primary", label: "Khách đã duyệt" };
-      case "REPAIRING": return { color: "success", label: "Đang sửa chữa" };
-      case "COMPLETED": return { color: "success", label: "Hoàn thành" };
-      case "CANCELLED": return { color: "error", label: "Đã hủy" };
-      default: return { color: "default", label: status };
-    }
-  };
-
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4} flexWrap="wrap" gap={2}>
@@ -75,7 +63,7 @@ function EmployeeRepairOrders() {
 
       <Grid container spacing={4}>
         {orders.map((order) => {
-          const statusInfo = getStatusColor(order.status);
+          const statusInfo = getRepairOrderStatusMeta(order.status);
           return (
             <Grid item xs={12} sm={6} md={4} xl={3} key={order.id}>
               <Card sx={{

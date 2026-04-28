@@ -85,14 +85,26 @@ src/
 - Cơ sở dữ liệu MySQL
 
 ### Bước 1: Khởi động Backend
-1. Mở file cấu hình `backend/src/main/resources/application.yml`
-2. Cập nhật thông tin kết nối Database và thông tin SMTP (Email).
-3. Chạy lệnh:
+1. Cấu hình biến môi trường: Tạo file `.env` tại thư mục `/backend` với nội dung tương tự sau:
+   ```env
+   # Database (MySQL)
+   DB_URL=jdbc:mysql://localhost:3306/auto_repair_shop
+   DB_USERNAME=root
+   DB_PASSWORD=your_db_password
+
+   # Mail Server (Gửi thông báo)
+   YOUR_MAIL=your_email@gmail.com
+   YOUR_MAIL_PASSWORD=your_app_password
+
+   # Security (JWT)
+   JWT_SECRET=your_jwt_secret_key_must_be_very_long
+   ```
+2. Mở Terminal và chạy lệnh:
 ```bash
 cd backend
 ./mvnw spring-boot:run
 ```
-*(Backend sẽ chạy ở cổng `8080` và Socket.IO chạy ở cổng `9092`)*
+*(Backend sẽ khởi chạy mặc định ở cổng `8080` và Socket.IO ở cổng `9092`)*
 
 ### Bước 2: Khởi động Frontend
 1. Cài đặt các gói phụ thuộc:
@@ -100,7 +112,20 @@ cd backend
 cd frontend
 npm install
 ```
-2. Cấu hình biến môi trường: Tạo file `.env` (hoặc sửa `.env.local`) trỏ API về Backend.
+2. Cấu hình biến môi trường: Tạo file `.env` tại thư mục `/frontend` với nội dung tương tự sau:
+   ```env
+   # API & Socket
+   VITE_API_URL=http://localhost:8080
+   VITE_SOCKET_URL=http://localhost:9092
+
+   # Firebase Cloud Messaging (Push Notifications)
+   VITE_FIREBASE_API_KEY=your_firebase_api_key
+   VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+   VITE_FIREBASE_PROJECT_ID=your_project_id
+   VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+   VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+   VITE_FIREBASE_APP_ID=your_app_id
+   ```
 3. Chạy ứng dụng:
 ```bash
 npm run dev

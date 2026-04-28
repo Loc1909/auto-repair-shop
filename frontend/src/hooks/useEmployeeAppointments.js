@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { getAllAppointments, confirmAppointmentByEmployee, cancelAppointmentByEmployee } from "../api/appointmentApi";
+import { getCurrentEmployeeId } from "../utils/auth";
 
 export const useEmployeeAppointments = () => {
     const [appointments, setAppointments] = useState([]);
@@ -26,8 +27,7 @@ export const useEmployeeAppointments = () => {
 
     const handleConfirm = async (id) => {
         try {
-            const user = JSON.parse(localStorage.getItem("user"));
-            const employeeId = user?.employeeId;
+            const employeeId = getCurrentEmployeeId();
             await confirmAppointmentByEmployee(id, employeeId);
             fetchAppointments();
         } catch (error) {

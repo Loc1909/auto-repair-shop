@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { employeeAPI } from "../api/employeeApi";
+import { getCurrentEmployeeId } from "../utils/auth";
 
 export const useEmployeeSchedule = () => {
     const [scheduleData, setScheduleData] = useState(null);
     const [loading, setLoading] = useState(true);
 
     const fetchSchedule = async () => {
-        const user = JSON.parse(localStorage.getItem("user"));
-        const employeeId = user?.employeeId;
+        const employeeId = getCurrentEmployeeId();
 
         if (!employeeId) {
             console.error("Không tìm thấy Employee ID");

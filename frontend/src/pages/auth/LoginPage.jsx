@@ -93,6 +93,7 @@ export default function LoginPage() {
                         ].map(({ icon, label, color }) => (
                             <button
                                 key={label}
+                                type="button"
                                 style={{
                                     display: "flex",
                                     alignItems: "center",
@@ -179,6 +180,7 @@ export default function LoginPage() {
                             />
 
                             <button
+                                type="button"
                                 onClick={() => setShowPassword(!showPassword)}
                                 style={{
                                     position: "absolute",
@@ -202,7 +204,7 @@ export default function LoginPage() {
                     <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "-.5rem", marginBottom: "1.5rem" }}>
 
 
-                        <button className="btn-ghost" onClick={() => navigate("/forgot")} style={{ color: C.orangeLight, padding: 0 }}>
+                        <button type="button" className="btn-ghost" onClick={() => navigate("/forgot")} style={{ color: C.orangeLight, padding: 0 }}>
                             Quên mật khẩu?
                         </button>
                     </div>

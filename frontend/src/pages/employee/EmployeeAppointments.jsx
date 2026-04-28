@@ -6,6 +6,7 @@ import {
 } from "@mui/material";
 import { DirectionsCar, Person, AccessTime, EventAvailable, Cancel } from "@mui/icons-material";
 import { useEmployeeAppointments } from "../../hooks/useEmployeeAppointments";
+import { getAppointmentStatusMeta } from "../../constants/employeeStatus";
 import dayjs from "dayjs";
 
 
@@ -26,16 +27,6 @@ function EmployeeAppointments() {
     return <CircularProgress sx={{ display: "block", mx: "auto", mt: 4 }} />;
   }
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "PENDING": return { color: "warning", label: "Chờ xác nhận" };
-      case "CONFIRMED": return { color: "success", label: "Đã xác nhận" };
-      case "CANCELLED": return { color: "error", label: "Đã hủy" };
-      case "RECEIVED": return { color: "info", label: "Đã tiếp nhận" };
-      default: return { color: "default", label: status };
-    }
-  };
-
   return (
     <Box>
       <Box sx={{ mb: 4 }}>
@@ -49,7 +40,7 @@ function EmployeeAppointments() {
 
       <Grid container spacing={3}>
         {appointments.map((apt) => {
-          const statusInfo = getStatusColor(apt.status);
+          const statusInfo = getAppointmentStatusMeta(apt.status);
           return (
             <Grid item xs={12} sm={6} md={4} key={apt.id}>
               <Card sx={{
