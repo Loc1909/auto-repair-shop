@@ -1,9 +1,6 @@
 package com.ou.autorepairshop.service;
 
-import com.ou.autorepairshop.dto.CreateQuotationRequest;
-import com.ou.autorepairshop.dto.QuotationDetailItem;
-import com.ou.autorepairshop.dto.QuotationDetailResponse;
-import com.ou.autorepairshop.dto.QuotationResponse;
+import com.ou.autorepairshop.dto.*;
 import com.ou.autorepairshop.entity.*;
 import com.ou.autorepairshop.enums.ItemType;
 import com.ou.autorepairshop.enums.QuotationStatus;
@@ -237,5 +234,19 @@ public class QuotationService {
         quotationRepository.save(quotation);
         List<QuotationDetail> details = quotationDetailRepository.findByQuotationId(quotation.getId());
         return quotationMapper.toResponse(quotation, details, quotationDetailMapper);
+    }
+
+    @Transactional(readOnly = true)
+    public List<QuotationNoDetailResponse> getMyQuotations() {
+        String username = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Customer customer = customerRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+
+        return quotationRepository.findMyQuotations(customer.getId());
     }
 }
