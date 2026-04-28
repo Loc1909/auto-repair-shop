@@ -6,4 +6,5 @@ export const quotationAPI = {
     approveQuotation: (id) =>api.put(`/quotations/repair-order/${id}?action=APPROVE`),
     rejectQuotation: (id) =>api.put(`/quotations/repair-order/${id}?action=REJECT`),
     getMyQuotations: () => api.get(`/quotations/me`),
+    createQuotation: (data) => api.post("/quotations", data),
 };

@@ -5,7 +5,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableRow, Chip, Alert, IconButton, Autocomplete
 } from "@mui/material";
 import { Add, Delete } from "@mui/icons-material";
-import axiosClient from "../../api/axiosClient";
+import { quotationAPI } from "../../api/quotationApi";
 import dayjs from "dayjs";
 
 export default function RepairQuotationTab({ repairOrderId, quotations, parts, services, refreshData }) {
@@ -45,7 +45,7 @@ export default function RepairQuotationTab({ repairOrderId, quotations, parts, s
       return;
     }
     try {
-      await axiosClient.post("/quotations", {
+      await quotationAPI.createQuotation({
         repairOrderId: Number(repairOrderId),
         items: quotationItems.map(({ itemType, itemId, quantity }) => ({
           itemType,

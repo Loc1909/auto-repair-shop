@@ -46,8 +46,6 @@ public class RepairProgressService {
                 .updateTime(LocalDateTime.now())
                 .build();
 
-        // return repairProgressMapper.toResponse(repairProgressRepository.save(progress));
-
         RepairProgressResponse response = repairProgressMapper.toResponse(repairProgressRepository.save(progress));
         
         // Gửi thông báo real-time

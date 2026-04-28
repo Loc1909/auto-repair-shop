@@ -1,9 +1,11 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
+
+// ===== ROUTES =====
+import EmployeeRoutes from "./routes/EmployeeRoutes";
 import CustomerRoutes from "./routes/CustomerRoutes";
 
 import AdminLayout from "./components/layout/AdminLayout";
-import EmployeeLayout from "./components/layout/EmployeeLayout";
 
 // ===== ADMIN PAGES =====
 import AdminDashboard from "./pages/admin/dashboard/Dashboard";
@@ -16,14 +18,6 @@ import AdminCustomers from "./pages/admin/customer/Customers";
 import AdminServiceCategories from "./pages/admin/service-category/ServiceCategories";
 import AdminRevenue from "./pages/admin/revenue/Revenue";
 import AdminNotificationConfig from "./pages/admin/notification-config/NotificationConfig";
-
-// ===== EMPLOYEE PAGES =====
-import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
-import EmployeeSchedule from "./pages/employee/EmployeeSchedule";
-import EmployeeAppointments from "./pages/employee/EmployeeAppointments";
-import EmployeeRepairOrders from "./pages/employee/EmployeeRepairOrders";
-import EmployeeRepairProgress from "./pages/employee/EmployeeRepairProgress";
-
 
 //===== HOME PAGE =====
 import HomePage from "./pages/home/HomePage";
@@ -38,7 +32,6 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-
         {/* ===== ADMIN ===== */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
@@ -54,20 +47,13 @@ function App() {
         </Route>
 
         {/* ===== EMPLOYEE ===== */}
-        <Route path="/employee" element={<EmployeeLayout />}>
-          <Route index element={<EmployeeDashboard />} />
-          <Route path="schedule" element={<EmployeeSchedule />} />
-          <Route path="appointments" element={<EmployeeAppointments />} />
-          <Route path="repair-orders" element={<EmployeeRepairOrders />} />
-          <Route path="repair-orders/:id" element={<EmployeeRepairProgress />} />
-        </Route>
+        <Route path="/employee/*" element={<EmployeeRoutes />} />
 
         {/* ===== HOME ===== */}
         <Route path="/" element={<HomePage />} />
-        
+
         {/* ===== CUSTOMER ===== */}
         <Route path="/*" element={<CustomerRoutes />} />
-        
       </Routes>
     </BrowserRouter>
   );

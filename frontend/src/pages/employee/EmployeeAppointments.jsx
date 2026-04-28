@@ -5,63 +5,22 @@ import {
   DialogActions, TextField, Card, CardContent, Divider, Paper
 } from "@mui/material";
 import { DirectionsCar, Person, AccessTime, EventAvailable, Cancel } from "@mui/icons-material";
-import axiosClient from "../../api/axiosClient";
+import { useEmployeeAppointments } from "../../hooks/useEmployeeAppointments";
 import dayjs from "dayjs";
 
 
 function EmployeeAppointments() {
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const [cancelOpen, setCancelOpen] = useState(false);
-  const [cancelId, setCancelId] = useState(null);
-  const [cancelReason, setCancelReason] = useState("");
-
-  useEffect(() => {
-    fetchAppointments();
-  }, []);
-
-  const fetchAppointments = async () => {
-    try {
-      const response = await axiosClient.get("/appointments");
-      setAppointments(response.data);
-    } catch (error) {
-      console.error("Lỗi khi tải lịch hẹn", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleConfirm = async (id) => {
-    try {
-      const user = JSON.parse(localStorage.getItem("user"));
-      const employeeId = user?.employeeId;
-      await axiosClient.patch(`/appointments/${id}/confirm-by-employee?employeeId=${employeeId}`);
-      fetchAppointments();
-    } catch (error) {
-      console.error("Lỗi khi xác nhận lịch hẹn", error);
-      alert("Xác nhận thất bại!");
-    }
-  };
-
-  const openCancelDialog = (id) => {
-    setCancelId(id);
-    setCancelReason("");
-    setCancelOpen(true);
-  };
-
-  const handleCancelClick = async () => {
-    try {
-      await axiosClient.patch(`/appointments/${cancelId}/cancel-by-employee`, {
-        reason: cancelReason,
-      });
-      setCancelOpen(false);
-      fetchAppointments();
-    } catch (error) {
-      console.error("Lỗi khi hủy lịch hẹn", error);
-      alert("Hủy thất bại!");
-    }
-  };
+  const {
+    appointments,
+    loading,
+    cancelOpen,
+    cancelReason,
+    setCancelOpen,
+    setCancelReason,
+    handleConfirm,
+    openCancelDialog,
+    handleCancelClick
+  } = useEmployeeAppointments();
 
   if (loading) {
     return <CircularProgress sx={{ display: "block", mx: "auto", mt: 4 }} />;

@@ -1,35 +1,9 @@
-import { useState, useEffect } from "react";
 import { Typography, Box, Grid, CircularProgress, Card, CardContent } from "@mui/material";
 import { CalendarTodayRounded, HandymanRounded } from "@mui/icons-material";
-import axiosClient from "../../api/axiosClient";
+import { useEmployeeSchedule } from "../../hooks/useEmployeeSchedule";
 
 function EmployeeDashboard() {
-  const [scheduleData, setScheduleData] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const employeeId = user?.employeeId;
-
-    if (!employeeId) {
-      console.error("Không tìm thấy Employee ID");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response = await axiosClient.get(`/staff/${employeeId}/schedule`);
-      setScheduleData(response.data);
-    } catch (error) {
-      console.error("Lỗi khi tải dữ liệu bảng điều khiển", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { scheduleData, loading } = useEmployeeSchedule();
 
   if (loading) {
     return <CircularProgress sx={{ display: "block", mx: "auto", mt: 4 }} />;

@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,7 +26,9 @@ public class PartRequestController {
                 .body(partRequestService.requestPart(request));
     }
 
+    /** Chỉ ADMIN mới được xem toàn bộ part-request của hệ thống */
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<PartRequestResponse>> getAll(
             @RequestParam(required = false) String status
     ) {
@@ -40,16 +43,18 @@ public class PartRequestController {
         return ResponseEntity.ok(partRequestService.getByRepairOrder(repairOrderId));
     }
 
-    /** Kho duyệt yêu cầu → trừ tồn kho, status APPROVED */
+    /** Chỉ ADMIN/Kho được duyệt yêu cầu → trừ tồn kho, status APPROVED */
     @PatchMapping("/{id}/approve")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PartRequestResponse> approve(@PathVariable Long id) {
         return ResponseEntity.ok(partRequestService.approvePartRequest(id));
     }
 
 
 
-    /** Kho từ chối yêu cầu → status REJECTED */
+    /** Chỉ ADMIN/Kho được từ chối yêu cầu → status REJECTED */
     @PatchMapping("/{id}/reject")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PartRequestResponse> reject(@PathVariable Long id) {
         return ResponseEntity.ok(partRequestService.rejectPartRequest(id));
     }

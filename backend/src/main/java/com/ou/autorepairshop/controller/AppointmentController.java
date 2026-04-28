@@ -8,6 +8,7 @@ import com.ou.autorepairshop.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class AppointmentController {
 
     // ================= CREATE =================
     @PostMapping
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     public ResponseEntity<AppointmentResponse> makeAppointment(
             @RequestBody AppointmentCreateRequest request) {
 
@@ -30,32 +32,34 @@ public class AppointmentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // ================= GET =================
+    // ================= GET ALL (ADMIN/STAFF only) =================
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<List<AppointmentResponseForEmployee>> getAllAppointments() {
         return ResponseEntity.ok(appointmentService.getAllAppointments());
     }
-
 
     /**
      * Lấy dữ liệu appointment của customer/user hiện tại
      */
     @GetMapping("/me")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<List<AppointmentResponse>> getMyAppointments() {
         return ResponseEntity.ok(appointmentService.getMyAppointments());
     }
 
     /**
-     * Nhân viên xác nhận lịch hẹn (PENDING → CONFIRMED)
+     * Admin/Staff xác nhận lịch hẹn (PENDING → CONFIRMED)
      */
-    // ================= CONFIRM (CUSTOMER / ADMIN) =================
     @PatchMapping("/{id}/confirm")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<AppointmentResponse> confirm(@PathVariable Long id) {
         return ResponseEntity.ok(appointmentService.confirmAppointment(id));
     }
 
     // ================= CONFIRM (EMPLOYEE) =================
     @PatchMapping("/{id}/confirm-by-employee")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<AppointmentResponseForEmployee> confirmByEmployee(
             @PathVariable Long id,
             @RequestParam Long employeeId) {
@@ -67,6 +71,7 @@ public class AppointmentController {
 
     // ================= CANCEL (CUSTOMER / ADMIN) =================
     @PatchMapping("/{id}/cancel")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     public ResponseEntity<AppointmentResponse> cancel(
             @PathVariable Long id,
             @RequestBody(required = false) Map<String, String> body) {
@@ -77,6 +82,7 @@ public class AppointmentController {
 
     // ================= CANCEL (EMPLOYEE) =================
     @PatchMapping("/{id}/cancel-by-employee")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<AppointmentResponseForEmployee> cancelByEmployee(
             @PathVariable Long id,
             @RequestBody(required = false) Map<String, String> body) {

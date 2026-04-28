@@ -1,10 +1,7 @@
 import { useState, useEffect } from "react";
-import {
-  Typography, Box, Card, CardContent, Grid, CircularProgress,
-  List, ListItem, ListItemText, Divider, Chip, Avatar
-} from "@mui/material";
+import { Typography, Box, Card, CardContent, Grid, CircularProgress, List, ListItem, ListItemText, Divider, Chip, Avatar } from "@mui/material";
 import { BuildCircle, EventAvailable } from "@mui/icons-material";
-import axiosClient from "../../api/axiosClient";
+import { useEmployeeSchedule } from "../../hooks/useEmployeeSchedule";
 import dayjs from "dayjs";
 
 const getAptStatusColor = (status) => {
@@ -31,32 +28,7 @@ const getRepairStatusColor = (status) => {
 };
 
 function EmployeeSchedule() {
-  const [scheduleData, setScheduleData] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchSchedule();
-  }, []);
-
-  const fetchSchedule = async () => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const employeeId = user?.employeeId;
-
-    if (!employeeId) {
-      console.error("Không tìm thấy Employee ID");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response = await axiosClient.get(`/staff/${employeeId}/schedule`);
-      setScheduleData(response.data);
-    } catch (error) {
-      console.error("Lỗi khi tải lịch làm việc", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { scheduleData, loading } = useEmployeeSchedule();
 
   if (loading) {
     return <CircularProgress sx={{ display: "block", mx: "auto", mt: 4 }} />;

@@ -28,6 +28,8 @@ public class RepairOrderService {
     private final EmployeeRepository employeeRepository;
     private final RepairOrderMapper repairOrderMapper;
 
+    private final SocketIOService socketIOService;
+
     @Transactional
     public RepairOrderResponse receiveVehicle(ReceiveVehicleRequest req) {
         Appointment appointment = appointmentRepository.findById(req.appointmentId())
@@ -53,7 +55,19 @@ public class RepairOrderService {
                 .createdDate(LocalDateTime.now())
                 .build();
 
-        return repairOrderMapper.toResponse(repairOrderRepository.save(order));
+        RepairOrder savedOrder = repairOrderRepository.save(order);
+
+        RepairProgress initialProgress = RepairProgress.builder()
+                .repairOrder(savedOrder)
+                .status(RepairStatus.PENDING)
+                .note(req.notes() != null && !req.notes().isBlank() ? req.notes() : "Khởi tạo phiếu sửa chữa - Xe đã được tiếp nhận tại xưởng.")
+                .updateTime(LocalDateTime.now())
+                .build();
+        RepairProgress savedInitialProgress = repairProgressRepository.save(initialProgress);
+
+        socketIOService.emit("repair_progress_updated", mapToResponse(savedInitialProgress));
+
+        return repairOrderMapper.toResponse(savedOrder);
     }
 
     @Transactional
@@ -69,6 +83,16 @@ public class RepairOrderService {
         }
         order.setStatus(RepairStatus.COMPLETED);
         order.setCompletedDate(LocalDateTime.now());
+
+        RepairProgress progress = RepairProgress.builder()
+                .repairOrder(order)
+                .status(RepairStatus.COMPLETED)
+                .note(req.notes() != null && !req.notes().isBlank() ? req.notes() : "Đã hoàn thành sửa chữa/bảo dưỡng và sẵn sàng giao xe.")
+                .updateTime(LocalDateTime.now())
+                .build();
+        RepairProgress savedProgress = repairProgressRepository.save(progress);
+
+        socketIOService.emit("repair_progress_updated", mapToResponse(savedProgress));
 
         return repairOrderMapper.toResponse(repairOrderRepository.save(order));
     }
