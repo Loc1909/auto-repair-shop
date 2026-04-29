@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import BackgroundOrbs from "../../components/effects/BackgroundOrbs";
 import { C } from "../../constants/colors";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import "../../styles/customer.css";
 import { quotationAPI } from "../../api/quotationApi";
 import { repairOrderAPI } from "../../api/repairOrderApi";
+import { paymentAPI } from "../../api/paymentApi";
 import { formatPrice } from "../../utils/utils";
 
-export default function PaymentPage({ showToast }) {
+export default function PaymentPage() {
+    const { showToast } = useOutletContext();
     const [method, setMethod] = useState("");
     const [processing, setProcessing] = useState(false);
     const navigate = useNavigate();
@@ -20,7 +22,6 @@ export default function PaymentPage({ showToast }) {
         { id: "vnpay", icon: "🔵", label: "VNPay", desc: "QR Code / Thẻ ngân hàng" },
         { id: "zalopay", icon: "🔷", label: "ZaloPay", desc: "Ví ZaloPay" },
         { id: "card", icon: "💳", label: "Thẻ Quốc Tế", desc: "Visa / Mastercard" },
-        { id: "transfer", icon: "🏦", label: "Chuyển Khoản", desc: "Ngân hàng nội địa" },
     ];
     useEffect(() => {
 
@@ -29,7 +30,7 @@ export default function PaymentPage({ showToast }) {
                 const response = await quotationAPI.getQuotationById(repairOrderId);
                 setQuotation(response.data[0]);
             } catch (error) {
-                showToast("Lỗi khi lấy báo giá:", "error");
+                console.error("Lỗi khi lấy báo giá:");
             }
         };
 
@@ -41,6 +42,12 @@ export default function PaymentPage({ showToast }) {
         setProcessing(true);
         try {
             setProcessing(true);
+            
+            await paymentAPI.createPayment({
+                repairOrderId: repairOrderId,
+                amount: Number(quotation.totalPrice),
+                method: method.toUpperCase(),
+            });
 
             await quotationAPI.approveQuotation(repairOrderId);
 
@@ -51,7 +58,7 @@ export default function PaymentPage({ showToast }) {
             }, 2000);
 
         } catch (err) {
-            showToast("Lỗi thanh toán: " + err.message, "error");
+            console.error("Lỗi thanh toán: ", err);
             setProcessing(false);
         }
     };
