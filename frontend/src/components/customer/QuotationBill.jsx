@@ -2,9 +2,8 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { C } from "../../constants/colors";
 
-const QuotationBill = ({ quotation, order, handleConfirmQuotation, confirmingQuotation }) => {
+const QuotationBill = ({ quotation, order }) => {
     const navigate = useNavigate();
-
     return (
         <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 24, padding: "2rem", animation: "fadeUp .5s ease .2s both" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}>
@@ -46,68 +45,15 @@ const QuotationBill = ({ quotation, order, handleConfirmQuotation, confirmingQuo
                 </span>
             </div>
 
-            {/* Action buttons */}
-            {quotation.status === "PENDING" && (
-                <div style={{ display: "flex", gap: ".8rem", marginTop: "1.2rem" }}>
-                    <button
-                        onClick={() => handleConfirmQuotation("REJECT")}
-                        disabled={confirmingQuotation}
-                        style={{
-                            flex: 1,
-                            padding: ".85rem",
-                            background: "rgba(244, 67, 54, 0.1)",
-                            color: "#F44336",
-                            border: "1px solid rgba(244, 67, 54, 0.3)",
-                            borderRadius: 12,
-                            fontWeight: 600,
-                            cursor: confirmingQuotation ? "not-allowed" : "pointer",
-                            transition: "all .3s",
-                            fontSize: ".9rem",
-                            opacity: confirmingQuotation ? 0.6 : 1
-                        }}
-                        onMouseEnter={(e) => {
-                            if (!confirmingQuotation) {
-                                e.target.style.background = "rgba(244, 67, 54, 0.2)";
-                            }
-                        }}
-                        onMouseLeave={(e) => {
-                            if (!confirmingQuotation) {
-                                e.target.style.background = "rgba(244, 67, 54, 0.1)";
-                            }
-                        }}
-                    >
-                        {confirmingQuotation ? "Đang xử lý..." : "Từ Chối"}
-                    </button>
-                    <button
-                        onClick={() => handleConfirmQuotation("APPROVE")}
-                        disabled={confirmingQuotation}
-                        className="btn-p"
-                        style={{
-                            flex: 1,
-                            padding: ".85rem",
-                            opacity: confirmingQuotation ? 0.6 : 1,
-                            cursor: confirmingQuotation ? "not-allowed" : "pointer"
-                        }}
-                    >
-                        {confirmingQuotation ? "Đang xử lý..." : "Xác Nhận & Thanh Toán →"}
-                    </button>
-                </div>
-            )}
 
-            {quotation.status === "APPROVED" && order.status === "QUOTING" && (
+            {quotation.status === "PENDING" && order.status === "QUOTING" && (
                 <button
                     onClick={() => navigate(`/payment/${order.id}`, { state: { order, quotation } })}
                     className="btn-p"
                     style={{ width: "100%", marginTop: "1.2rem", padding: ".85rem" }}
                 >
-                    Tiếp Tục Thanh Toán →
+                    Thanh Toán →
                 </button>
-            )}
-
-            {quotation.status === "REJECTED" && (
-                <div style={{ marginTop: "1.2rem", padding: "1rem", background: "rgba(244, 67, 54, 0.1)", borderRadius: 12, textAlign: "center" }}>
-                    <p style={{ color: "#F44336", fontWeight: 600 }}>Báo giá đã bị từ chối</p>
-                </div>
             )}
         </div>
     );
