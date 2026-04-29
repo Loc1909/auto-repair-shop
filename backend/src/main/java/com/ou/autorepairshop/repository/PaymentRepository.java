@@ -92,4 +92,6 @@ WHERE p.status = 'PAID'
 GROUP BY s.name
 """)
     List<Object[]> getRevenueByService();
+
+    boolean existsByRepairOrderId(Long repairOrderId);
 }
