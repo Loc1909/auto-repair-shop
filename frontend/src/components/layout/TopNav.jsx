@@ -40,7 +40,7 @@ export default function TopNav({ user, onLogout }) {
       display: "flex", alignItems: "center", justifyContent: "space-between",
     }}>
 
-      <Logo onClick={() => navigate("/")} />
+      <Logo onClick={() => navigate("/dashboard")} />
 
       {/* Nav links */}
       <div style={{ display: "flex", gap: "2rem" }}>
