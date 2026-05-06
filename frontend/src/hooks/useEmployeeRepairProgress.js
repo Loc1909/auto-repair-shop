@@ -46,16 +46,20 @@ export const useEmployeeRepairProgress = (id) => {
         fetchData();
 
         connectSocket();
+
+        // Tham gia phòng của đơn hàng này để chỉ nhận sự kiện liên quan
+        socket.emit("join_order", String(id));
+
         socket.on("repair_progress_updated", (newProgress) => {
-            if (String(newProgress.repairOrderId) === String(id)) {
-                setProgresses(prev => {
-                    if (prev.find(p => p.id === newProgress.id)) return prev;
-                    return [newProgress, ...prev];
-                });
-            }
+            setProgresses(prev => {
+                if (prev.find(p => p.id === newProgress.id)) return prev;
+                return [newProgress, ...prev];
+            });
         });
 
         return () => {
+            // Rời phòng và hủy lắng nghe khi rời trang
+            socket.emit("leave_order", String(id));
             socket.off("repair_progress_updated");
             disconnectSocket();
         };

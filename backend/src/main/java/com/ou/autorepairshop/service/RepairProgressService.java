@@ -47,10 +47,11 @@ public class RepairProgressService {
                 .build();
 
         RepairProgressResponse response = repairProgressMapper.toResponse(repairProgressRepository.save(progress));
-        
-        // Gửi thông báo real-time
-        socketIOService.emit("repair_progress_updated", response);
-        
+
+        // Gửi thông báo real-time chỉ đến những client đang xem đơn hàng này
+        String room = "order_" + req.repairOrderId();
+        socketIOService.emitToRoom(room, "repair_progress_updated", response);
+
         return response;
     }
 

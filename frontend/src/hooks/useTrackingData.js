@@ -63,23 +63,24 @@ export const useTrackingData = (id, initialOrder) => {
         }
     }, [id]);
 
-    // Kết nối Socket.io để nhận cập nhật real-time
+    // Kết nối Socket.io và tham gia phòng theo repairOrderId
     useEffect(() => {
         if (!id) return;
 
         connectSocket();
 
+        // Tham gia phòng để chỉ nhận sự kiện của đơn hàng này
+        socket.emit("join_order", String(id));
+
         socket.on("repair_progress_updated", (newProgress) => {
-            if (String(newProgress.repairOrderId) === String(id)) {
-                setRepairProgress((prev) => {
-                    // Tránh trùng lặp nếu socket gửi lại event đã có
-                    if (prev.find((p) => p.id === newProgress.id)) return prev;
-                    return [...prev, newProgress];
-                });
-            }
+            setRepairProgress((prev) => {
+                if (prev.find((p) => p.id === newProgress.id)) return prev;
+                return [...prev, newProgress];
+            });
         });
 
         return () => {
+            socket.emit("leave_order", String(id));
             socket.off("repair_progress_updated");
             disconnectSocket();
         };
