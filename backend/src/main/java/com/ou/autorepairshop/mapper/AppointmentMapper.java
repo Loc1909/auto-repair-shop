@@ -17,6 +17,8 @@ public interface AppointmentMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "status", constant = "PENDING")
+    @Mapping(target = "vehicle", source = "vehicle")
+    @Mapping(target = "assignedEmployee", source = "employee")
     Appointment toEntity(AppointmentCreateRequest request,
                          Customer customer,
                          Vehicle vehicle,

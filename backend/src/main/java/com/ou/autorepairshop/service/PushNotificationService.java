@@ -88,7 +88,7 @@ public class PushNotificationService {
                     .putData("type", "GENERAL")
                     .build();
 
-            BatchResponse response = FirebaseMessaging.getInstance().sendMulticast(message);
+            BatchResponse response = FirebaseMessaging.getInstance().sendEachForMulticast(message);
 
             log.info("Batch sent: success={} fail={}",
                     response.getSuccessCount(),

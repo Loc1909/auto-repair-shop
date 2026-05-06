@@ -65,7 +65,8 @@ public class RepairOrderService {
                 .build();
         RepairProgress savedInitialProgress = repairProgressRepository.save(initialProgress);
 
-        socketIOService.emit("repair_progress_updated", mapToResponse(savedInitialProgress));
+        String room = "order_" + savedOrder.getId();
+        socketIOService.emitToRoom(room, "repair_progress_updated", mapToResponse(savedInitialProgress));
 
         return repairOrderMapper.toResponse(savedOrder);
     }
@@ -92,7 +93,8 @@ public class RepairOrderService {
                 .build();
         RepairProgress savedProgress = repairProgressRepository.save(progress);
 
-        socketIOService.emit("repair_progress_updated", mapToResponse(savedProgress));
+        String room = "order_" + orderId;
+        socketIOService.emitToRoom(room, "repair_progress_updated", mapToResponse(savedProgress));
 
         return repairOrderMapper.toResponse(repairOrderRepository.save(order));
     }
