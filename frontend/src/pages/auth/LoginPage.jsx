@@ -7,6 +7,8 @@ import "../../styles/auth.css";
 import { FaFacebook, FaGoogle } from "react-icons/fa";
 import { FiLock, FiEye, FiEyeOff, FiUser } from "react-icons/fi";
 import { login, storeLoginToken } from "../../api/authApi";
+import { requestPermissionAndGetToken } from "../../firebase";
+import { deviceTokenAPI } from "../../api/deviceTokenApi";
 
 
 export default function LoginPage() {
@@ -45,6 +47,20 @@ export default function LoginPage() {
             });
             setUser(res.data.user);
             storeLoginToken(res.data);
+
+            // Đăng ký FCM device token (không block login nếu lỗi)
+            requestPermissionAndGetToken()
+                .then((fcmToken) => {
+                    if (fcmToken) {
+                        return deviceTokenAPI.saveToken({
+                            userId: res.data.user.id,
+                            token: fcmToken,
+                            deviceType: "WEB",
+                            deviceName: navigator.userAgent.substring(0, 100),
+                        });
+                    }
+                })
+                .catch((err) => console.warn("FCM token registration failed:", err));
 
             const role = res.data.user.role;
             setTimeout(() => {
