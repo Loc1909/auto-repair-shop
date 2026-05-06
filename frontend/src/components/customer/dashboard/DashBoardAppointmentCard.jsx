@@ -3,7 +3,7 @@ import { formatDateTime } from "../../../utils/utils";
 
 const STATUS_CONFIG = {
     PENDING: { label: "Chờ xác nhận", color: C.blue, bg: C.blueDim },
-    CONFIRM: { label: "Đã xác nhận lịch hẹn", color: C.green, bg: C.greenDim },
+    CONFIRMED: { label: "Đã xác nhận lịch hẹn", color: C.green, bg: C.greenDim },
     RECEIVED: { label: "Đã nhận xe", color: C.amber, bg: C.amberDim },
     CANCELLED: { label: "Đã hủy", color: C.red, bg: C.redDim },
 };

@@ -81,6 +81,9 @@ public class SecurityConfig {
                         // ===== VEHICLES =====
                         .requestMatchers("/api/vehicles/**").hasAnyRole("ADMIN", "CUSTOMER", "STAFF")
 
+                        // ===== PAYMENTS =====
+                        .requestMatchers("/api/payments/**").hasAnyRole("ADMIN", "CUSTOMER")
+
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthEntryPoint)
